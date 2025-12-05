@@ -35,17 +35,8 @@ export const ReviewModal = ({ isOpen, onClose, carwashId, orderId, onSuccess }: 
         try {
             setIsSubmitting(true);
             await ReviewService.createReview({
-                carwash_id: carwashId, // Note: backend expects snake_case for some fields, check model
-                // However, the service uses axios which sends JSON. 
-                // The Go struct tags are `json:"carwash_id"`.
-                // So we should send `carwash_id`.
-                // Wait, the frontend Review interface uses snake_case keys?
-                // Let's check ReviewService.ts interface again.
-                // It has `carwash_id`.
-
-                // Actually, let's just send the object matching the interface
-                carwash_id: carwashId as any, // Type assertion if needed, or just string
-                order_id: orderId as any,
+                carwash_id: carwashId,
+                order_id: orderId,
                 rating,
                 accuracy,
                 cleanliness,
