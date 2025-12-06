@@ -132,6 +132,27 @@ const AuthService = { // Now returns both user and token
       throw error;
     }
   },
+
+  async resendVerificationEmail(email: string): Promise<void> {
+    try {
+      await axios.post(
+        `${API_BASE_URL}/auth/resend-verification`,
+        { email },
+        {
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      toast.success('Verification code resent! Check your email.');
+    } catch (error: any) {
+      console.error('Resend error:', error);
+      const errorMessage = error.response?.data?.message || 'Failed to resend code';
+      toast.error(errorMessage);
+      throw error;
+    }
+  },
 };
 
 export default AuthService;

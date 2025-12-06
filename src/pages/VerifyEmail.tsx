@@ -123,10 +123,20 @@ const VerifyEmail = () => {
                             <span className="text-gray-500">Didn't receive the code? </span>
                             <button
                                 type="button"
-                                className="text-blue-600 hover:underline font-medium"
-                                onClick={() => toast.info('Resend functionality coming soon')}
+                                className="text-blue-600 hover:underline font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                                onClick={async () => {
+                                    try {
+                                        setIsLoading(true);
+                                        await AuthService.resendVerificationEmail(email);
+                                    } catch (error) {
+                                        console.error(error);
+                                    } finally {
+                                        setIsLoading(false);
+                                    }
+                                }}
+                                disabled={isLoading}
                             >
-                                Resend
+                                {isLoading ? 'Sending...' : 'Resend'}
                             </button>
                         </div>
                     </form>
@@ -137,3 +147,6 @@ const VerifyEmail = () => {
 };
 
 export default VerifyEmail;
+
+
+
