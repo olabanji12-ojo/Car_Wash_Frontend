@@ -13,16 +13,30 @@ import {
   Clock,
   Share2,
   Heart,
-  CheckCircle2
+  CheckCircle2,
+  User,
+  LogOut,
+  Settings
 } from "lucide-react";
 import CarwashService, { Carwash } from "@/Contexts/CarwashService";
 import ReviewService, { Review } from "@/Contexts/ReviewService";
 import { toast } from "sonner";
 import { AddReviewDialog } from "@/components/AddReviewDialog";
+import { useAuth } from "../Contexts/AuthContext";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const CarwashDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
   const [selectedImage, setSelectedImage] = useState(0);
   const [carwash, setCarwash] = useState<Carwash | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -73,10 +87,46 @@ const CarwashDetails = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading carwash details...</p>
+      <div className="min-h-screen bg-gray-50/50 pb-12">
+        {/* Header Skeleton */}
+        <div className="bg-background border-b sticky top-0 z-50">
+          <div className="max-w-7xl mx-auto px-4 md:px-8 h-16 flex items-center justify-between">
+            <Skeleton className="h-8 w-8 rounded-full" />
+            <div className="flex gap-4">
+              <Skeleton className="h-9 w-9 rounded-full" />
+              <Skeleton className="h-9 w-24 rounded-md" />
+            </div>
+          </div>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+          {/* Hero Section Skeleton */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="space-y-4">
+              <Skeleton className="w-full aspect-video rounded-xl" />
+              <div className="grid grid-cols-4 gap-4">
+                {[1, 2, 3, 4].map((i) => (
+                  <Skeleton key={i} className="aspect-video rounded-lg" />
+                ))}
+              </div>
+            </div>
+            <div className="space-y-6">
+              <Skeleton className="h-10 w-3/4" />
+              <div className="flex gap-2">
+                <Skeleton className="h-6 w-16 rounded-full" />
+                <Skeleton className="h-6 w-16 rounded-full" />
+              </div>
+              <div className="space-y-3 pt-4">
+                <Skeleton className="h-5 w-full" />
+                <Skeleton className="h-5 w-5/6" />
+                <Skeleton className="h-5 w-4/6" />
+              </div>
+              <div className="grid grid-cols-2 gap-4 pt-4">
+                <Skeleton className="h-12 w-full rounded-lg" />
+                <Skeleton className="h-12 w-full rounded-lg" />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -132,6 +182,44 @@ const CarwashDetails = () => {
             <Button variant="ghost" size="icon">
               <Heart className="h-4 w-4" />
             </Button>
+
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="relative h-9 w-9 rounded-full border bg-muted/50 hover:bg-muted ml-2">
+                    <User className="h-5 w-5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none">{user?.name || "User"}</p>
+                      <p className="text-xs leading-none text-muted-foreground">
+                        {user?.email || "user@example.com"}
+                      </p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => navigate('/profile')} className="cursor-pointer">
+                    <User className="mr-2 h-4 w-4" />
+                    <span>Profile</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/dashboard')} className="cursor-pointer">
+                    <Settings className="mr-2 h-4 w-4" />
+                    <span>Dashboard</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={logout} className="cursor-pointer text-destructive focus:bg-destructive/10 focus:text-destructive">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Log out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button onClick={() => navigate("/login")} variant="default" size="sm" className="ml-2">
+                Login
+              </Button>
+            )}
           </div>
         </div>
       </header>

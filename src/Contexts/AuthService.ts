@@ -9,6 +9,7 @@ interface User {
   role: 'car_owner' | 'business_owner' | 'worker' | 'business_admin' | '';
   account_type: 'car_owner' | 'car_wash' | '';
   carwash_id?: string; // Business owner's carwash ID
+  name?: string;
 }
 
 const AuthService = { // Now returns both user and token
@@ -46,7 +47,8 @@ const AuthService = { // Now returns both user and token
           email: userData.email,
           role: userData.role || '',
           account_type: userData.accountType || userData.account_type || '',
-          carwash_id: userData.carwash_id || userData.carwashId
+          carwash_id: userData.carwash_id || userData.carwashId,
+          name: userData.name || userData.full_name
         },
         token: token
       };
@@ -99,7 +101,8 @@ const AuthService = { // Now returns both user and token
           email: userData.email,
           role: userData.role || '',
           account_type: userData.accountType || userData.account_type || '',
-          carwash_id: userData.carwash_id || userData.carwashId
+          carwash_id: userData.carwash_id || userData.carwashId,
+          name: userData.name || userData.full_name
         },
         token: token
       };

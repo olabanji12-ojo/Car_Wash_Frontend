@@ -9,6 +9,7 @@ interface User {
   role: 'car_owner' | 'business_owner' | 'worker' | 'business_admin' | '';
   account_type: 'car_owner' | 'car_wash' | '';
   carwash_id?: string; // Business owner's carwash ID
+  name?: string;
 }
 
 interface AuthContextType {

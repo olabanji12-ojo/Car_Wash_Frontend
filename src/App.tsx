@@ -21,6 +21,7 @@ import BusinessDashboard from "./Carwash/BusinessDashboard";
 import BookingsManagement from "./Carwash/BookingsManagement";
 import ReviewsManagement from "./Carwash/ReviewsManagement";
 import { AuthProvider } from "./Contexts/AuthContext";
+import { FavoritesProvider } from "./Contexts/FavoritesContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { PublicOnlyRoute } from "./components/PublicOnlyRoute";
 
@@ -34,95 +35,97 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
-          <Routes>
-            {/* 🌐 PUBLIC ROUTES - Anyone can access */}
-            <Route path="/" element={<Index />} />
-            <Route path="/login" element={<PublicOnlyRoute><Login /></PublicOnlyRoute>} />
-            <Route path="/signup" element={<PublicOnlyRoute><Signup /></PublicOnlyRoute>} />
-            <Route path="/verify-email" element={<PublicOnlyRoute><VerifyEmail /></PublicOnlyRoute>} />
-            <Route path="/carwash/:id" element={<CarwashDetails />} />
+          <FavoritesProvider>
+            <Routes>
+              {/* 🌐 PUBLIC ROUTES - Anyone can access */}
+              <Route path="/" element={<Index />} />
+              <Route path="/login" element={<PublicOnlyRoute><Login /></PublicOnlyRoute>} />
+              <Route path="/signup" element={<PublicOnlyRoute><Signup /></PublicOnlyRoute>} />
+              <Route path="/verify-email" element={<PublicOnlyRoute><VerifyEmail /></PublicOnlyRoute>} />
+              <Route path="/carwash/:id" element={<CarwashDetails />} />
 
-            {/* 🚗 CUSTOMER-ONLY ROUTES */}
-            <Route
-              path="/dashboard/*"
-              element={
-                <ProtectedRoute allowedRoles={['car_owner']}>
-                  <Dashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/booking"
-              element={
-                <ProtectedRoute allowedRoles={['car_owner']}>
-                  <Booking />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/vehicles"
-              element={
-                <ProtectedRoute allowedRoles={['car_owner']}>
-                  <Vehicles />
-                </ProtectedRoute>
-              }
-            />
+              {/* 🚗 CUSTOMER-ONLY ROUTES */}
+              <Route
+                path="/dashboard/*"
+                element={
+                  <ProtectedRoute allowedRoles={['car_owner']}>
+                    <Dashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/booking"
+                element={
+                  <ProtectedRoute allowedRoles={['car_owner']}>
+                    <Booking />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/vehicles"
+                element={
+                  <ProtectedRoute allowedRoles={['car_owner']}>
+                    <Vehicles />
+                  </ProtectedRoute>
+                }
+              />
 
-            {/* 🏢 BUSINESS OWNER-ONLY ROUTES */}
-            <Route
-              path="/business-dashboard"
-              element={
-                <ProtectedRoute allowedRoles={['business_owner']}>
-                  <BusinessDashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/post-onboarding"
-              element={
-                <ProtectedRoute allowedRoles={['business_owner']}>
-                  <PostOnboarding />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/business-profile-settings"
-              element={
-                <ProtectedRoute allowedRoles={['business_owner']}>
-                  <BusinessProfileSettings />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/bookings-management"
-              element={
-                <ProtectedRoute allowedRoles={['business_owner']}>
-                  <BookingsManagement />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/reviews-management"
-              element={
-                <ProtectedRoute allowedRoles={['business_owner']}>
-                  <ReviewsManagement />
-                </ProtectedRoute>
-              }
-            />
+              {/* 🏢 BUSINESS OWNER-ONLY ROUTES */}
+              <Route
+                path="/business-dashboard"
+                element={
+                  <ProtectedRoute allowedRoles={['business_owner']}>
+                    <BusinessDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/post-onboarding"
+                element={
+                  <ProtectedRoute allowedRoles={['business_owner']}>
+                    <PostOnboarding />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/business-profile-settings"
+                element={
+                  <ProtectedRoute allowedRoles={['business_owner']}>
+                    <BusinessProfileSettings />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/bookings-management"
+                element={
+                  <ProtectedRoute allowedRoles={['business_owner']}>
+                    <BookingsManagement />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/reviews-management"
+                element={
+                  <ProtectedRoute allowedRoles={['business_owner']}>
+                    <ReviewsManagement />
+                  </ProtectedRoute>
+                }
+              />
 
-            {/* 👤 SHARED ROUTES - Both roles can access */}
-            <Route
-              path="/profile"
-              element={
-                <ProtectedRoute allowedRoles={['car_owner', 'business_owner']}>
-                  <Profile />
-                </ProtectedRoute>
-              }
-            />
+              {/* 👤 SHARED ROUTES - Both roles can access */}
+              <Route
+                path="/profile"
+                element={
+                  <ProtectedRoute allowedRoles={['car_owner', 'business_owner']}>
+                    <Profile />
+                  </ProtectedRoute>
+                }
+              />
 
-            {/* 404 - Not Found */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+              {/* 404 - Not Found */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </FavoritesProvider>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>

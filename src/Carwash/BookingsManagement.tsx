@@ -209,6 +209,26 @@ const BookingsManagement = () => {
     }
   };
 
+  // ✅ PROCESS 1.3: Wire Complete button to backend API
+  const handleCompleteBooking = async (id: string) => {
+    try {
+      console.log('✅ Completing booking:', id);
+      const { default: BookingService } = await import('@/Contexts/BookingService');
+      await BookingService.updateBookingStatus(id, "completed");
+
+      // Update local state
+      setBookings(
+        bookings.map((booking) =>
+          booking.id === id ? { ...booking, status: "completed" } : booking
+        )
+      );
+      toast.success("Booking marked as completed", { style: { color: "#10B981" } }); // Green success
+    } catch (error) {
+      console.error('❌ Failed to complete booking:', error);
+      toast.error("Failed to update status");
+    }
+  };
+
   const openBookingDetails = (booking: Booking) => {
     setSelectedBooking(booking);
     setMessages(booking.serviceType === "home" ? mockMessages : []);
@@ -346,6 +366,17 @@ const BookingsManagement = () => {
                               Reject
                             </Button>
                           </>
+                        )}
+                        {booking.status === "confirmed" && (
+                          <Button
+                            variant="default" // Use primary color to indicate completion is the next positive step
+                            size="sm"
+                            className="bg-purple-600 hover:bg-purple-700"
+                            onClick={() => handleCompleteBooking(booking.id)}
+                          >
+                            <CheckCircle className="h-4 w-4 mr-1" />
+                            Mark Completed
+                          </Button>
                         )}
                         {booking.serviceType === "home" && (
                           <Button

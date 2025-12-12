@@ -11,6 +11,7 @@ import {
   Search,
   MessageSquare
 } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import BookingService, { BookingResponse } from "@/Contexts/BookingService";
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
@@ -188,7 +189,39 @@ const MyBookingsPage = () => {
     return acc;
   }, {} as Record<string, number>);
 
-  if (loading) return <div className="p-8 text-center">Loading bookings...</div>;
+  if (loading) {
+    return (
+      <div className="bg-gray-50/50 min-h-screen">
+        <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
+          <div className="mb-8 space-y-2">
+            <Skeleton className="h-8 w-48" />
+            <Skeleton className="h-4 w-96" />
+          </div>
+          <div className="space-y-4">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="rounded-xl border bg-card text-card-foreground shadow-sm p-5">
+                <div className="flex gap-4">
+                  <div className="space-y-3 flex-1">
+                    <div className="flex justify-between">
+                      <div className="space-y-2">
+                        <Skeleton className="h-6 w-32" />
+                        <Skeleton className="h-4 w-24" />
+                      </div>
+                      <Skeleton className="h-6 w-20 rounded-full" />
+                    </div>
+                    <div className="space-y-2 pt-2">
+                      <Skeleton className="h-4 w-48" />
+                      <Skeleton className="h-4 w-32" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-gray-50/50 min-h-screen">

@@ -5,19 +5,21 @@ import { QuickActions } from "@/components/dashboard/QuickActions";
 import { CarwashList } from "@/components/dashboard/CarwashList";
 import MyBookingsPage from "./MyBookings";
 import Vehicles from "./Vehicles";
+import Favorites from "./Favorites";
 
 import { useState, useEffect } from "react";
 import CarwashService, { Carwash } from "@/Contexts/CarwashService";
 import { toast } from "sonner";
 
 import BookingService from "@/Contexts/BookingService";
+import { useFavorites } from "@/Contexts/FavoritesContext";
 
 const DashboardHome = () => {
   const [carwashes, setCarwashes] = useState<Carwash[]>([]);
   const [loading, setLoading] = useState(true);
+  const { favorites } = useFavorites();
   const [stats, setStats] = useState({
     upcomingBookings: 0,
-    favoriteCarwashes: 0,
     totalVisits: 0,
     rewardsPoints: 0
   });
@@ -50,12 +52,11 @@ const DashboardHome = () => {
       const upcoming = bookings.filter(b => b.status === 'pending' || b.status === 'confirmed').length;
       const visits = bookings.filter(b => b.status === 'completed').length;
 
-      // Mock data for favorites and rewards until implemented
+      // Mock data for rewards until implemented
       setStats({
         upcomingBookings: upcoming,
-        favoriteCarwashes: 0, // Placeholder
         totalVisits: visits,
-        rewardsPoints: visits * 10 // Simple reward logic: 10 pts per visit
+        rewardsPoints: visits * 10
       });
     } catch (error) {
       console.error("Failed to fetch dashboard stats", error);
@@ -81,7 +82,7 @@ const DashboardHome = () => {
   return (
     <div className="space-y-8">
       <QuickActions onSearch={handleSearch} />
-      <DashboardStats stats={stats} />
+      <DashboardStats stats={{ ...stats, favoriteCarwashes: favorites.length }} />
       <CarwashList carwashes={carwashes} loading={loading} />
     </div>
   );
@@ -93,6 +94,7 @@ const Dashboard = () => {
       <Routes>
         <Route index element={<DashboardHome />} />
         <Route path="bookings" element={<MyBookingsPage />} />
+        <Route path="favorites" element={<Favorites />} />
         <Route path="vehicles" element={<Vehicles />} />
       </Routes>
     </DashboardLayout>

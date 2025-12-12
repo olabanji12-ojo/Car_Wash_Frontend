@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/sidebar";
 
 const menuItems = [
-  {title:"Welcompage", url:"/", icon: Car},
+  { title: "Home Website", url: "/", icon: Car },
   { title: "Dashboard", url: "/dashboard", icon: Home },
   { title: "Find Carwash", url: "/dashboard/find", icon: Search },
   { title: "Book Home Service", url: "/dashboard/book", icon: Calendar },
@@ -25,11 +25,11 @@ export function DashboardSidebar() {
   const { open } = useSidebar();
 
   return (
-    <Sidebar collapsible="offcanvas">
-      <SidebarContent className="bg-primary">
+    <Sidebar collapsible="offcanvas" className="border-r border-border/50 bg-background/80 backdrop-blur-md">
+      <SidebarContent>
         <div className="p-6">
-          <h1 className="text-2xl font-bold text-primary-foreground">
-            CarWashPro
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
+            QueueLess
           </h1>
         </div>
 
@@ -43,8 +43,9 @@ export function DashboardSidebar() {
                       to={item.url}
                       end={item.url === "/dashboard"}
                       className={({ isActive }) =>
-                        `flex items-center gap-3 px-6 py-3 text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10 transition-colors ${
-                          isActive ? "bg-primary-foreground/20 text-primary-foreground font-medium" : ""
+                        `flex items-center gap-3 px-6 py-3 transition-all duration-200 rounded-md mx-2 ${isActive
+                          ? "bg-primary/10 text-primary font-bold shadow-sm"
+                          : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                         }`
                       }
                     >

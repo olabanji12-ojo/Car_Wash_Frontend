@@ -59,21 +59,18 @@ const BookingService = {
                 `${API_BASE_URL}/bookings`,
                 bookingData,
                 {
-                    withCredentials: true, // Important for cookies/sessions if used
+                    withCredentials: true,
                     headers: getAuthHeaders()
                 }
             );
 
             if (response.status === 201) {
-                toast.success("Booking created successfully!");
                 return response.data;
             } else {
                 throw new Error("Unexpected response status");
             }
         } catch (error: any) {
             console.error('Create booking error:', error);
-            const errorMessage = error.response?.data?.error || error.response?.data?.message || 'Failed to create booking';
-            toast.error(errorMessage);
             throw error;
         }
     },
