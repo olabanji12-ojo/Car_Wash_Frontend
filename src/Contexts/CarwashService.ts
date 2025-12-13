@@ -2,10 +2,12 @@ import axios from 'axios';
 import { toast } from 'sonner';
 import API_BASE_URL from './baseUrl';
 
-// NEW INTERFACE for paginated response
+// NEW INTERFACE for paginated response - Adjusted for safer handling
 export interface PaginatedCarwashes {
     data: Carwash[];
     totalCount: number;
+    // We add 'success' here as the backend returns it at the top level
+    success?: boolean; 
 }
 
 export interface Carwash {
@@ -46,17 +48,24 @@ const CarwashService = {
             
             console.log(`Response from getAllCarwashes (Page ${page}):`, response.data);
 
-            // Assuming backend returns a structure like { success: true, data: { carwashes: [...], count: N } }
-            const carwashesData = response.data.data || response.data;
-
+            // Access the response body. 
+            const responseBody = response.data;
+            
+            // CRITICAL FIX: Extract the carwash array and count from the nested data structure
+            // We assume the carwash array is at responseBody.data 
+            // and the count is at responseBody.totalCount or responseBody.count
+            const carwashesArray = responseBody.data || [];
+            const count = responseBody.totalCount || responseBody.count || 
+                          (Array.isArray(carwashesArray) ? carwashesArray.length : 0);
+            
             return {
-                // Extracts the carwashes array
-                data: carwashesData.carwashes || carwashesData.data || [], 
-                // Extracts the total count
-                totalCount: carwashesData.count || carwashesData.totalCount || 0
+                data: carwashesArray, // Returns the actual array of carwashes
+                totalCount: count
             };
         } catch (error: any) {
             console.error('Get all carwashes error:', error);
+            // Use toast.error here as well for consistency
+            toast.error("Failed to load carwash list."); 
             // Return empty data structure on error
             return { data: [], totalCount: 0 };
         }
@@ -68,7 +77,8 @@ const CarwashService = {
     async getCarwashById(id: string): Promise<Carwash> {
         try {
             const response = await axios.get(`${API_BASE_URL}/carwashes/${id}`);
-            return response.data;
+            // Check if response has a nested data property and use it
+            return response.data.data || response.data;
         } catch (error: any) {
             console.error('Get carwash error:', error);
             throw error;
@@ -78,28 +88,25 @@ const CarwashService = {
     /**
      * Search nearby car washes
      */
-    async searchNearby(lat: number, lng: number): Promise<any> {
+    async searchNearby(lat: number, lng: number): Promise<Carwash[]> {
         try {
             const response = await axios.get(`${API_BASE_URL}/carwashes/nearby/?lat=${lat}&lng=${lng}`);
             console.log('Response from searchNearby:', response.data);
 
-            let data = response.data.data || response.data;
-            console.log('First level data:', data);
-
-            if (data.data) {
-                data = data.data;
-                console.log('Second level data:', data);
-            }
-
-            const carwashes = data.carwashes || [];
-            console.log('Extracted carwashes array:', carwashes);
-            return carwashes;
+            // Safely extract the array of carwashes, accommodating nested structures
+            const responseData = response.data.data || response.data;
+            const carwashes = responseData.carwashes || responseData || [];
+            
+            // Ensure the result is an array before returning
+            return Array.isArray(carwashes) ? carwashes : []; 
         } catch (error: any) {
             console.error('Search nearby error:', error);
             return []; // Return empty array instead of throwing
         }
     },
 
+    // ... (rest of the functions remain the same as they are not affected by this specific issue)
+    
     /**
      * Create a new carwash (Business Onboarding)
      */
@@ -144,8 +151,9 @@ const CarwashService = {
                     'Authorization': `Bearer ${token}`,
                 }
             });
-
-            return response.data;
+            
+            // Assuming this endpoint returns an array or an object with a data array
+            return Array.isArray(response.data) ? response.data : response.data.data || [];
         } catch (error: any) {
             console.error('Get carwash by owner error:', error);
             throw error;
