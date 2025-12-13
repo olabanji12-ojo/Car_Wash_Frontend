@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { CarwashCard } from "./CarwashCard";
 import { CarwashMap } from "./CarwashMap";
-import { MapPin, SearchX, ChevronLeft, ChevronRight } from "lucide-react";
+import { MapPin, SearchX, ArrowRight } from "lucide-react"; // Changed Chevron icons to ArrowRight
 import { Carwash } from "@/Contexts/CarwashService";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -9,38 +9,24 @@ import { Button } from "@/components/ui/button";
 interface CarwashListProps {
   carwashes: Carwash[];
   loading: boolean;
-  currentPage: number;
-  itemsPerPage: number;
-  totalItems: number;
-  onPageChange: (page: number) => void;
+  // ADDED PROP: Handler for the "View More" action
+  onViewAll: () => void;
+  
+  // REMOVED PAGINATION PROPS: currentPage, itemsPerPage, totalItems, onPageChange
 }
+
+// Internal display configuration
+const DISPLAY_LIMIT = 6; 
 
 export const CarwashList = ({
   carwashes,
   loading,
-  currentPage,
-  itemsPerPage,
-  totalItems,
-  onPageChange
+  onViewAll
 }: CarwashListProps) => {
 
-  // Calculate total pages based on total items and items per page
-  // We use the totalItems count returned by the API here.
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
-
-  // --- FIX: REMOVED CLIENT-SIDE SLICING LOGIC ---
-  // const startIndex = (currentPage - 1) * itemsPerPage;
-  // const endIndex = startIndex + itemsPerPage;
-  // const paginatedCarwashes = carwashes.slice(startIndex, endIndex);
-  
-  // The `carwashes` prop now directly contains the items for the current page.
-
-  // Handler for page change clicks
-  const handlePageChange = (newPage: number) => {
-    if (newPage >= 1 && newPage <= totalPages) {
-      onPageChange(newPage);
-    }
-  };
+  // Logic for limited display
+  const initialDisplayCarwashes = carwashes.slice(0, DISPLAY_LIMIT);
+  const hasMoreCarwashes = carwashes.length > DISPLAY_LIMIT;
 
   return (
     <div className="space-y-6">
@@ -57,74 +43,62 @@ export const CarwashList = ({
       <div className="space-y-6">
         <CarwashMap />
 
-        <div className="space-y-4">
+        {/*
+          NEW: Responsive Grid Layout
+          - grid-cols-2: 2 columns by default (small devices)
+          - lg:grid-cols-3: 3 columns on large screens
+          - gap-4: Spacing between items
+        */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {loading ? (
-            // Skeleton Loading State
-            Array.from({ length: 5 }).map((_, i) => ( 
-              <div key={i} className="flex gap-4 p-4 border rounded-lg bg-card/50">
-                <Skeleton className="h-24 w-24 rounded-md" />
-                <div className="space-y-2 flex-1">
-                  <Skeleton className="h-5 w-1/3" />
-                  <Skeleton className="h-4 w-1/2" />
-                  <div className="pt-2 flex gap-2">
-                    <Skeleton className="h-8 w-20" />
-                    <Skeleton className="h-8 w-20" />
-                  </div>
-              </div>
+            // Skeleton Loading State (Show skeletons matching the grid)
+            Array.from({ length: DISPLAY_LIMIT }).map((_, i) => (
+              // Adjusted skeleton styling for a card-like grid item
+              <div key={i} className="space-y-3 p-4 border rounded-lg bg-card/50">
+                <Skeleton className="h-32 w-full rounded-md" />
+                <Skeleton className="h-5 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
               </div>
             ))
           ) : carwashes.length > 0 ? (
             <>
-              {/* RENDER THE ARRAY DIRECTLY */}
-              {carwashes.map((carwash) => (
+              {/* Render the limited subset of carwashes */}
+              {initialDisplayCarwashes.map((carwash) => (
                 <CarwashCard key={carwash.id} carwash={carwash} />
               ))}
-
-              {/* Pagination Controls */}
-              {totalPages > 1 && (
-                <div className="flex justify-between items-center pt-6">
-                  <Button
-                    variant="outline"
-                    onClick={() => handlePageChange(currentPage - 1)}
-                    disabled={currentPage === 1}
-                    className="gap-2"
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                    Previous
-                  </Button>
-
-                  <span className="text-sm font-medium text-muted-foreground">
-                    Page {currentPage} of {totalPages}
-                  </span>
-
-                  <Button
-                    variant="outline"
-                    onClick={() => handlePageChange(currentPage + 1)}
-                    disabled={currentPage === totalPages}
-                    className="gap-2"
-                  >
-                    Next
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
-                </div>
-              )}
             </>
-          ) : (
-            // Empty State
-            <div className="flex flex-col items-center justify-center py-12 px-4 text-center border-2 border-dashed rounded-lg bg-muted/30">
-              <div className="bg-muted rounded-full p-4 mb-4">
-                <SearchX className="h-8 w-8 text-muted-foreground" />
-              </div>
-              <h3 className="text-lg font-semibold mb-1">No carwashes found</h3>
-              <p className="text-muted-foreground max-w-sm mb-6">
-                We couldn't find any carwashes in this area. Try adjusting your search or location.
-              </p>
-              <Button variant="outline" className="gap-2">
-                Refresh List
+          ) : null} {/* Closing the grid div here, moving the empty state out */}
+        </div>
+        
+        {/* View More Button / Empty State Logic */}
+        {carwashes.length > 0 ? (
+          hasMoreCarwashes && (
+            <div className="flex justify-center pt-4">
+              <Button 
+                variant="outline" 
+                onClick={onViewAll} 
+                className="gap-2 w-full sm:w-auto"
+              >
+                View More Carwashes ({carwashes.length - DISPLAY_LIMIT} found)
+                <ArrowRight className="h-4 w-4" />
               </Button>
             </div>
-          )}
-        </div>
+          )
+        ) : !loading && (
+          // Empty State
+          <div className="flex flex-col items-center justify-center py-12 px-4 text-center border-2 border-dashed rounded-lg bg-muted/30">
+            <div className="bg-muted rounded-full p-4 mb-4">
+              <SearchX className="h-8 w-8 text-muted-foreground" />
+            </div>
+            <h3 className="text-lg font-semibold mb-1">No carwashes found</h3>
+            <p className="text-muted-foreground max-w-sm mb-6">
+              We couldn't find any carwashes in this area. Try adjusting your search or location.
+            </p>
+            <Button variant="outline" className="gap-2">
+              Refresh List
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );
