@@ -1,18 +1,17 @@
 import { Card } from "@/components/ui/card";
 import { CarwashCard } from "./CarwashCard";
 import { CarwashMap } from "./CarwashMap";
-import { MapPin, SearchX, ArrowRight } from "lucide-react"; // Changed Chevron icons to ArrowRight
+import { MapPin, SearchX, ArrowRight } from "lucide-react"; 
 import { Carwash } from "@/Contexts/CarwashService";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+// ❌ REMOVED: import { useNavigate } from 'react-router-dom'; // Navigation hook belongs in the parent (DashboardHome)
 
 interface CarwashListProps {
   carwashes: Carwash[];
   loading: boolean;
   // ADDED PROP: Handler for the "View More" action
   onViewAll: () => void;
-  
-  // REMOVED PAGINATION PROPS: currentPage, itemsPerPage, totalItems, onPageChange
 }
 
 // Internal display configuration
@@ -43,17 +42,11 @@ export const CarwashList = ({
       <div className="space-y-6">
         <CarwashMap />
 
-        {/*
-          NEW: Responsive Grid Layout
-          - grid-cols-2: 2 columns by default (small devices)
-          - lg:grid-cols-3: 3 columns on large screens
-          - gap-4: Spacing between items
-        */}
+        {/* Responsive Grid Layout */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {loading ? (
-            // Skeleton Loading State (Show skeletons matching the grid)
+            // Skeleton Loading State
             Array.from({ length: DISPLAY_LIMIT }).map((_, i) => (
-              // Adjusted skeleton styling for a card-like grid item
               <div key={i} className="space-y-3 p-4 border rounded-lg bg-card/50">
                 <Skeleton className="h-32 w-full rounded-md" />
                 <Skeleton className="h-5 w-3/4" />
@@ -67,7 +60,7 @@ export const CarwashList = ({
                 <CarwashCard key={carwash.id} carwash={carwash} />
               ))}
             </>
-          ) : null} {/* Closing the grid div here, moving the empty state out */}
+          ) : null} 
         </div>
         
         {/* View More Button / Empty State Logic */}
@@ -76,7 +69,7 @@ export const CarwashList = ({
             <div className="flex justify-center pt-4">
               <Button 
                 variant="outline" 
-                onClick={onViewAll} 
+                onClick={onViewAll} // <-- Correctly calls the prop function
                 className="gap-2 w-full sm:w-auto"
               >
                 View More Carwashes ({carwashes.length - DISPLAY_LIMIT} found)

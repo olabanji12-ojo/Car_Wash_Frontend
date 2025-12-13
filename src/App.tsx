@@ -23,6 +23,7 @@ import ReviewsManagement from "./Carwash/ReviewsManagement";
 import { AuthProvider } from "./Contexts/AuthContext";
 import { FavoritesProvider } from "./Contexts/FavoritesContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
+import BrowseCarwashesPage from "./components/dashboard/BrowseCarwashesPage";
 import { PublicOnlyRoute } from "./components/PublicOnlyRoute";
 
 
@@ -43,6 +44,7 @@ const App = () => (
               <Route path="/signup" element={<PublicOnlyRoute><Signup /></PublicOnlyRoute>} />
               <Route path="/verify-email" element={<PublicOnlyRoute><VerifyEmail /></PublicOnlyRoute>} />
               <Route path="/carwash/:id" element={<CarwashDetails />} />
+              <Route path="/carwashes" element={<BrowseCarwashesPage />} />
 
               {/* 🚗 CUSTOMER-ONLY ROUTES */}
               <Route

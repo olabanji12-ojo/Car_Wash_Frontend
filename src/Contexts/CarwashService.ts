@@ -2,6 +2,12 @@ import axios from 'axios';
 import { toast } from 'sonner';
 import API_BASE_URL from './baseUrl';
 
+// NEW INTERFACE for paginated response
+export interface PaginatedCarwashes {
+    data: Carwash[];
+    totalCount: number;
+}
+
 export interface Carwash {
     id: string;
     name: string;
@@ -29,17 +35,30 @@ export interface Carwash {
 
 const CarwashService = {
     /**
-     * Get all active car washes
+     * Get all active car washes with pagination
+     * @param page The page number to fetch (default 1)
+     * @param limit The number of items per page (default 10)
      */
-    async getAllCarwashes(): Promise<Carwash[]> {
+    async getAllCarwashes(page: number = 1, limit: number = 10): Promise<PaginatedCarwashes> {
         try {
-            const response = await axios.get(`${API_BASE_URL}/carwashes`);
-            // Log the response to see its structure
-            console.log('Response from getAllCarwashes:', response.data);
-            return response.data.data; // Return the nested data array
+            // Include page and limit query parameters for the server
+            const response = await axios.get(`${API_BASE_URL}/carwashes?page=${page}&limit=${limit}`);
+            
+            console.log(`Response from getAllCarwashes (Page ${page}):`, response.data);
+
+            // Assuming backend returns a structure like { success: true, data: { carwashes: [...], count: N } }
+            const carwashesData = response.data.data || response.data;
+
+            return {
+                // Extracts the carwashes array
+                data: carwashesData.carwashes || carwashesData.data || [], 
+                // Extracts the total count
+                totalCount: carwashesData.count || carwashesData.totalCount || 0
+            };
         } catch (error: any) {
             console.error('Get all carwashes error:', error);
-            throw error;
+            // Return empty data structure on error
+            return { data: [], totalCount: 0 };
         }
     },
 
@@ -64,12 +83,9 @@ const CarwashService = {
             const response = await axios.get(`${API_BASE_URL}/carwashes/nearby/?lat=${lat}&lng=${lng}`);
             console.log('Response from searchNearby:', response.data);
 
-            // Backend returns {success: true, data: {data: {carwashes: [...], count: 2, ...}, message: '...'}}
-            // So we need to go deeper: response.data.data.data.carwashes
             let data = response.data.data || response.data;
             console.log('First level data:', data);
 
-            // Check if there's another nested 'data' property
             if (data.data) {
                 data = data.data;
                 console.log('Second level data:', data);
@@ -86,7 +102,6 @@ const CarwashService = {
 
     /**
      * Create a new carwash (Business Onboarding)
-     * Sends JSON data. File uploads are currently not supported by the backend in this endpoint.
      */
     async createCarwash(data: any): Promise<Carwash> {
         try {
@@ -100,7 +115,6 @@ const CarwashService = {
                 withCredentials: true,
                 headers: {
                     'Content-Type': 'application/json',
-                    // Add the Authorization header with the Bearer token
                     'Authorization': `Bearer ${token}`,
                 },
             });
