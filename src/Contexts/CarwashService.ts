@@ -89,21 +89,38 @@ const CarwashService = {
      * Search nearby car washes
      */
     async searchNearby(lat: number, lng: number): Promise<Carwash[]> {
-        try {
-            const response = await axios.get(`${API_BASE_URL}/carwashes/nearby/?lat=${lat}&lng=${lng}`);
-            console.log('Response from searchNearby:', response.data);
+    try {
+        const response = await axios.get(`${API_BASE_URL}/carwashes/nearby/?lat=${lat}&lng=${lng}`);
+        console.log('Response from searchNearby:', response.data);
 
-            // Safely extract the array of carwashes, accommodating nested structures
-            const responseData = response.data.data || response.data;
-            const carwashes = responseData.carwashes || responseData || [];
-            
-            // Ensure the result is an array before returning
-            return Array.isArray(carwashes) ? carwashes : []; 
-        } catch (error: any) {
-            console.error('Search nearby error:', error);
-            return []; // Return empty array instead of throwing
+        // Define a variable to hold the final array
+        let carwashesArray: Carwash[] = [];
+        
+        // 1. Check for the deepest nesting (response.data.data.carwashes)
+        if (response.data?.data?.carwashes) {
+            carwashesArray = response.data.data.carwashes;
+        } 
+        // 2. Check for the first level of nesting (response.data.carwashes)
+        else if (response.data?.carwashes) {
+            carwashesArray = response.data.carwashes;
         }
-    },
+        // 3. Fallback check (response.data.data directly holds the array)
+        else if (Array.isArray(response.data.data)) {
+            carwashesArray = response.data.data;
+        } 
+        // 4. Fallback check (response.data directly holds the array)
+        else if (Array.isArray(response.data)) {
+            carwashesArray = response.data;
+        }
+
+        console.log('Extracted carwashes array:', carwashesArray);
+        return carwashesArray;
+    } catch (error: any) {
+        console.error('Search nearby error:', error);
+        // Ensure you return an empty array on error
+        return []; 
+    }
+},
 
     // ... (rest of the functions remain the same as they are not affected by this specific issue)
     
