@@ -102,6 +102,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     } catch (error) {
       console.error('Error saving user:', error);
       toast.error('Failed to save session.');
+      
     }
   };
 
