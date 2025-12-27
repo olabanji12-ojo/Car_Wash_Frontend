@@ -108,14 +108,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const logout = async () => {
     try {
+      // Attempt to notify server of logout
       await axios.post(`${API_BASE_URL}/auth/logout`, {}, { withCredentials: true });
+    } catch (error) {
+      console.error('Server logout error:', error);
+      // We proceed with local logout anyway
+    } finally {
       setUser(null);
-      localStorage.removeItem('authToken'); // Clear the token on logout
+      localStorage.removeItem('authToken');
       localStorage.removeItem('user');
       navigate('/login');
-    } catch (error) {
-      console.error('Logout error:', error);
-      toast.error('Failed to log out.');
+      toast.success('Logged out successfully');
     }
   };
 

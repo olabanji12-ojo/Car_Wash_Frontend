@@ -2,63 +2,58 @@ import { useEffect, useRef } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
-interface Carwash {
-  id: number;
-  name: string;
-  location: string;
-  coordinates: [number, number]; // [lng, lat]
-  rating: number;
-  price: string;
+import { Carwash } from '@/Contexts/CarwashService';
+
+interface CarwashMapProps {
+  carwashes?: Carwash[];
+  center?: [number, number]; // [lng, lat]
 }
 
-const carwashes: Carwash[] = [
-  {
-    id: 1,
-    name: "Sparkle Clean Auto Spa",
-    location: "123 Oak St, Cityville",
-    coordinates: [3.3792, 6.5244],
-    rating: 4.8,
-    price: "$25",
-  },
-  {
-    id: 2,
-    name: "Elite Detail Carwash",
-    location: "456 Pine Ave, Townsville",
-    coordinates: [3.3892, 6.5344],
-    rating: 4.5,
-    price: "$35",
-  },
-  {
-    id: 3,
-    name: "Supreme Shine Wash",
-    location: "789 Elm Dr, Villagetown",
-    coordinates: [3.3692, 6.5144],
-    rating: 4.7,
-    price: "$30",
-  },
-];
-
-export const CarwashMap = () => {
+export const CarwashMap = ({ carwashes = [], center = [3.3792, 6.5244] }: CarwashMapProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
+  const markers = useRef<mapboxgl.Marker[]>([]);
 
   useEffect(() => {
     if (!mapContainer.current) return;
 
     // TODO: Replace with your Mapbox public token from https://account.mapbox.com/access-tokens/
     mapboxgl.accessToken = 'pk.eyJ1IjoiYmp0b2Z1bm1pZSIsImEiOiJjbWVoc2pzd2swMHRnMmtzZGxpd3EwaXllIn0.GiS-6hLA9z75hEOJRQk7UQ';
-    
+
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
       style: 'mapbox://styles/mapbox/streets-v12',
-      center: [3.3792, 6.5244], // Lagos coordinates
+      center: center,
       zoom: 12,
     });
 
     map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
 
+    return () => {
+      map.current?.remove();
+    };
+  }, []);
+
+  // Update center when it changes
+  useEffect(() => {
+    if (map.current && center) {
+      map.current.flyTo({ center, zoom: 12 });
+    }
+  }, [center]);
+
+  // Update markers when carwashes change
+  useEffect(() => {
+    if (!map.current) return;
+
+    // Remove existing markers
+    markers.current.forEach(marker => marker.remove());
+    markers.current = [];
+
     // Add markers for each carwash
     carwashes.forEach((carwash) => {
+      const coords = carwash.location?.coordinates;
+      if (!coords || coords.length !== 2) return;
+
       const el = document.createElement('div');
       el.className = 'carwash-marker';
       el.style.width = '32px';
@@ -70,25 +65,24 @@ export const CarwashMap = () => {
         </svg>
       `;
 
-      new mapboxgl.Marker(el)
-        .setLngLat(carwash.coordinates)
+      const marker = new mapboxgl.Marker(el)
+        .setLngLat([coords[0], coords[1]])
         .setPopup(
           new mapboxgl.Popup({ offset: 25 })
             .setHTML(
               `<div class="p-2">
                 <h3 class="font-semibold">${carwash.name}</h3>
-                <p class="text-sm text-gray-600">${carwash.location}</p>
-                <p class="text-sm mt-1">⭐ ${carwash.rating} • ${carwash.price}</p>
+                <p class="text-sm text-gray-600">${carwash.address}</p>
+                <p class="text-sm mt-1">⭐ ${carwash.rating || '0.0'} • ${carwash.services?.[0]?.price ? `₦${carwash.services[0].price.toLocaleString()}` : 'Price N/A'}</p>
+                ${carwash.distance_text ? `<p class="text-xs text-indigo-600 font-medium mt-1">${carwash.distance_text}</p>` : ''}
               </div>`
             )
         )
         .addTo(map.current!);
-    });
 
-    return () => {
-      map.current?.remove();
-    };
-  }, []);
+      markers.current.push(marker);
+    });
+  }, [carwashes]);
 
   return (
     <div

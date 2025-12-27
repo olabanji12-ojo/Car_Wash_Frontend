@@ -26,75 +26,91 @@ export const CarwashCard = ({ carwash }: CarwashCardProps) => {
   };
 
   return (
-    <Card className="overflow-hidden">
+    <Card
+      className="group overflow-hidden hover:shadow-xl transition-all duration-300 border-none bg-white/50 backdrop-blur-sm ring-1 ring-gray-200/50 cursor-pointer"
+      onClick={() => navigate(`/carwash/${carwash.id}`)}
+    >
       <CardContent className="p-0">
-        <div className="flex flex-col md:flex-row">
-          <div className="md:w-48 h-48 md:h-auto relative">
-            <img
-              src={carwash.photo_gallery?.[0] || "https://images.unsplash.com/photo-1520340356584-f9917d1eea6f?w=400&h=300&fit=crop"}
-              alt={carwash.name}
-              className="w-full h-full object-cover"
-            />
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute top-2 right-2 bg-black/20 hover:bg-black/40 text-white rounded-full md:hidden"
-              onClick={toggleFavorite}
+        <div className="relative aspect-[16/10] overflow-hidden">
+          <img
+            src={carwash.photo_gallery?.[0] || "https://images.unsplash.com/photo-1520340356584-f9917d1eea6f?w=400&h=300&fit=crop"}
+            alt={carwash.name}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          />
+
+          {/* Top Badges */}
+          <div className="absolute top-3 left-3 flex flex-wrap gap-2">
+            <Badge
+              variant={carwash.is_active ? "default" : "secondary"}
+              className={`${carwash.is_active ? "bg-green-500 hover:bg-green-600 text-white" : "bg-gray-500"} border-none shadow-sm backdrop-blur-md`}
             >
-              <Heart className={`h-5 w-5 ${isFav ? "fill-red-500 text-red-500" : ""}`} />
-            </Button>
+              <div className={`w-1.5 h-1.5 rounded-full mr-1.5 ${carwash.is_active ? "bg-white animate-pulse" : "bg-gray-300"}`} />
+              {carwash.is_active ? "Open Now" : "Closed"}
+            </Badge>
+
+            {carwash.distance_text && (
+              <Badge variant="secondary" className="bg-white/90 text-indigo-600 border-none shadow-sm backdrop-blur-md font-medium">
+                <MapPin className="w-3 h-3 mr-1" />
+                {carwash.distance_text}
+              </Badge>
+            )}
           </div>
 
-          <div className="flex-1 p-6">
-            <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-              <div className="space-y-2 flex-1">
-                <div>
-                  <h3 className="font-semibold text-lg">{carwash.name}</h3>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
-                    <MapPin className="h-4 w-4" />
-                    <span>{carwash.address}</span>
-                  </div>
-                </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute top-3 right-3 bg-white/90 hover:bg-white text-gray-900 rounded-full shadow-sm backdrop-blur-md z-10 transition-colors"
+            onClick={toggleFavorite}
+          >
+            <Heart className={`h-4.5 w-4.5 transition-all ${isFav ? "fill-red-500 text-red-500" : "text-gray-600"}`} />
+          </Button>
 
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-1">
-                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                    <span className="font-medium">{carwash.rating || "0.0"}</span>
-                    {carwash.review_count !== undefined && (
-                      <span className="text-sm text-muted-foreground">
-                        ({carwash.review_count} review{carwash.review_count !== 1 ? 's' : ''})
-                      </span>
-                    )}
-                  </div>
+          {/* Price Overlay or Bottom Info */}
+          <div className="absolute bottom-3 right-3">
+            <div className="bg-white/95 px-3 py-1.5 rounded-full shadow-lg backdrop-blur-md border border-white/20">
+              <p className="text-sm font-bold text-indigo-700">
+                {carwash.services?.[0]?.price ? `₦${carwash.services[0].price.toLocaleString()}` : "N/A"}
+              </p>
+            </div>
+          </div>
+        </div>
 
-                  <Badge variant={carwash.is_active ? "default" : "secondary"}>
-                    {carwash.is_active ? "Open Now" : "Closed"}
-                  </Badge>
-                </div>
-              </div>
-
-              <div className="flex md:flex-col items-center md:items-end gap-4 md:gap-2">
-                <div className="text-2xl font-bold">
-                  {carwash.services?.[0]?.price ? `₦${carwash.services[0].price.toLocaleString()}` : "N/A"}
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="hidden md:flex"
-                    onClick={toggleFavorite}
-                  >
-                    <Heart className={`h-4 w-4 ${isFav ? "fill-red-500 text-red-500" : ""}`} />
-                  </Button>
-                  <Button
-                    size="sm"
-                    onClick={() => navigate(`/carwash/${carwash.id}`)}
-                  >
-                    Book Now
-                  </Button>
-                </div>
+        <div className="p-4 space-y-3">
+          <div className="flex justify-between items-start">
+            <div className="space-y-1 min-w-0">
+              <h3 className="font-bold text-gray-900 text-base truncate pr-2 group-hover:text-indigo-600 transition-colors">
+                {carwash.name}
+              </h3>
+              <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                <MapPin className="h-3.5 w-3.5 flex-shrink-0" />
+                <span className="truncate">{carwash.address}</span>
               </div>
             </div>
+          </div>
+
+          <div className="flex items-center justify-between pt-1 border-t border-gray-100/50">
+            <div className="flex items-center gap-1.5">
+              <div className="flex items-center bg-yellow-400/10 px-1.5 py-0.5 rounded text-yellow-700">
+                <Star className="h-3.5 w-3.5 fill-yellow-400 text-yellow-500 mr-1" />
+                <span className="text-xs font-bold">{carwash.rating || "0.0"}</span>
+              </div>
+              {carwash.review_count !== undefined && (
+                <span className="text-[11px] text-gray-400 font-medium tracking-tight">
+                  {carwash.review_count} reviews
+                </span>
+              )}
+            </div>
+
+            <Button
+              size="sm"
+              className="h-8 px-4 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-200 transition-all active:scale-95"
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(`/carwash/${carwash.id}`);
+              }}
+            >
+              Book Now
+            </Button>
           </div>
         </div>
       </CardContent>

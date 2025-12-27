@@ -5,20 +5,20 @@ import { Search } from "lucide-react";
 import { LocationSearchBar } from "@/components/LocationSearchBar";
 
 interface QuickActionsProps {
-  onSearch: (lat: number, lng: number) => void;
+  onSearch: (lat: number, lng: number, address: string) => void;
 }
 
 export const QuickActions = ({ onSearch }: QuickActionsProps) => {
-  const [selectedLocation, setSelectedLocation] = useState<{ lat: number, lng: number } | null>(null);
+  const [selectedLocation, setSelectedLocation] = useState<{ lat: number, lng: number, address: string } | null>(null);
 
   const handlePlaceSelected = (lat: number, lng: number, address: string) => {
     console.log("Selected:", address, lat, lng);
-    setSelectedLocation({ lat, lng });
+    setSelectedLocation({ lat, lng, address });
   };
 
   const handleSearchClick = () => {
     if (selectedLocation) {
-      onSearch(selectedLocation.lat, selectedLocation.lng);
+      onSearch(selectedLocation.lat, selectedLocation.lng, selectedLocation.address);
     }
   };
 
