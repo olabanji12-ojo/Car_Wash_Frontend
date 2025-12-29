@@ -22,6 +22,7 @@ import { AddressManager } from "@/components/profile/AddressManager";
 import { NotificationSettings } from "@/components/profile/NotificationSettings";
 import { SecuritySettings } from "@/components/profile/SecuritySettings";
 import { AccountSettings } from "@/components/profile/AccountSettings";
+import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -94,42 +95,38 @@ const Profile = () => {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-[#F9FAFB]">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-[#F9FAFB] border-b">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="gap-2">
-            <ArrowLeft className="h-4 w-4" />
-            <span className="hidden sm:inline">Back</span>
-          </Button>
-          <h1 className="text-2xl font-bold sm:text-left text-center">Profile & Settings</h1>
-          <Badge variant="outline" className="gap-2 text-[#10B981]">
+    <DashboardLayout>
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Profile & Settings</h1>
+            <p className="text-muted-foreground mt-1">Manage your account preferences and addresses</p>
+          </div>
+          <Badge variant="outline" className="gap-2 text-[#10B981] bg-emerald-50 border-emerald-200">
             <Check className="h-4 w-4" />
             Up to date
           </Badge>
         </div>
-      </header>
 
-      <div className="container mx-auto px-4 py-8">
         <div className="grid lg:grid-cols-4 gap-8">
           {/* Sidebar Navigation */}
           <div className="lg:col-span-1">
-            <Card className="sticky top-24">
+            <Card className="sticky top-24 shadow-sm border-muted">
               <CardContent className="p-0">
                 {tabs.map((tab) => (
                   <Button
                     key={tab.id}
                     variant="ghost"
-                    className={`w-full justify-start px-4 py-3 text-left gap-3 transition-colors ${activeTab === tab.id
-                      ? "bg-[#DBEAFE] text-[#2563EB] border-l-4 border-[#2563EB]"
-                      : "text-[#6B7280] hover:bg-gray-100"
+                    className={`w-full justify-start px-4 py-4 text-left gap-3 transition-all ${activeTab === tab.id
+                      ? "bg-primary/10 text-primary border-l-4 border-primary font-semibold"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                       }`}
                     onClick={() => setActiveTab(tab.id)}
                   >
                     <tab.icon className="h-5 w-5" />
                     <span>{tab.label}</span>
                     {tab && tab.badge !== undefined && tab.badge > 0 && (
-                      <Badge variant="outline" className="ml-auto">
+                      <Badge variant="outline" className="ml-auto bg-white">
                         {tab.badge}
                       </Badge>
                     )}
@@ -163,7 +160,7 @@ const Profile = () => {
           </div>
         </div>
       </div>
-    </div>
+    </DashboardLayout>
   );
 };
 

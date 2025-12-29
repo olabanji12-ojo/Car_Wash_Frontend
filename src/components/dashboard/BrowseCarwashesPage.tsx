@@ -1,47 +1,47 @@
 import { useState, useEffect } from "react";
-// FIX: Import the default export (CarwashService) and the necessary types
+import { useSearchParams } from "react-router-dom";
 import CarwashService, { Carwash, PaginatedCarwashes } from "@/Contexts/CarwashService";
 import { CarwashCard } from "./CarwashCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { SearchX, ChevronLeft, ChevronRight } from "lucide-react";
+import { SearchX, ChevronLeft, ChevronRight, Home } from "lucide-react";
 
 const ITEMS_PER_PAGE = 6;
 
-/**
- * A dedicated page component to browse all carwashes with server-side pagination.
- * It manages its own state for data fetching, loading, and pagination.
- */
 export const BrowseCarwashesPage = () => {
-    // State for the list of carwashes on the current page
+    const [searchParams] = useSearchParams();
+    const serviceType = searchParams.get("type"); // e.g. "home"
+
     const [carwashes, setCarwashes] = useState<Carwash[]>([]);
-    // State for loading status
     const [loading, setLoading] = useState(true);
-    // State for the current page number (1-indexed)
     const [currentPage, setCurrentPage] = useState(1);
-    // State for the total number of carwashes available from the server
     const [totalItems, setTotalItems] = useState(0);
 
-    // Calculate the total number of pages
     const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
 
-    // Effect to fetch carwashes whenever the currentPage changes
     useEffect(() => {
         const fetchCarwashes = async () => {
             setLoading(true);
             try {
-                // FIX: Call the method on the default imported object (CarwashService)
                 const response: PaginatedCarwashes = await CarwashService.getAllCarwashes(
                     currentPage,
                     ITEMS_PER_PAGE
                 );
-                
-                // Use the structured response data
-                setCarwashes(response.data);
+
+                let filteredData = response.data;
+
+                // If serviceType is home, filter carwashes that offer home service
+                // For now, since the schema might not explicitly have 'offers_home_service',
+                // we'll simulate it or check description.
+                if (serviceType === "home") {
+                    // Logic to prioritize or filter carwashes with "home" or "doorstep" in description
+                    // or if they have a specific flag (TODO: verify backend support)
+                }
+
+                setCarwashes(filteredData);
                 setTotalItems(response.totalCount);
             } catch (error) {
                 console.error("Failed to fetch carwashes:", error);
-                // In case of an error, reset the state
                 setCarwashes([]);
                 setTotalItems(0);
             } finally {
@@ -50,7 +50,7 @@ export const BrowseCarwashesPage = () => {
         };
 
         fetchCarwashes();
-    }, [currentPage]);
+    }, [currentPage, serviceType]);
 
     // Handlers for pagination
     const handleNextPage = () => {

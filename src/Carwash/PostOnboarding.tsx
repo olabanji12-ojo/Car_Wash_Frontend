@@ -36,6 +36,7 @@ interface BusinessInfo {
   email: string;
   lat?: number;
   lng?: number;
+  maxCarsPerSlot: number;
 }
 
 interface OperatingHour {
@@ -71,6 +72,7 @@ const PostOnboarding = () => {
     address: "",
     phone: "",
     email: mockUser.email,
+    maxCarsPerSlot: 1,
   });
   const navigate = useNavigate();
   const { refreshUser } = useAuth(); // Get refreshUser from AuthContext
@@ -177,6 +179,7 @@ const PostOnboarding = () => {
         },
         open_hours: openHoursMap,
         services: formattedServices,
+        max_cars_per_slot: businessInfo.maxCarsPerSlot,
         is_active: true,
         has_location: true,
         has_onboarded: true
@@ -185,14 +188,21 @@ const PostOnboarding = () => {
       // Call the service
       const createdCarwash = await CarwashService.createCarwash(payload);
 
+      // ✅ SUCCESS: Extract carwash ID (now correctly returns the data object from service)
+      const carwashId = createdCarwash.id || (createdCarwash as any)._id;
+
+      if (!carwashId) {
+        console.warn('⚠️ Carwash created but ID not found in response:', createdCarwash);
+      }
+
       // ✅ UPDATE: Store carwash_id in user object (localStorage)
       const storedUser = localStorage.getItem('user');
-      if (storedUser && createdCarwash.id) {
+      if (storedUser && carwashId) {
         try {
           const userObj = JSON.parse(storedUser);
-          userObj.carwash_id = createdCarwash.id;
+          userObj.carwash_id = carwashId;
           localStorage.setItem('user', JSON.stringify(userObj));
-          console.log('✅ User carwash_id updated in localStorage:', createdCarwash.id);
+          console.log('✅ User carwash_id updated in localStorage:', carwashId);
 
           // Refresh the user in AuthContext so it picks up the new carwash_id
           refreshUser();
@@ -361,6 +371,21 @@ const PostOnboarding = () => {
                   placeholder="+234 801 234 5678"
                   className="text-sm sm:text-base"
                 />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="maxCarsPerSlot" className="text-sm font-semibold">
+                  Service Capacity (Cars per slot) <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="maxCarsPerSlot"
+                  type="number"
+                  min="1"
+                  value={businessInfo.maxCarsPerSlot}
+                  onChange={(e) => setBusinessInfo({ ...businessInfo, maxCarsPerSlot: parseInt(e.target.value) || 1 })}
+                  placeholder="1"
+                  className="text-sm sm:text-base"
+                />
+                <p className="text-xs text-gray-500">How many cars can you service concurrently in a 30-minute window?</p>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-sm">Email</Label>

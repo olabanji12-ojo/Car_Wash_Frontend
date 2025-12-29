@@ -64,8 +64,9 @@ const BookingService = {
                 }
             );
 
-            if (response.status === 201) {
-                return response.data;
+            if (response.status === 201 || response.status === 200) {
+                // Backend returns {success: true, data: {...}}
+                return response.data.data || response.data;
             } else {
                 throw new Error("Unexpected response status");
             }
@@ -106,7 +107,7 @@ const BookingService = {
                 withCredentials: true,
                 headers: getAuthHeaders()
             });
-            return response.data;
+            return response.data.data || response.data;
         } catch (error: any) {
             console.error('Get booking error:', error);
             throw error;
@@ -146,7 +147,7 @@ const BookingService = {
                 }
             );
             toast.success(`Booking ${status} successfully`);
-            return response.data;
+            return response.data.data || response.data;
         } catch (error: any) {
             console.error('Update booking status error:', error);
             toast.error('Failed to update booking status');

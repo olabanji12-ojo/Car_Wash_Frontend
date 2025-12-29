@@ -1,4 +1,4 @@
-import { Home, Search, Calendar, BookOpen, Heart, Car } from "lucide-react";
+import { Home, Search, Calendar, BookOpen, Heart, Car, ClipboardList, Star, Settings } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import {
   Sidebar,
@@ -10,19 +10,30 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { useAuth } from "@/Contexts/AuthContext";
 
-const menuItems = [
+const customerMenuItems = [
   { title: "Home Website", url: "/", icon: Car },
   { title: "Dashboard", url: "/dashboard", icon: Home },
-  { title: "Find Carwash", url: "/dashboard/find", icon: Search },
-  { title: "Book Home Service", url: "/dashboard/book", icon: Calendar },
   { title: "My Bookings", url: "/dashboard/bookings", icon: BookOpen },
   { title: "Favorites", url: "/dashboard/favorites", icon: Heart },
   { title: "My Vehicles", url: "/dashboard/vehicles", icon: Car },
 ];
 
+const businessMenuItems = [
+  { title: "Home Website", url: "/", icon: Car },
+  { title: "Business Dashboard", url: "/business-dashboard", icon: Home },
+  { title: "Bookings", url: "/bookings-management", icon: ClipboardList },
+  { title: "Reviews", url: "/reviews-management", icon: Star },
+  { title: "Complete Setup", url: "/post-onboarding", icon: ClipboardList },
+  { title: "Settings", url: "/business-profile-settings", icon: Settings },
+];
+
 export function DashboardSidebar() {
   const { open } = useSidebar();
+  const { user } = useAuth();
+
+  const menuItems = user?.role === 'business_owner' ? businessMenuItems : customerMenuItems;
 
   return (
     <Sidebar collapsible="offcanvas" className="border-r border-border/50 bg-background/80 backdrop-blur-md">

@@ -1,3 +1,3 @@
-const API_BASE_URL = 'https://car-wash-app-j54r.onrender.com/api';
+const API_BASE_URL = 'http://127.0.0.1:8080/api';
 
 export default API_BASE_URL;

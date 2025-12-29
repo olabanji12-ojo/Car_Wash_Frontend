@@ -52,15 +52,16 @@ export const DashboardHeader = () => {
                                 </p>
                             </div>
                         </DropdownMenuLabel>
-                        <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={() => navigate(`/profile`)} className="cursor-pointer">
                             <User className="mr-2 h-4 w-4" />
-                            <span>Profile</span>
+                            <span>My Account</span>
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => navigate(`/settings`)} className="cursor-pointer">
-                            <Settings className="mr-2 h-4 w-4" />
-                            <span>Settings</span>
-                        </DropdownMenuItem>
+                        {user?.role === 'business_owner' && (
+                            <DropdownMenuItem onClick={() => navigate(`/business-profile-settings`)} className="cursor-pointer">
+                                <Settings className="mr-2 h-4 w-4" />
+                                <span>Business Settings</span>
+                            </DropdownMenuItem>
+                        )}
                         <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={logout} className="cursor-pointer text-destructive focus:bg-destructive/10 focus:text-destructive">
                             <LogOut className="mr-2 h-4 w-4" />

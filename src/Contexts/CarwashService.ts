@@ -142,7 +142,8 @@ const CarwashService = {
                 },
             });
             toast.success("Carwash business created successfully!");
-            return response.data;
+            // Extract the carwash object from the standard API wrapper ({success: true, data: {...}})
+            return response.data.data || response.data;
         } catch (error: any) {
             console.error('Create carwash error:', error);
             const errorMessage = error.response?.data?.error || "Failed to create carwash business";
@@ -224,7 +225,7 @@ const CarwashService = {
             });
 
             toast.success("Carwash updated successfully!");
-            return response.data;
+            return response.data.data || response.data;
         } catch (error: any) {
             console.error('Update carwash error:', error);
             const errorMessage = error.response?.data?.error || "Failed to update carwash";

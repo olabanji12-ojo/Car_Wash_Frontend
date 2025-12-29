@@ -101,6 +101,7 @@ const Booking = () => {
   // Step 2: Scheduling
   const [date, setDate] = useState(initialState?.date || "");
   const [timeSlot, setTimeSlot] = useState(initialState?.timeSlot || "");
+  const [selectedSlotRaw, setSelectedSlotRaw] = useState<string>("");
 
   // Step 3: Vehicle & Services
   const [myCars, setMyCars] = useState<CarResponse[]>([]);
@@ -143,6 +144,8 @@ const Booking = () => {
 
   useEffect(() => {
     const fetchSlots = async () => {
+      setTimeSlot("");
+      setSelectedSlotRaw("");
       if (date && initialState?.carwashId) {
         setIsLoadingSlots(true);
         try {
@@ -284,7 +287,7 @@ const Booking = () => {
         finalCarId = car.id;
       }
 
-      const bookingDateTime = new Date(`${date}T${convertTo24Hour(timeSlot)}`);
+      const bookingDateTime = selectedSlotRaw ? new Date(selectedSlotRaw) : new Date(`${date}T${convertTo24Hour(timeSlot)}`);
       const userLocation = serviceType === "home" && userCoordinates
         ? { type: 'Point', coordinates: userCoordinates }
         : undefined;
@@ -498,27 +501,36 @@ const Booking = () => {
                       ) : availableSlots.length > 0 ? (
                         <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
                           {availableSlots.map((slot: any, idx: number) => {
-                            const startTime = new Date(slot.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                            const dateObj = new Date(slot.start_time);
+                            const startTime = dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                             const isAvailable = serviceType === 'home' || slot.available;
                             return (
                               <Button
                                 key={idx}
                                 variant={timeSlot === startTime ? "default" : "outline"}
                                 className={`
-                                  relative overflow-hidden text-xs sm:text-sm h-12
+                                  relative overflow-hidden text-xs sm:text-sm h-16 transition-all duration-200
                                   ${!isAvailable
-                                    ? 'bg-red-50 text-red-500 border-red-100 hover:bg-red-50 hover:text-red-500 opacity-100 cursor-not-allowed'
-                                    : ''
+                                    ? 'bg-white text-gray-400 border-gray-300 border-dashed hover:bg-white hover:text-gray-400 opacity-100 cursor-not-allowed border-2'
+                                    : 'hover:border-primary/50'
                                   }
+                                  ${timeSlot === startTime ? 'ring-2 ring-primary ring-offset-2' : ''}
                                 `}
-                                onClick={() => isAvailable && setTimeSlot(startTime)}
+                                onClick={() => {
+                                  if (isAvailable) {
+                                    setTimeSlot(startTime);
+                                    setSelectedSlotRaw(slot.start_time);
+                                  }
+                                }}
                                 disabled={!isAvailable}
                               >
-                                {isAvailable ? startTime : (
-                                  <div className="flex flex-col items-center">
-                                    <span className="text-[10px] font-bold line-through opacity-70">{startTime}</span>
-                                    <span className="text-[10px] font-bold">TAKEN</span>
+                                {!isAvailable ? (
+                                  <div className="flex flex-col items-center gap-0.5">
+                                    <span className="text-base font-bold text-gray-700">{startTime}</span>
+                                    <span className="text-[10px] sm:text-xs text-gray-400 font-medium whitespace-nowrap">Slot Taken</span>
                                   </div>
+                                ) : (
+                                  <span className="text-sm font-semibold">{startTime}</span>
                                 )}
                               </Button>
                             );

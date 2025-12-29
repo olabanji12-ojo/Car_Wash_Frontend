@@ -15,14 +15,11 @@ import {
   Star,
   Bell,
   ChevronRight,
-  CheckCircle2,
-  AlertCircle,
-  User,
-  MapPin,
   Clock,
-  Menu,
+  AlertCircle,
 } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 
 // Mock data
 const mockMetrics = {
@@ -70,29 +67,7 @@ const BusinessDashboard = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      // 🔍 DEBUG: Log the entire user object
-      console.log('=== BusinessDashboard Debug ===');
-      console.log('1. Full user object:', user);
-      console.log('2. user.carwash_id:', user?.carwash_id);
-      console.log('3. typeof carwash_id:', typeof user?.carwash_id);
-
-      // Also check localStorage directly
-      const storedUser = localStorage.getItem('user');
-      console.log('4. localStorage user (raw):', storedUser);
-      if (storedUser) {
-        try {
-          const parsed = JSON.parse(storedUser);
-          console.log('5. localStorage user (parsed):', parsed);
-          console.log('6. localStorage carwash_id:', parsed.carwash_id);
-        } catch (e) {
-          console.error('Failed to parse localStorage user:', e);
-        }
-      }
-      console.log('==============================');
-
-      // Check if user has a carwash_id (business owner)
       if (!user?.carwash_id) {
-        console.error('❌ No carwash_id found in user object');
         toast.error("No carwash found for this account");
         setIsLoading(false);
         return;
@@ -100,24 +75,11 @@ const BusinessDashboard = () => {
 
       try {
         setIsLoading(true);
-        console.log('✅ Fetching carwash with ID:', user.carwash_id);
-
-        // 1. Get carwash details
         const myCarwash = await CarwashService.getCarwashById(user.carwash_id);
-        console.log('✅ Carwash fetched:', myCarwash);
-
-        // 2. Get bookings for this carwash
         const fetchedBookings = await BookingService.getBookingsByCarwash(user.carwash_id);
-        console.log('✅ Raw bookings response:', fetchedBookings);
-        console.log('✅ Is array?', Array.isArray(fetchedBookings));
-        console.log('✅ Type:', typeof fetchedBookings);
-
-        // ✅ SAFETY: Ensure bookings is always an array
         const bookingsArray = Array.isArray(fetchedBookings) ? fetchedBookings : [];
-        console.log('✅ Bookings array:', bookingsArray.length, 'bookings');
         setBookings(bookingsArray);
 
-        // 3. Calculate metrics
         const total = bookingsArray.length;
         const pending = bookingsArray.filter((b: any) => b.status === 'pending').length;
         const revenue = bookingsArray
@@ -130,10 +92,8 @@ const BusinessDashboard = () => {
           averageRating: myCarwash.rating || 0,
           pendingBookings: pending
         });
-
-        console.log('✅ Metrics calculated:', { total, pending, revenue });
       } catch (error) {
-        console.error("❌ Failed to fetch dashboard data:", error);
+        console.error("Failed to fetch dashboard data:", error);
         toast.error("Failed to load dashboard data");
       } finally {
         setIsLoading(false);
@@ -188,43 +148,25 @@ const BusinessDashboard = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
+      <DashboardLayout>
+        <div className="min-h-[60vh] bg-gray-50 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        </div>
+      </DashboardLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header - Mobile Optimized */}
-      <header className="sticky top-0 z-50 bg-white border-b">
-        <div className="container mx-auto px-3 sm:px-4 h-14 sm:h-16 flex items-center justify-between">
-          <h1 className="text-lg sm:text-2xl font-bold">Dashboard</h1>
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" className="relative">
-              <Bell className="h-4 w-4 sm:h-5 sm:w-5" />
-              {notifications.filter(n => n.unread).length > 0 && (
-                <span className="absolute top-1 right-1 h-2 w-2 bg-red-500 rounded-full"></span>
-              )}
-            </Button>
-            <Button variant="ghost" size="icon" className="sm:hidden">
-              <Menu className="h-5 w-5" />
-            </Button>
-          </div>
-        </div>
-      </header>
-
+    <DashboardLayout>
       <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
         <div className="grid lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
           {/* Sidebar - Metrics and Quick Actions */}
           <div className="lg:col-span-1 space-y-4 sm:space-y-6">
-            {/* Metrics Card */}
             <Card>
               <CardHeader className="pb-3 sm:pb-4">
                 <CardTitle className="text-base sm:text-lg">Key Metrics</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3 sm:space-y-4">
-                {/* Metric Item */}
                 <div className="flex items-center gap-3">
                   <div className="p-2 rounded-lg bg-blue-50">
                     <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
@@ -235,7 +177,6 @@ const BusinessDashboard = () => {
                   </div>
                 </div>
                 <Separator />
-
                 <div className="flex items-center gap-3">
                   <div className="p-2 rounded-lg bg-blue-50">
                     <DollarSign className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
@@ -246,7 +187,6 @@ const BusinessDashboard = () => {
                   </div>
                 </div>
                 <Separator />
-
                 <div className="flex items-center gap-3">
                   <div className="p-2 rounded-lg bg-blue-50">
                     <Star className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
@@ -257,7 +197,6 @@ const BusinessDashboard = () => {
                   </div>
                 </div>
                 <Separator />
-
                 <div className="flex items-center gap-3">
                   <div className="p-2 rounded-lg bg-orange-50">
                     <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5 text-orange-600" />
@@ -270,13 +209,12 @@ const BusinessDashboard = () => {
               </CardContent>
             </Card>
 
-            {/* Quick Actions */}
             <Card>
               <CardHeader className="pb-3 sm:pb-4">
                 <CardTitle className="text-base sm:text-lg">Quick Actions</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2 sm:space-y-3">
-                <Button className="w-full justify-between text-sm sm:text-base" size="sm">
+                <Button onClick={() => navigate("/bookings-management")} className="w-full justify-between text-sm sm:text-base" size="sm">
                   Manage Bookings
                   <ChevronRight className="h-4 w-4" />
                 </Button>
@@ -288,23 +226,16 @@ const BusinessDashboard = () => {
                   Update Profile
                   <ChevronRight className="h-4 w-4" />
                 </Button>
-                <Button className="w-full justify-between text-sm sm:text-base" variant="outline" size="sm">
-                  Add Service
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
               </CardContent>
             </Card>
           </div>
 
-          {/* Main Content */}
           <div className="lg:col-span-2 space-y-4 sm:space-y-6">
-            {/* Recent Bookings - Mobile Card View */}
             <Card>
               <CardHeader className="pb-3 sm:pb-4">
                 <CardTitle className="text-base sm:text-lg">Recent Bookings</CardTitle>
               </CardHeader>
               <CardContent>
-                {/* Desktop Table View */}
                 <div className="hidden md:block overflow-x-auto">
                   <Table>
                     <TableHeader>
@@ -326,31 +257,11 @@ const BusinessDashboard = () => {
                           <TableCell>
                             {booking.status === "pending" ? (
                               <div className="flex gap-2">
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  className="text-green-600 border-green-600"
-                                  onClick={() => handleAcceptBooking(booking.id)}
-                                >
-                                  Accept
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  className="text-red-600 border-red-600"
-                                  onClick={() => handleRejectBooking(booking.id)}
-                                >
-                                  Reject
-                                </Button>
+                                <Button size="sm" variant="outline" className="text-green-600 border-green-600" onClick={() => handleAcceptBooking(booking.id)}>Accept</Button>
+                                <Button size="sm" variant="outline" className="text-red-600 border-red-600" onClick={() => handleRejectBooking(booking.id)}>Reject</Button>
                               </div>
                             ) : (
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => handleViewBooking(booking.id)}
-                              >
-                                View
-                              </Button>
+                              <Button size="sm" variant="ghost" onClick={() => handleViewBooking(booking.id)}>View</Button>
                             )}
                           </TableCell>
                         </TableRow>
@@ -359,7 +270,6 @@ const BusinessDashboard = () => {
                   </Table>
                 </div>
 
-                {/* Mobile Card View */}
                 <div className="md:hidden space-y-3">
                   {bookings.map((booking) => (
                     <div key={booking.id} className="border rounded-lg p-3 space-y-2">
@@ -376,46 +286,22 @@ const BusinessDashboard = () => {
                       </div>
                       {booking.status === "pending" ? (
                         <div className="flex gap-2 pt-1">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="flex-1 text-green-600 border-green-600 text-xs"
-                            onClick={() => handleAcceptBooking(booking.id)}
-                          >
-                            Accept
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="flex-1 text-red-600 border-red-600 text-xs"
-                            onClick={() => handleRejectBooking(booking.id)}
-                          >
-                            Reject
-                          </Button>
+                          <Button size="sm" variant="outline" className="flex-1 text-green-600 border-green-600 text-xs" onClick={() => handleAcceptBooking(booking.id)}>Accept</Button>
+                          <Button size="sm" variant="outline" className="flex-1 text-red-600 border-red-600 text-xs" onClick={() => handleRejectBooking(booking.id)}>Reject</Button>
                         </div>
                       ) : (
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="w-full text-xs"
-                          onClick={() => handleViewBooking(booking.id)}
-                        >
-                          View Details
-                        </Button>
+                        <Button size="sm" variant="ghost" className="w-full text-xs" onClick={() => handleViewBooking(booking.id)}>View Details</Button>
                       )}
                     </div>
                   ))}
                 </div>
 
                 {bookings.length === 0 && (
-                  <div className="text-center py-8 text-gray-600 text-sm">
-                    No recent bookings
-                  </div>
+                  <div className="text-center py-8 text-gray-600 text-sm">No recent bookings</div>
                 )}
               </CardContent>
             </Card>
 
-            {/* Notifications */}
             <Card>
               <CardHeader className="pb-3 sm:pb-4">
                 <CardTitle className="text-base sm:text-lg">Notifications</CardTitle>
@@ -424,62 +310,23 @@ const BusinessDashboard = () => {
                 {notifications.slice(0, 3).map((notif) => (
                   <div
                     key={notif.id}
-                    className={`flex items-start gap-2 sm:gap-3 p-2 sm:p-3 rounded-md cursor-pointer ${notif.unread ? "bg-blue-50" : ""
-                      } hover:bg-gray-100`}
+                    className={`flex items-start gap-2 sm:gap-3 p-2 sm:p-3 rounded-md cursor-pointer ${notif.unread ? "bg-blue-50" : ""} hover:bg-gray-100`}
                     onClick={() => handleMarkAsRead(notif.id)}
                   >
                     <Bell className="h-4 w-4 sm:h-5 sm:w-5 mt-0.5 flex-shrink-0" />
                     <div className="flex-1 min-w-0">
-                      <p className={`text-xs sm:text-sm ${notif.unread ? "font-semibold" : ""}`}>
-                        {notif.message}
-                      </p>
+                      <p className={`text-xs sm:text-sm ${notif.unread ? "font-semibold" : ""}`}>{notif.message}</p>
                     </div>
                     {notif.unread && <div className="h-2 w-2 rounded-full bg-blue-600 flex-shrink-0 mt-1" />}
                   </div>
                 ))}
-                {notifications.length === 0 && (
-                  <div className="text-center py-8 text-gray-600 text-sm">
-                    No notifications
-                  </div>
-                )}
-                <Button variant="outline" className="w-full text-xs sm:text-sm" size="sm">
-                  View All Notifications
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Performance Chart */}
-            <Card>
-              <CardHeader className="pb-3 sm:pb-4">
-                <CardTitle className="text-base sm:text-lg">Performance Trends</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="w-full overflow-x-auto">
-                  <ResponsiveContainer width="100%" height={250} minWidth={300}>
-                    <LineChart data={mockChartData}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-                      <YAxis tick={{ fontSize: 12 }} />
-                      <Tooltip
-                        contentStyle={{ fontSize: '12px' }}
-                        formatter={(value: any) =>
-                          typeof value === 'number' && value > 1000
-                            ? `₦${value.toLocaleString()}`
-                            : value
-                        }
-                      />
-                      <Legend wrapperStyle={{ fontSize: '12px' }} />
-                      <Line type="monotone" dataKey="bookings" stroke="#2563EB" name="Bookings" strokeWidth={2} />
-                      <Line type="monotone" dataKey="revenue" stroke="#10B981" name="Revenue (₦)" strokeWidth={2} />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
+                <Button variant="outline" className="w-full text-xs sm:text-sm" size="sm">View All Notifications</Button>
               </CardContent>
             </Card>
           </div>
         </div>
       </div>
-    </div>
+    </DashboardLayout>
   );
 };
 

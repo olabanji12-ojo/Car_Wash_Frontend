@@ -3,6 +3,7 @@ import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { DashboardStats } from "@/components/dashboard/DashboardStats";
 import { QuickActions } from "@/components/dashboard/QuickActions";
 import { CarwashList } from "@/components/dashboard/CarwashList";
+import BrowseCarwashesPage from "@/components/dashboard/BrowseCarwashesPage";
 import MyBookingsPage from "./MyBookings";
 import Vehicles from "./Vehicles";
 import Favorites from "./Favorites";
@@ -90,6 +91,8 @@ const Dashboard = () => {
         <DashboardLayout>
             <Routes>
                 <Route index element={<DashboardHome />} />
+                <Route path="browse" element={<BrowseCarwashesPage />} />
+                <Route path="find" element={<BrowseCarwashesPage />} /> {/* Alias for find */}
                 <Route path="bookings" element={<MyBookingsPage />} />
                 <Route path="favorites" element={<Favorites />} />
                 <Route path="vehicles" element={<Vehicles />} />
