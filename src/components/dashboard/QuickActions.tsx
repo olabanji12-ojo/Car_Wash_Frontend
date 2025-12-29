@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import heroBg from "@/assets/hero-bg.jpg";
 
+
 interface QuickActionsProps {
   onSearch: (lat: number, lng: number, address: string) => void;
 }
@@ -82,3 +83,4 @@ export const QuickActions = ({ onSearch }: QuickActionsProps) => {
     </div>
   );
 };
+
