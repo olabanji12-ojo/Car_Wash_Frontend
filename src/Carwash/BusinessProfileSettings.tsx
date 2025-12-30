@@ -304,6 +304,66 @@ const BusinessProfileSettings = () => {
                   </div>
                 )}
 
+                {activeTab === "hours" && (
+                  <div className="space-y-4">
+                    {businessData.hours.map((dayHour, index) => (
+                      <div key={dayHour.day} className="flex items-center gap-4 p-4 border rounded-lg">
+                        <div className="w-24 font-medium">{dayHour.day}</div>
+                        <Switch
+                          checked={!dayHour.closed}
+                          onCheckedChange={(checked) => {
+                            const newHours = [...businessData.hours];
+                            newHours[index].closed = !checked;
+                            setBusinessData({ ...businessData, hours: newHours });
+                          }}
+                        />
+                        {!dayHour.closed && (
+                          <>
+                            <Select
+                              value={dayHour.open}
+                              onValueChange={(value) => {
+                                const newHours = [...businessData.hours];
+                                newHours[index].open = value;
+                                setBusinessData({ ...businessData, hours: newHours });
+                              }}
+                            >
+                              <SelectTrigger className="w-32">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {Array.from({ length: 24 }, (_, i) => {
+                                  const hour = i.toString().padStart(2, '0');
+                                  return <SelectItem key={hour} value={`${hour}:00`}>{`${hour}:00`}</SelectItem>;
+                                })}
+                              </SelectContent>
+                            </Select>
+                            <span>to</span>
+                            <Select
+                              value={dayHour.close}
+                              onValueChange={(value) => {
+                                const newHours = [...businessData.hours];
+                                newHours[index].close = value;
+                                setBusinessData({ ...businessData, hours: newHours });
+                              }}
+                            >
+                              <SelectTrigger className="w-32">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {Array.from({ length: 24 }, (_, i) => {
+                                  const hour = i.toString().padStart(2, '0');
+                                  return <SelectItem key={hour} value={`${hour}:00`}>{`${hour}:00`}</SelectItem>;
+                                })}
+                              </SelectContent>
+                            </Select>
+                          </>
+                        )}
+                        {dayHour.closed && <span className="text-muted-foreground">Closed</span>}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
                 {/* {activeTab === "account" && (
                   <div className="space-y-4">
                     <Button variant="outline" className="w-full gap-2" onClick={() => navigate("/logout")}><LogOut className="h-5 w-5" />Log Out</Button>
