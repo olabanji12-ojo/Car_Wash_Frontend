@@ -206,8 +206,8 @@ const Booking = () => {
 
   const calculateTotal = () => {
     const servicePrice = selectedService?.price || 0;
-    const addonsPrice = selectedAddons.reduce((total, addonId) => {
-      const addon = availableAddons.find(a => a.id === addonId);
+    const addonsPrice = selectedAddons.reduce((total, addonName) => {
+      const addon = carwash?.addons?.find((a: any) => a.name === addonName);
       return total + (addon?.price || 0);
     }, 0);
     return servicePrice + addonsPrice;
@@ -663,19 +663,28 @@ const Booking = () => {
                   <CardTitle>Add-ons</CardTitle>
                 </CardHeader>
                 <CardContent className="grid sm:grid-cols-2 gap-4">
-                  {availableAddons.map((addon) => (
-                    <div
-                      key={addon.id}
-                      className="flex items-start space-x-3 p-4 rounded-lg border hover:border-primary cursor-pointer active:scale-[0.98] transition-transform"
-                      onClick={() => handleAddonToggle(addon.id)}
-                    >
-                      <Checkbox checked={selectedAddons.includes(addon.id)} />
-                      <div className="flex-1">
-                        <div className="font-medium">{addon.name}</div>
-                        <div className="text-sm text-primary font-semibold">+₦{addon.price.toLocaleString()}</div>
+                  <CardContent className="grid sm:grid-cols-2 gap-4">
+                    {(carwash?.addons || []).length > 0 ? (
+                      (carwash?.addons || []).map((addon: any) => (
+                        <div
+                          key={addon.name} // Using name as ID if ID is missing, or generate one
+                          className="flex items-start space-x-3 p-4 rounded-lg border hover:border-primary cursor-pointer active:scale-[0.98] transition-transform"
+                          onClick={() => handleAddonToggle(addon.name)}
+                        >
+                          <Checkbox checked={selectedAddons.includes(addon.name)} />
+                          <div className="flex-1">
+                            <div className="font-medium">{addon.name}</div>
+                            <div className="text-sm text-primary font-semibold">+₦{addon.price.toLocaleString()}</div>
+                            {addon.description && <div className="text-xs text-muted-foreground mt-1">{addon.description}</div>}
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="col-span-2 text-center text-muted-foreground py-4">
+                        No add-ons available for this car wash.
                       </div>
-                    </div>
-                  ))}
+                    )}
+                  </CardContent>
                 </CardContent>
               </Card>
             </motion.div>
@@ -724,10 +733,10 @@ const Booking = () => {
                       <span>Base Price</span>
                       <span>₦{(selectedService?.price || 0).toLocaleString()}</span>
                     </div>
-                    {selectedAddons.map(id => {
-                      const addon = availableAddons.find(a => a.id === id);
+                    {selectedAddons.map(name => {
+                      const addon = carwash?.addons?.find((a: any) => a.name === name);
                       return (
-                        <div key={id} className="flex justify-between text-sm text-muted-foreground">
+                        <div key={name} className="flex justify-between text-sm text-muted-foreground">
                           <span>{addon?.name}</span>
                           <span>+₦{addon?.price.toLocaleString()}</span>
                         </div>

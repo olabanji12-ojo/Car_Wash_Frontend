@@ -43,8 +43,18 @@ const CallbackPage = () => {
                 toast.success('Successfully logged in with Google!');
 
                 // Redirect based on role
+                // Redirect based on role and onboarding status
                 if (user.role === 'business_owner') {
-                    navigate('/business-dashboard');
+                    if (!user.carwash_id) {
+                        console.log('🔄 [CallbackPage] Business owner needs onboarding, redirecting...');
+                        navigate('/post-onboarding');
+                    } else {
+                        navigate('/business-dashboard');
+                    }
+                } else if (user.role === 'worker') {
+                    navigate('/worker/dashboard');
+                } else if (user.role === 'business_admin') {
+                    navigate('/admin/dashboard');
                 } else {
                     navigate('/dashboard');
                 }

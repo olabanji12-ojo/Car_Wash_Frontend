@@ -32,6 +32,22 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
+
+// Fix for default marker icon
+import icon from 'leaflet/dist/images/marker-icon.png';
+import iconShadow from 'leaflet/dist/images/marker-shadow.png';
+
+let DefaultIcon = L.icon({
+  iconUrl: icon,
+  shadowUrl: iconShadow,
+  iconSize: [25, 41],
+  iconAnchor: [12, 41]
+});
+
+L.Marker.prototype.options.icon = DefaultIcon;
 
 const CarwashDetails = () => {
   const { id } = useParams();
@@ -433,12 +449,28 @@ const CarwashDetails = () => {
                 <MapPin className="h-5 w-5 mt-0.5 flex-shrink-0" />
                 <span>{carwash.address || 'Address not available'}</span>
               </div>
-              <div className="aspect-video rounded-lg overflow-hidden border bg-muted">
-                <img
-                  src="https://images.unsplash.com/photo-1524661135-423995f22d0b?w=800&h=400&fit=crop"
-                  alt="Map location"
-                  className="w-full h-full object-cover"
-                />
+              <div className="h-[400px] w-full rounded-lg overflow-hidden border bg-muted relative z-0">
+                <MapContainer
+                  center={[
+                    (carwash.location?.coordinates?.[1] || 6.5244),
+                    (carwash.location?.coordinates?.[0] || 3.3792)
+                  ]}
+                  zoom={15}
+                  style={{ height: "100%", width: "100%" }}
+                >
+                  <TileLayer
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                  />
+                  <Marker position={[
+                    (carwash.location?.coordinates?.[1] || 6.5244),
+                    (carwash.location?.coordinates?.[0] || 3.3792)
+                  ]}>
+                    <Popup>
+                      {carwash.name} <br /> {carwash.address}
+                    </Popup>
+                  </Marker>
+                </MapContainer>
               </div>
             </div>
 
