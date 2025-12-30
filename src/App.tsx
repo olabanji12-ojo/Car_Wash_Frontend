@@ -17,6 +17,7 @@ import BookingSidebar from "./components/BookingSidebar";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import VerifyEmail from "./pages/VerifyEmail";
+import CallbackPage from "./pages/CallbackPage";
 import BusinessDashboard from "./Carwash/BusinessDashboard";
 import BookingsManagement from "./Carwash/BookingsManagement";
 import ReviewsManagement from "./Carwash/ReviewsManagement";
@@ -42,6 +43,7 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/login" element={<PublicOnlyRoute><Login /></PublicOnlyRoute>} />
               <Route path="/signup" element={<PublicOnlyRoute><Signup /></PublicOnlyRoute>} />
+              <Route path="/CallbackPage" element={<CallbackPage />} />
               <Route path="/verify-email" element={<PublicOnlyRoute><VerifyEmail /></PublicOnlyRoute>} />
               <Route path="/carwash/:id" element={<CarwashDetails />} />
               <Route path="/carwashes" element={<BrowseCarwashesPage />} />
