@@ -36,9 +36,9 @@ const Profile = () => {
     { id: "personal", label: "Personal Info", icon: User },
     { id: "addresses", label: "Addresses", icon: MapPin, badge: user?.addresses?.length },
     // { id: "payments", label: "Payment Methods", icon: CreditCard }, // Coming Soon
-    { id: "notifications", label: "Notifications", icon: Bell },
-    { id: "security", label: "Security", icon: Shield },
-    { id: "account", label: "Account", icon: LogOut },
+    // { id: "notifications", label: "Notifications", icon: Bell }, // Hidden for MVP Demo
+    // { id: "security", label: "Security", icon: Shield }, // Hidden for MVP Demo
+    // { id: "account", label: "Account", icon: LogOut }, // Hidden for MVP Demo
   ];
 
   useEffect(() => {

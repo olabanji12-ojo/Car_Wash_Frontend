@@ -78,7 +78,8 @@ const mockBusinessData: BusinessData = {
 
 const BusinessProfileSettings = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<"business-info" | "hours" | "payout-methods" | "notifications" | "account">("business-info");
+  /* Removed for MVP Demo: "payout-methods" | "notifications" | "account" */
+  const [activeTab, setActiveTab] = useState<"business-info" | "hours">("business-info");
   const [businessData, setBusinessData] = useState<BusinessData>(mockBusinessData);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -229,9 +230,9 @@ const BusinessProfileSettings = () => {
                 {[
                   { id: "business-info", label: "Business Info", icon: User },
                   { id: "hours", label: "Operating Hours", icon: Clock },
-                  { id: "payout-methods", label: "Payout Methods", icon: DollarSign },
-                  { id: "notifications", label: "Notifications", icon: Bell },
-                  { id: "account", label: "Account Actions", icon: AlertTriangle },
+                  // { id: "payout-methods", label: "Payout Methods", icon: DollarSign }, // Hidden for MVP
+                  // { id: "notifications", label: "Notifications", icon: Bell }, // Hidden for MVP
+                  // { id: "account", label: "Account Actions", icon: AlertTriangle }, // Hidden for MVP
                 ].map((tab) => (
                   <Button
                     key={tab.id}
@@ -253,9 +254,9 @@ const BusinessProfileSettings = () => {
                 <CardTitle>
                   {activeTab === "business-info" && "Business Information"}
                   {activeTab === "hours" && "Operating Hours"}
-                  {activeTab === "payout-methods" && "Payout Methods"}
-                  {activeTab === "notifications" && "Notification Preferences"}
-                  {activeTab === "account" && "Account Actions"}
+                  {/* {activeTab === "payout-methods" && "Payout Methods"} */}
+                  {/* {activeTab === "notifications" && "Notification Preferences"} */}
+                  {/* {activeTab === "account" && "Account Actions"} */}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
@@ -303,15 +304,14 @@ const BusinessProfileSettings = () => {
                   </div>
                 )}
 
-                {activeTab === "account" && (
+                {/* {activeTab === "account" && (
                   <div className="space-y-4">
                     <Button variant="outline" className="w-full gap-2" onClick={() => navigate("/logout")}><LogOut className="h-5 w-5" />Log Out</Button>
                   </div>
-                )}
+                )} */}
 
-                {activeTab !== "account" && (
-                  <Button className="mt-4" onClick={handleSave} disabled={isSaving}>{isSaving ? "Saving..." : "Save Changes"}</Button>
-                )}
+                {/* Always show save button for the remaining tabs */}
+                <Button className="mt-4" onClick={handleSave} disabled={isSaving}>{isSaving ? "Saving..." : "Save Changes"}</Button>
               </CardContent>
             </Card>
           </div>
