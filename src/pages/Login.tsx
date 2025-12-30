@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, Loader2, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import AuthService from '../Contexts/AuthService';
 import { useAuth } from '../Contexts/AuthContext';
@@ -55,6 +55,10 @@ const Login = () => {
         <div className="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-12 bg-background">
           <div className="mx-auto grid w-full max-w-[400px] gap-6">
             <div className="grid gap-2 text-center">
+              <Link to="/" className="inline-flex items-center text-sm text-muted-foreground hover:text-primary mb-2">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back to Home
+              </Link>
               <h1 className="text-3xl font-bold font-sans tracking-tight text-foreground">Welcome back</h1>
               <p className="text-balance text-muted-foreground">
                 Enter your email below to login to your account
@@ -78,7 +82,7 @@ const Login = () => {
                 <div className="flex items-center">
                   <Label htmlFor="password">Password</Label>
                   <Link
-                    to="#"
+                    to="/forgot-password"
                     className="ml-auto inline-block text-sm underline text-muted-foreground hover:text-primary transition-colors"
                   >
                     Forgot your password?
