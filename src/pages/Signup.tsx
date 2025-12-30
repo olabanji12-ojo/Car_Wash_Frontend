@@ -11,6 +11,7 @@ import { useAuth } from '../Contexts/AuthContext';
 import { validatePassword, getPasswordStrengthColor, getPasswordStrengthBg } from '@/lib/passwordValidation';
 import logoImg from "@/assets/logo-full.jpg";
 import { motion } from 'framer-motion';
+import API_BASE_URL from '../Contexts/baseUrl';
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -95,10 +96,12 @@ const Signup = () => {
     }
   };
 
+
+
   const handleGoogleSignup = () => {
     const role = userType === 'business' ? 'business_owner' : 'car_owner';
     const accountType = userType === 'business' ? 'car_wash' : 'car_owner';
-    window.location.href = `http://localhost:8080/api/auth/google?role=${role}&account_type=${accountType}`;
+    window.location.href = `${API_BASE_URL}/auth/google/login?role=${role}&account_type=${accountType}`;
   };
 
   return (

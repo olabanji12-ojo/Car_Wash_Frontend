@@ -9,6 +9,7 @@ import AuthService from '../Contexts/AuthService';
 import { useAuth } from '../Contexts/AuthContext';
 import logoImg from "@/assets/logo-full.jpg";
 import { motion } from 'framer-motion';
+import API_BASE_URL from '../Contexts/baseUrl';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -36,8 +37,10 @@ const Login = () => {
     }
   };
 
+
+
   const handleGoogleLogin = () => {
-    window.location.href = 'http://localhost:8080/api/auth/google';
+    window.location.href = `${API_BASE_URL}/auth/google/login`;
   };
 
   return (

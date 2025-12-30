@@ -30,7 +30,17 @@ const DashboardHome = () => {
 
     // Initial fetch
     useEffect(() => {
-        fetchDashboardStats();
+        const user = localStorage.getItem('user');
+        if (user) {
+            fetchDashboardStats();
+        } else {
+            // Ensure stats are zero for guest to avoid "ghost data"
+            setStats({
+                upcomingBookings: 0,
+                totalVisits: 0,
+                rewardsPoints: 0
+            });
+        }
     }, []);
 
     const fetchDashboardStats = async () => {
@@ -48,6 +58,11 @@ const DashboardHome = () => {
             });
         } catch (error) {
             console.error("Failed to fetch dashboard stats", error);
+            setStats({
+                upcomingBookings: 0,
+                totalVisits: 0,
+                rewardsPoints: 0
+            });
         }
     };
 

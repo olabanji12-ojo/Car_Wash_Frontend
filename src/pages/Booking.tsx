@@ -259,6 +259,14 @@ const Booking = () => {
   };
 
   const nextStep = () => {
+    if (!user) {
+      toast.error("Please login to continue booking");
+      // Save current booking state to localStorage or pass in state to login for redirect
+      // For MVP, simple redirect
+      navigate("/login", { state: { from: location } });
+      return;
+    }
+
     if (validateStep(step)) {
       setDirection(1);
       setStep(prev => Math.min(prev + 1, 4));

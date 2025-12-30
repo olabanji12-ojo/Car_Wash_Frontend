@@ -92,7 +92,7 @@ const CarwashService = {
      */
     async searchNearby(lat: number, lng: number): Promise<Carwash[]> {
         try {
-            const response = await axios.get(`${API_BASE_URL}/carwashes/nearby/?lat=${lat}&lng=${lng}`);
+            const response = await axios.get(`${API_BASE_URL}/carwashes/nearby?lat=${lat}&lng=${lng}`);
             console.log('Response from searchNearby:', response.data);
 
             let carwashesArray: Carwash[] = [];

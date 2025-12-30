@@ -35,40 +35,46 @@ export const DashboardHeader = () => {
                     <Bell className="h-5 w-5" />
                 </Button>
 
-                {/* Profile Dropdown Menu */}
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="relative h-9 w-9 rounded-full border bg-muted/50 hover:bg-muted">
-                            <User className="h-5 w-5" />
-                            <span className="sr-only">Toggle user menu</span>
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-56">
-                        <DropdownMenuLabel className="font-normal">
-                            <div className="flex flex-col space-y-1">
-                                <p className="text-sm font-medium leading-none">{user?.name || "User"}</p>
-                                <p className="text-xs leading-none text-muted-foreground">
-                                    {user?.email || "user@example.com"}
-                                </p>
-                            </div>
-                        </DropdownMenuLabel>
-                        <DropdownMenuItem onClick={() => navigate(`/profile`)} className="cursor-pointer">
-                            <User className="mr-2 h-4 w-4" />
-                            <span>My Account</span>
-                        </DropdownMenuItem>
-                        {user?.role === 'business_owner' && (
-                            <DropdownMenuItem onClick={() => navigate(`/business-profile-settings`)} className="cursor-pointer">
-                                <Settings className="mr-2 h-4 w-4" />
-                                <span>Business Settings</span>
+                {user ? (
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="relative h-9 w-9 rounded-full border bg-muted/50 hover:bg-muted">
+                                <User className="h-5 w-5" />
+                                <span className="sr-only">Toggle user menu</span>
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-56">
+                            <DropdownMenuLabel className="font-normal">
+                                <div className="flex flex-col space-y-1">
+                                    <p className="text-sm font-medium leading-none">{user.name || "User"}</p>
+                                    <p className="text-xs leading-none text-muted-foreground">
+                                        {user.email || "user@example.com"}
+                                    </p>
+                                </div>
+                            </DropdownMenuLabel>
+                            <DropdownMenuItem onClick={() => navigate(`/profile`)} className="cursor-pointer">
+                                <User className="mr-2 h-4 w-4" />
+                                <span>My Account</span>
                             </DropdownMenuItem>
-                        )}
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={logout} className="cursor-pointer text-destructive focus:bg-destructive/10 focus:text-destructive">
-                            <LogOut className="mr-2 h-4 w-4" />
-                            <span>Log out</span>
-                        </DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
+                            {user.role === 'business_owner' && (
+                                <DropdownMenuItem onClick={() => navigate(`/business-profile-settings`)} className="cursor-pointer">
+                                    <Settings className="mr-2 h-4 w-4" />
+                                    <span>Business Settings</span>
+                                </DropdownMenuItem>
+                            )}
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={logout} className="cursor-pointer text-destructive focus:bg-destructive/10 focus:text-destructive">
+                                <LogOut className="mr-2 h-4 w-4" />
+                                <span>Log out</span>
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                ) : (
+                    <div className="flex items-center gap-2">
+                        <Button variant="ghost" onClick={() => navigate("/login")}>Log in</Button>
+                        <Button onClick={() => navigate("/signup")}>Sign up</Button>
+                    </div>
+                )}
             </div>
         </header>
     );

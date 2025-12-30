@@ -45,16 +45,9 @@ const App = () => (
               <Route path="/verify-email" element={<PublicOnlyRoute><VerifyEmail /></PublicOnlyRoute>} />
               <Route path="/carwash/:id" element={<CarwashDetails />} />
               <Route path="/carwashes" element={<BrowseCarwashesPage />} />
+              <Route path="/dashboard/*" element={<Dashboard />} />
 
               {/* 🚗 CUSTOMER-ONLY ROUTES */}
-              <Route
-                path="/dashboard/*"
-                element={
-                  <ProtectedRoute allowedRoles={['car_owner']}>
-                    <Dashboard />
-                  </ProtectedRoute>
-                }
-              />
               <Route
                 path="/booking"
                 element={

@@ -15,9 +15,17 @@ import { useAuth } from "@/Contexts/AuthContext";
 const customerMenuItems = [
   { title: "Home Website", url: "/", icon: Car },
   { title: "Dashboard", url: "/dashboard", icon: Home },
+  { title: "Search Carwashes", url: "/carwashes", icon: Search },
   { title: "My Bookings", url: "/dashboard/bookings", icon: BookOpen },
   { title: "Favorites", url: "/dashboard/favorites", icon: Heart },
   { title: "My Vehicles", url: "/dashboard/vehicles", icon: Car },
+];
+
+const guestMenuItems = [
+  { title: "Home Website", url: "/", icon: Car },
+  { title: "Find a Carwash", url: "/carwashes", icon: Search },
+  { title: "Login", url: "/login", icon: BookOpen }, // Using BookOpen as a generic 'Action' icon for now, or could change
+  { title: "Sign Up", url: "/signup", icon: Heart }, // Using Heart as generic
 ];
 
 const businessMenuItems = [
@@ -33,7 +41,10 @@ export function DashboardSidebar() {
   const { open } = useSidebar();
   const { user } = useAuth();
 
-  const menuItems = user?.role === 'business_owner' ? businessMenuItems : customerMenuItems;
+  let menuItems = guestMenuItems;
+  if (user) {
+    menuItems = user.role === 'business_owner' ? businessMenuItems : customerMenuItems;
+  }
 
   return (
     <Sidebar collapsible="offcanvas" className="border-r border-border/50 bg-background/80 backdrop-blur-md">
