@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu, User, LogOut, Settings } from "lucide-react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { useAuth } from "../Contexts/AuthContext";
 import {
   DropdownMenu,
@@ -14,7 +14,24 @@ import {
 
 const Header = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, logout } = useAuth();
+
+  const scrollToSection = (sectionId: string) => {
+    // If not on homepage, navigate there first
+    if (location.pathname !== '/') {
+      navigate('/');
+      // Wait for navigation then scroll
+      setTimeout(() => {
+        const element = document.getElementById(sectionId);
+        element?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+    } else {
+      // Already on homepage, just scroll
+      const element = document.getElementById(sectionId);
+      element?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 py-4 backdrop-blur supports-[backdrop-filter]:bg-background/60 transition-all">
@@ -25,15 +42,24 @@ const Header = () => {
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-8">
-          <Link to="/" className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors">
+          <button
+            onClick={() => navigate('/')}
+            className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors cursor-pointer"
+          >
             Home
-          </Link>
-          <Link to="/" className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors">
+          </button>
+          <button
+            onClick={() => scrollToSection('how-it-works')}
+            className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors cursor-pointer"
+          >
             About
-          </Link>
-          <Link to="/" className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors">
+          </button>
+          <button
+            onClick={() => scrollToSection('services')}
+            className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors cursor-pointer"
+          >
             Services
-          </Link>
+          </button>
         </nav>
 
         {/* Desktop Auth Buttons */}
@@ -92,15 +118,24 @@ const Header = () => {
           </SheetTrigger>
           <SheetContent side="right" className="w-[300px]">
             <nav className="flex flex-col gap-6 mt-8">
-              <Link to="/" className="text-lg font-medium text-foreground hover:text-primary transition-colors">
+              <button
+                onClick={() => navigate('/')}
+                className="text-lg font-medium text-foreground hover:text-primary transition-colors text-left"
+              >
                 Home
-              </Link>
-              <Link to="/" className="text-lg font-medium text-foreground hover:text-primary transition-colors">
+              </button>
+              <button
+                onClick={() => scrollToSection('how-it-works')}
+                className="text-lg font-medium text-foreground hover:text-primary transition-colors text-left"
+              >
                 About
-              </Link>
-              <Link to="/" className="text-lg font-medium text-foreground hover:text-primary transition-colors">
+              </button>
+              <button
+                onClick={() => scrollToSection('services')}
+                className="text-lg font-medium text-foreground hover:text-primary transition-colors text-left"
+              >
                 Services
-              </Link>
+              </button>
               <div className="flex flex-col gap-3 mt-6 pt-6 border-t">
                 {user ? (
                   <>

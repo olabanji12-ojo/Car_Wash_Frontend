@@ -17,17 +17,22 @@ export const CarwashMap = ({ carwashes = [], center = [3.3792, 6.5244] }: Carwas
   useEffect(() => {
     if (!mapContainer.current) return;
 
-    // TODO: Replace with your Mapbox public token from https://account.mapbox.com/access-tokens/
-    mapboxgl.accessToken = 'pk.eyJ1IjoiYmp0b2Z1bm1pZSIsImEiOiJjbWVoc2pzd2swMHRnMmtzZGxpd3EwaXllIn0.GiS-6hLA9z75hEOJRQk7UQ';
+    try {
+      // TODO: Replace with your Mapbox public token from https://account.mapbox.com/access-tokens/
+      mapboxgl.accessToken = 'pk.eyJ1IjoiYmp0b2Z1bm1pZSIsImEiOiJjbWVoc2pzd2swMHRnMmtzZGxpd3EwaXllIn0.GiS-6hLA9z75hEOJRQk7UQ';
 
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/streets-v12',
-      center: center,
-      zoom: 12,
-    });
+      map.current = new mapboxgl.Map({
+        container: mapContainer.current,
+        style: 'mapbox://styles/mapbox/streets-v12',
+        center: center,
+        zoom: 12,
+      });
 
-    map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
+      map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
+    } catch (error) {
+      console.error('Failed to initialize map:', error);
+      // Silently fail - map will just not render
+    }
 
     return () => {
       map.current?.remove();

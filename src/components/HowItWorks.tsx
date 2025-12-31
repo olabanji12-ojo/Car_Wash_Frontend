@@ -1,32 +1,41 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Search, Calendar, Sparkles, Building2, TrendingUp, LineChart } from "lucide-react";
+import { Search, Calendar, Sparkles, Building2, TrendingUp, Zap } from "lucide-react";
 
 const HowItWorks = () => {
   return (
-    <section className="w-full py-16 bg-section-bg" id="about">
+    <section className="w-full py-20 bg-gradient-to-b from-background to-section-bg" id="how-it-works">
       <div className="container mx-auto px-4">
-        <h2 className="text-4xl font-bold text-center mb-12 text-foreground">
-          How It Works
-        </h2>
+        <div className="text-center mb-16" data-aos="fade-up">
+          <h2 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">
+            Simple. Fast. Effortless.
+          </h2>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Whether you're a busy professional or a growing business, we've made car care incredibly easy
+          </p>
+        </div>
 
-        <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto">
+        <div className="grid md:grid-cols-2 gap-12 max-w-6xl mx-auto">
           {/* For Car Owners */}
-          <div>
-            <h3 className="text-2xl font-bold mb-6 text-primary">
-              Get Your Car Sparkling Clean
+          <div data-aos="fade-right">
+            <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full mb-6">
+              <Sparkles className="h-4 w-4" />
+              <span className="text-sm font-medium">For Car Owners</span>
+            </div>
+            <h3 className="text-3xl font-bold mb-8 text-foreground">
+              Your Car, Sparkling Clean in 3 Steps
             </h3>
             <div className="space-y-6">
-              <Card className="shadow-card hover:shadow-card-hover transition-shadow">
+              <Card className="shadow-lg hover:shadow-xl transition-all duration-300 border-l-4 border-l-primary">
                 <CardHeader>
                   <div className="flex items-start gap-4">
                     <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                       <Search className="h-6 w-6 text-primary" />
                     </div>
                     <div>
-                      <CardTitle className="text-lg mb-2">Choose Your Service</CardTitle>
+                      <CardTitle className="text-xl mb-2">1. Find Your Perfect Match</CardTitle>
                       <CardContent className="p-0">
                         <p className="text-sm text-muted-foreground">
-                          Browse top-rated carwashes by location or book a home service
+                          Browse verified car washes near you or request a mobile service at your doorstep
                         </p>
                       </CardContent>
                     </div>
@@ -34,17 +43,17 @@ const HowItWorks = () => {
                 </CardHeader>
               </Card>
 
-              <Card className="shadow-card hover:shadow-card-hover transition-shadow">
+              <Card className="shadow-lg hover:shadow-xl transition-all duration-300 border-l-4 border-l-primary">
                 <CardHeader>
                   <div className="flex items-start gap-4">
                     <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                       <Calendar className="h-6 w-6 text-primary" />
                     </div>
                     <div>
-                      <CardTitle className="text-lg mb-2">Select Date & Time</CardTitle>
+                      <CardTitle className="text-xl mb-2">2. Book in Seconds</CardTitle>
                       <CardContent className="p-0">
                         <p className="text-sm text-muted-foreground">
-                          Check real-time availability and book instantly
+                          Choose your time slot, select services, and confirm—all in under 60 seconds
                         </p>
                       </CardContent>
                     </div>
@@ -52,17 +61,17 @@ const HowItWorks = () => {
                 </CardHeader>
               </Card>
 
-              <Card className="shadow-card hover:shadow-card-hover transition-shadow">
+              <Card className="shadow-lg hover:shadow-xl transition-all duration-300 border-l-4 border-l-primary">
                 <CardHeader>
                   <div className="flex items-start gap-4">
                     <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                       <Sparkles className="h-6 w-6 text-primary" />
                     </div>
                     <div>
-                      <CardTitle className="text-lg mb-2">Relax & Enjoy</CardTitle>
+                      <CardTitle className="text-xl mb-2">3. Enjoy the Results</CardTitle>
                       <CardContent className="p-0">
                         <p className="text-sm text-muted-foreground">
-                          Your car gets sparkling clean while you relax
+                          Sit back while professionals make your car look showroom-ready
                         </p>
                       </CardContent>
                     </div>
@@ -73,22 +82,26 @@ const HowItWorks = () => {
           </div>
 
           {/* For Businesses */}
-          <div>
-            <h3 className="text-2xl font-bold mb-6 text-accent">
-              Grow Your Carwash Business
+          <div data-aos="fade-left">
+            <div className="inline-flex items-center gap-2 bg-accent/10 text-accent px-4 py-2 rounded-full mb-6">
+              <Zap className="h-4 w-4" />
+              <span className="text-sm font-medium">For Businesses</span>
+            </div>
+            <h3 className="text-3xl font-bold mb-8 text-foreground">
+              Grow Your Revenue, Effortlessly
             </h3>
             <div className="space-y-6">
-              <Card className="shadow-card hover:shadow-card-hover transition-shadow">
+              <Card className="shadow-lg hover:shadow-xl transition-all duration-300 border-l-4 border-l-accent">
                 <CardHeader>
                   <div className="flex items-start gap-4">
                     <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0">
                       <Building2 className="h-6 w-6 text-accent" />
                     </div>
                     <div>
-                      <CardTitle className="text-lg mb-2">List Your Business</CardTitle>
+                      <CardTitle className="text-xl mb-2">1. Get Discovered</CardTitle>
                       <CardContent className="p-0">
                         <p className="text-sm text-muted-foreground">
-                          Reach thousands of potential customers seeking car wash services
+                          Reach thousands of customers actively searching for car wash services in your area
                         </p>
                       </CardContent>
                     </div>
@@ -96,17 +109,17 @@ const HowItWorks = () => {
                 </CardHeader>
               </Card>
 
-              <Card className="shadow-card hover:shadow-card-hover transition-shadow">
+              <Card className="shadow-lg hover:shadow-xl transition-all duration-300 border-l-4 border-l-accent">
                 <CardHeader>
                   <div className="flex items-start gap-4">
                     <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0">
                       <Calendar className="h-6 w-6 text-accent" />
                     </div>
                     <div>
-                      <CardTitle className="text-lg mb-2">Manage Bookings</CardTitle>
+                      <CardTitle className="text-xl mb-2">2. Manage with Ease</CardTitle>
                       <CardContent className="p-0">
                         <p className="text-sm text-muted-foreground">
-                          Streamlined tools for scheduling, payments, and client communication
+                          Streamline bookings, payments, and customer communication from one powerful dashboard
                         </p>
                       </CardContent>
                     </div>
@@ -114,17 +127,17 @@ const HowItWorks = () => {
                 </CardHeader>
               </Card>
 
-              <Card className="shadow-card hover:shadow-card-hover transition-shadow">
+              <Card className="shadow-lg hover:shadow-xl transition-all duration-300 border-l-4 border-l-accent">
                 <CardHeader>
                   <div className="flex items-start gap-4">
                     <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0">
                       <TrendingUp className="h-6 w-6 text-accent" />
                     </div>
                     <div>
-                      <CardTitle className="text-lg mb-2">Increase Revenue</CardTitle>
+                      <CardTitle className="text-xl mb-2">3. Watch Revenue Grow</CardTitle>
                       <CardContent className="p-0">
                         <p className="text-sm text-muted-foreground">
-                          Expand your customer base and boost your earnings
+                          Fill empty slots, reduce no-shows, and maximize your earning potential
                         </p>
                       </CardContent>
                     </div>
