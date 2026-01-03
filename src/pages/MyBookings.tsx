@@ -23,6 +23,7 @@ import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { LiveTrackingMap } from "@/components/dashboard/LiveTrackingMap";
+import { useAuth } from "@/Contexts/AuthContext";
 
 type BookingStatus = "pending" | "confirmed" | "completed" | "cancelled";
 
@@ -238,19 +239,49 @@ const EmptyState = ({ status }: { status: string }) => {
 };
 
 const MyBookingsPage = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const tabs = ["pending", "confirmed", "completed", "cancelled"];
+  const [activeTab, setActiveTab] = useState<string>("pending");
   const { data: bookings = [], isLoading, refetch } = useMyBookings({
     refetchInterval: (data) => data?.some((b: any) => b.status === "en_route") ? 3000 : 5000
   });
   const [reviewBooking, setReviewBooking] = useState<BookingResponse | null>(null);
   const updateStatusMutation = useUpdateBookingStatus();
-  const [activeTab, setActiveTab] = useState<string>("pending");
 
   const handleCancelBooking = async (id: string) => {
     if (!window.confirm("Are you sure you want to cancel this booking?")) return;
     updateStatusMutation.mutate({ id, status: "cancelled_by_user" });
   };
 
-  const tabs = ["pending", "confirmed", "completed", "cancelled"];
+  if (!user && !isLoading) {
+    return (
+      <div className="bg-gray-50/50 min-h-screen flex items-center justify-center p-4">
+        <div className="max-w-md w-full text-center space-y-6 p-8 bg-white rounded-2xl shadow-sm border">
+          <div className="mx-auto w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center">
+            <Calendar className="h-8 w-8 text-blue-600" />
+          </div>
+          <div className="space-y-2">
+            <h1 className="text-2xl font-bold tracking-tight">View Your Bookings</h1>
+            <p className="text-muted-foreground">
+              Sign in to track your appointments, manage vehicles, and see your booking history.
+            </p>
+          </div>
+          <div className="flex flex-col gap-3">
+            <Button onClick={() => navigate("/login")} className="w-full bg-blue-600 hover:bg-blue-700">
+              Sign In
+            </Button>
+            <Button onClick={() => navigate("/signup")} variant="outline" className="w-full">
+              Create Account
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground pt-4">
+            New here? <span className="text-blue-600 font-semibold cursor-pointer" onClick={() => navigate("/dashboard")}>Browse carwashes</span> first.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   const filteredBookings = bookings.filter(b => {
     if (activeTab === "confirmed") {

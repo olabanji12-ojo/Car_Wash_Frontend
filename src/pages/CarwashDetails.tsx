@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
 import BookingSidebar from "@/components/BookingSidebar";
 import {
   ArrowLeft,
@@ -244,32 +245,41 @@ const CarwashDetails = () => {
       </header>
 
       {/* Hero Image Gallery */}
-      <div className="container mx-auto px-4 py-6">
-        <div className="grid gap-4">
-          <div className="relative aspect-video md:aspect-[21/9] rounded-lg overflow-hidden">
+      <div className="container mx-auto px-4 py-4 sm:py-6">
+        <div className="grid gap-3 sm:gap-4">
+          <div className="relative aspect-video md:aspect-[21/9] rounded-xl overflow-hidden shadow-lg border">
             <img
               src={images[selectedImage]}
               alt={carwash.name}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover transition-all duration-500 hover:scale-105"
             />
-            <Badge className="absolute top-4 left-4">
-              {carwash.is_open ? "Open Now" : "Closed"}
-            </Badge>
+            <div className="absolute top-4 left-4 flex gap-2">
+              <Badge className={cn("px-2.5 py-1 font-bold", carwash.is_open ? "bg-green-600" : "bg-red-600")}>
+                {carwash.is_open ? "Open Now" : "Closed"}
+              </Badge>
+              {startingPrice > 0 && (
+                <Badge variant="secondary" className="px-2.5 py-1 font-bold bg-white/90 text-primary">
+                  From ₦{startingPrice.toLocaleString()}
+                </Badge>
+              )}
+            </div>
           </div>
 
           {images.length > 1 && (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
-              {images.slice(0, 4).map((image: string, index: number) => (
+            <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 sm:gap-3">
+              {images.map((image: string, index: number) => (
                 <button
                   key={index}
                   onClick={() => setSelectedImage(index)}
-                  className={`relative aspect-video rounded-lg overflow-hidden border-2 transition-all ${selectedImage === index ? "border-primary" : "border-transparent"
-                    }`}
+                  className={cn(
+                    "relative aspect-video rounded-lg overflow-hidden border-2 transition-all p-0.5",
+                    selectedImage === index ? "border-primary bg-primary/10" : "border-transparent hover:border-primary/30"
+                  )}
                 >
                   <img
                     src={image}
                     alt={`View ${index + 1}`}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover rounded-[calc(8px-2px)]"
                   />
                 </button>
               ))}
@@ -576,13 +586,34 @@ const CarwashDetails = () => {
 
 
           {/* Booking Sidebar */}
-          <BookingSidebar
-            carwashId={id || "1"}
-            startingPrice={startingPrice}
-            services={carwash.services || []}
-            phone={carwash.phone || ''}
-            hasHomeService={carwash.home_service}
-          />
+          <div id="booking-section">
+            <BookingSidebar
+              carwashId={id || "1"}
+              startingPrice={startingPrice}
+              services={carwash.services || []}
+              phone={carwash.phone || ''}
+              hasHomeService={carwash.home_service}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile Sticky CTA */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 p-4 bg-background/80 backdrop-blur-lg border-t z-50 animate-in fade-in slide-in-from-bottom-10 duration-500">
+        <div className="container mx-auto flex items-center justify-between gap-4">
+          <div className="flex flex-col">
+            <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Starting Price</span>
+            <span className="font-black text-lg text-primary leading-none">₦{startingPrice.toLocaleString()}</span>
+          </div>
+          <Button
+            className="flex-1 bg-blue-600 hover:bg-blue-700 h-12 rounded-xl font-bold text-base shadow-lg shadow-blue-200"
+            onClick={() => {
+              const element = document.getElementById('booking-section');
+              element?.scrollIntoView({ behavior: 'smooth' });
+            }}
+          >
+            Book Now
+          </Button>
         </div>
       </div>
     </div>

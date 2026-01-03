@@ -3,6 +3,7 @@ import BookingService, { BookingResponse } from "@/Contexts/BookingService";
 import ReviewService, { Review } from "@/Contexts/ReviewService";
 import { toast } from "sonner";
 import NotificationService, { Notification } from "@/Contexts/NotificationService";
+import { useAuth } from "@/Contexts/AuthContext";
 
 /**
  * Hook for Customers to fetch their own bookings
@@ -10,14 +11,17 @@ import NotificationService, { Notification } from "@/Contexts/NotificationServic
 export const useMyBookings = (options?: {
     refetchInterval?: number | false | ((data: BookingResponse[] | undefined) => number | false)
 }) => {
+    const { user } = useAuth();
     return useQuery({
         queryKey: ["my-bookings"],
         queryFn: async () => {
+            if (!user) return [];
             console.log("🔄 Polling: Fetching My Bookings...");
             const data = await BookingService.getMyBookings();
             console.log("✅ Polled My Bookings:", data);
             return data;
         },
+        enabled: !!user,
         refetchInterval: (query: any) => {
             const interval = options?.refetchInterval;
             if (typeof interval === 'function') {
@@ -70,9 +74,14 @@ export const useReviews = (carwashId: string | undefined) => {
  * Hook to fetch notifications
  */
 export const useNotifications = () => {
+    const { user } = useAuth();
     return useQuery({
         queryKey: ["notifications"],
-        queryFn: () => NotificationService.getMyNotifications(),
+        queryFn: async () => {
+            if (!user) return [];
+            return NotificationService.getMyNotifications();
+        },
+        enabled: !!user,
         refetchInterval: 5000,
     });
 };

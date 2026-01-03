@@ -1,6 +1,7 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { DashboardStats } from "@/components/dashboard/DashboardStats";
+import { useAuth } from "@/Contexts/AuthContext";
 import { QuickActions } from "@/components/dashboard/QuickActions";
 import { CarwashList } from "@/components/dashboard/CarwashList";
 import BrowseCarwashesPage from "@/components/dashboard/BrowseCarwashesPage";
@@ -115,6 +116,16 @@ const DashboardHome = () => {
 };
 
 const Dashboard = () => {
+    const { user, isLoading } = useAuth();
+
+    if (isLoading) return null;
+
+    // RBAC Redirect: Business owners should not be on the customer dashboard
+    if (user?.role === 'business_owner') {
+        console.warn("🚫 Dashboard: Business owner detected, redirecting to /business-dashboard");
+        return <Navigate to="/business-dashboard" replace />;
+    }
+
     return (
         <DashboardLayout>
             <Routes>

@@ -601,7 +601,7 @@ const Booking = () => {
                           <Loader2 className="h-8 w-8 animate-spin text-primary" />
                         </div>
                       ) : availableSlots.length > 0 ? (
-                        <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 gap-2 sm:gap-3">
+                        <div className="grid grid-cols-3 xs:grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-2">
                           {availableSlots.map((slot: any, idx: number) => {
                             const dateObj = new Date(slot.start_time);
                             const startTime = dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -611,9 +611,9 @@ const Booking = () => {
                                 key={idx}
                                 variant={timeSlot === startTime ? "default" : "outline"}
                                 className={`
-                                  relative overflow-hidden text-xs sm:text-sm h-16 transition-all duration-200
+                                  relative overflow-hidden h-14 transition-all duration-200 px-1
                                   ${!isAvailable
-                                    ? 'bg-white text-gray-400 border-gray-300 border-dashed hover:bg-white hover:text-gray-400 opacity-100 cursor-not-allowed border-2'
+                                    ? 'bg-white text-gray-400 border-gray-200 border-dashed hover:bg-white hover:text-gray-400 opacity-100 cursor-not-allowed border-2'
                                     : 'hover:border-primary/50'
                                   }
                                   ${timeSlot === startTime ? 'ring-2 ring-primary ring-offset-2' : ''}
@@ -627,12 +627,12 @@ const Booking = () => {
                                 disabled={!isAvailable}
                               >
                                 {!isAvailable ? (
-                                  <div className="flex flex-col items-center gap-0.5">
-                                    <span className="text-sm font-bold text-gray-700">{startTime}</span>
-                                    <span className="text-[9px] sm:text-xs text-gray-400 font-medium whitespace-nowrap">Slot Taken</span>
+                                  <div className="flex flex-col items-center gap-0.5 scale-90">
+                                    <span className="text-xs font-bold text-gray-500">{startTime}</span>
+                                    <span className="text-[8px] uppercase font-black text-gray-300">Taken</span>
                                   </div>
                                 ) : (
-                                  <span className="text-sm font-bold">{startTime}</span>
+                                  <span className="text-xs font-bold">{startTime}</span>
                                 )}
                               </Button>
                             );
@@ -737,17 +737,17 @@ const Booking = () => {
                       </Label>
                     </div>
                     {carwash?.services?.map((service: any, idx: number) => (
-                      <div key={idx} className="flex items-center space-x-3 p-4 rounded-lg border hover:bg-muted/50 cursor-pointer">
+                      <div key={idx} className="flex items-center space-x-3 p-3 sm:p-4 rounded-xl border hover:bg-muted/50 cursor-pointer active:scale-[0.99] transition-transform">
                         <RadioGroupItem value={service.name} id={service.name} />
-                        <Label htmlFor={service.name} className="flex-1 cursor-pointer flex justify-between items-center sm:items-start">
-                          <div>
-                            <div className="font-medium">{service.name}</div>
-                            <div className="text-sm text-muted-foreground">{service.description}</div>
+                        <Label htmlFor={service.name} className="flex-1 cursor-pointer flex justify-between items-start gap-3">
+                          <div className="min-w-0">
+                            <div className="font-bold text-sm sm:text-base truncate">{service.name}</div>
+                            <div className="text-xs text-muted-foreground line-clamp-2 leading-tight mt-0.5">{service.description}</div>
                           </div>
-                          <div className="flex flex-col items-end gap-1 ml-2">
-                            <div className="font-bold text-primary whitespace-nowrap">₦{service.price.toLocaleString()}</div>
+                          <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
+                            <div className="font-black text-primary text-sm sm:text-base whitespace-nowrap">₦{service.price.toLocaleString()}</div>
                             {service.duration && (
-                              <div className="flex items-center gap-1 text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+                              <div className="flex items-center gap-1 text-[9px] sm:text-xs font-bold text-muted-foreground bg-muted px-1.5 py-0.5 rounded uppercase tracking-tighter">
                                 <Clock className="h-3 w-3" />
                                 {service.duration}m
                               </div>
@@ -888,36 +888,36 @@ const Booking = () => {
         </AnimatePresence>
 
         {/* Sticky Bottom Navigation Bar */}
-        <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/95 backdrop-blur border-t z-50">
-          <div className="container mx-auto max-w-3xl flex items-center justify-between">
+        <div className="fixed bottom-0 left-0 right-0 p-3 sm:p-4 bg-background/95 backdrop-blur border-t z-50">
+          <div className="container mx-auto max-w-3xl flex items-center justify-between gap-3">
             <Button
               variant="outline"
               onClick={prevStep}
               disabled={step === 1}
-              className="w-24 sm:w-32"
+              className="h-10 sm:h-11 px-3 sm:px-6 text-sm sm:text-base"
             >
-              <ChevronLeft className="mr-2 h-4 w-4" /> Back
+              <ChevronLeft className="mr-1 sm:mr-2 h-4 w-4" /> <span className="hidden xs:inline">Back</span>
             </Button>
 
             {/* Sticky Price Summary (Visible when selecting services or reviewing) */}
             {step >= 3 && (
-              <div className="flex flex-col items-end px-2 sm:px-4">
-                <span className="text-xs text-muted-foreground uppercase">Total</span>
-                <span className="font-bold text-lg text-primary">₦{calculateTotal().toLocaleString()}</span>
+              <div className="flex flex-col items-center xs:items-end flex-1">
+                <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Est. Total</span>
+                <span className="font-black text-base sm:text-xl text-primary leading-none">₦{calculateTotal().toLocaleString()}</span>
               </div>
             )}
 
             {step < 4 ? (
               <Button
                 onClick={nextStep}
-                className="w-24 sm:w-32"
+                className="h-10 sm:h-11 px-4 sm:px-8 text-sm sm:text-base font-bold shadow-lg shadow-primary/20"
                 disabled={step === 1 && serviceType === "home" && (isWithinRadius === false || !userCoordinates)}
               >
-                Next <ChevronRight className="ml-2 h-4 w-4" />
+                Next <ChevronRight className="ml-1 sm:ml-2 h-4 w-4" />
               </Button>
             ) : (
-              <Button onClick={handleConfirmBooking} className="w-24 sm:w-32">
-                Confirm
+              <Button onClick={handleConfirmBooking} className="h-10 sm:h-11 px-4 sm:px-8 font-black text-sm sm:text-base bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-200">
+                Book Securely
               </Button>
             )}
           </div>

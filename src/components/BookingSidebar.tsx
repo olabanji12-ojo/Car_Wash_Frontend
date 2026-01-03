@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/Contexts/AuthContext";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -26,9 +28,13 @@ const BookingSidebar = ({ carwashId, startingPrice, services, phone, hasHomeServ
   const [serviceType, setServiceType] = useState<"onsite" | "home">("onsite");
   const [selectedService, setSelectedService] = useState("");
 
+  const { user } = useAuth();
   const handleQuickBooking = () => {
-    // Optional: Validate only if they started selecting things
-    // But for now, let's just pass whatever they have selected
+    if (!user) {
+      toast.info("Please sign in to continue with your booking");
+      navigate("/login", { state: { from: `/carwash/${carwashId}` } });
+      return;
+    }
 
     const bookingData = {
       carwashId,

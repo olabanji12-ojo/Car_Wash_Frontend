@@ -278,44 +278,44 @@ const BusinessDashboard = () => {
                   <CardHeader className="pb-3 sm:pb-4">
                     <CardTitle className="text-base sm:text-lg">Key Metrics</CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-3 sm:space-y-4">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-lg bg-blue-50">
-                        <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
+                  <CardContent>
+                    <div className="grid grid-cols-2 lg:grid-cols-1 gap-4">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-blue-50">
+                          <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-[10px] sm:text-sm text-gray-600">Total Bookings</p>
+                          <p className="text-base sm:text-2xl font-bold">{metrics.totalBookings}</p>
+                        </div>
                       </div>
-                      <div className="flex-1">
-                        <p className="text-xs sm:text-sm text-gray-600">Total Bookings</p>
-                        <p className="text-lg sm:text-2xl font-bold">{metrics.totalBookings}</p>
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-blue-50">
+                          <DollarSign className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-[10px] sm:text-sm text-gray-600">Revenue</p>
+                          <p className="text-base sm:text-2xl font-bold">₦{metrics.revenue.toLocaleString()}</p>
+                        </div>
                       </div>
-                    </div>
-                    <Separator />
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-lg bg-blue-50">
-                        <DollarSign className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
+                      <div className="hidden lg:block"><Separator /></div>
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-blue-50">
+                          <Star className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-[10px] sm:text-sm text-gray-600">Avg Rating</p>
+                          <p className="text-base sm:text-2xl font-bold">{metrics.averageRating}/5</p>
+                        </div>
                       </div>
-                      <div className="flex-1">
-                        <p className="text-xs sm:text-sm text-gray-600">Revenue</p>
-                        <p className="text-lg sm:text-2xl font-bold">₦{metrics.revenue.toLocaleString()}</p>
-                      </div>
-                    </div>
-                    <Separator />
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-lg bg-blue-50">
-                        <Star className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-xs sm:text-sm text-gray-600">Average Rating</p>
-                        <p className="text-lg sm:text-2xl font-bold">{metrics.averageRating}/5</p>
-                      </div>
-                    </div>
-                    <Separator />
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-lg bg-orange-50">
-                        <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5 text-orange-600" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-xs sm:text-sm text-gray-600">Pending Bookings</p>
-                        <p className="text-lg sm:text-2xl font-bold">{metrics.pendingBookings}</p>
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-orange-50">
+                          <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5 text-orange-600" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-[10px] sm:text-sm text-gray-600">Pending</p>
+                          <p className="text-base sm:text-2xl font-bold">{metrics.pendingBookings}</p>
+                        </div>
                       </div>
                     </div>
                   </CardContent>
@@ -344,8 +344,16 @@ const BusinessDashboard = () => {
 
               <div className="lg:col-span-2 space-y-4 sm:space-y-6">
                 <Card>
-                  <CardHeader className="pb-3 sm:pb-4">
+                  <CardHeader className="pb-3 sm:pb-4 flex flex-row items-center justify-between space-y-0">
                     <CardTitle className="text-base sm:text-lg">Recent Bookings</CardTitle>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-primary hover:text-primary/80 text-xs gap-1"
+                      onClick={() => navigate("/bookings-management")}
+                    >
+                      View All <ChevronRight className="h-3 w-3" />
+                    </Button>
                   </CardHeader>
                   <CardContent>
                     <div className="overflow-x-auto -mx-6 px-6">
@@ -444,43 +452,73 @@ const BusinessDashboard = () => {
                     </div>
 
                     <div className="md:hidden space-y-3">
-                      {bookings.map((booking) => (
-                        <div key={booking.id} className="border rounded-lg p-3 space-y-2">
+                      {bookings.slice(0, 5).map((booking) => (
+                        <div key={booking.id} className="border rounded-xl p-4 space-y-3 bg-card shadow-sm">
                           <div className="flex justify-between items-start">
                             <div>
-                              <p className="font-semibold text-sm">Customer {booking.user_id?.slice(-4)}</p>
-                              <div className="flex gap-2 mt-1">
-                                {getServiceBadge(booking.booking_type)}
-                                {getStatusBadge(booking.status)}
-                              </div>
+                              <p className="font-bold text-sm">Customer {booking.user_id?.slice(-4)}</p>
+                              <p className="text-[10px] text-muted-foreground font-mono uppercase mt-0.5">{booking.car_id?.slice(-6)}</p>
+                            </div>
+                            <div className="flex flex-col items-end gap-1.5">
+                              {getStatusBadge(booking.status)}
+                              {getServiceBadge(booking.booking_type)}
                             </div>
                           </div>
-                          <div className="space-y-1 py-1">
-                            <div className="flex items-center gap-2 text-xs text-gray-600 font-medium">
-                              <Clock className="h-3 w-3" />
-                              <span>{new Date(booking.booking_time).toLocaleString()}</span>
-                            </div>
-                            {booking.booking_type === 'home_service' && booking.address_note && (
-                              <div className="mt-1 p-2 bg-blue-50/50 rounded border border-blue-100/50 text-blue-900 italic text-[10px]">
-                                {booking.address_note}
+
+                          <div className="grid grid-cols-2 gap-2 py-2 border-y border-dashed">
+                            <div className="space-y-1">
+                              <p className="text-[9px] uppercase font-bold text-muted-foreground">Verification</p>
+                              <div className="flex items-center gap-1.5">
+                                {booking.booking_type === 'home_service' ? (
+                                  <span className="font-mono font-black text-primary bg-primary/5 px-2 py-0.5 rounded border border-primary/10 text-xs">
+                                    {booking.verification_code || "----"}
+                                  </span>
+                                ) : (
+                                  <span className="font-bold text-primary text-xs">Q #{booking.queue_number || "---"}</span>
+                                )}
                               </div>
+                            </div>
+                            <div className="space-y-1 text-right">
+                              <p className="text-[9px] uppercase font-bold text-muted-foreground">Price</p>
+                              <p className="font-bold text-sm text-foreground">₦{(booking.total_price || 0).toLocaleString()}</p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center justify-between text-xs text-muted-foreground">
+                            <div className="flex items-center gap-1.5">
+                              <Calendar className="h-3 w-3" />
+                              <span>{new Date(booking.booking_time).toLocaleDateString()}</span>
+                            </div>
+                            <div className="flex items-center gap-1.5 font-semibold text-blue-600">
+                              <Clock className="h-3 w-3" />
+                              <span>{new Date(booking.booking_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                            </div>
+                          </div>
+
+                          {booking.booking_type === 'home_service' && booking.address_note && (
+                            <div className="p-2.5 bg-blue-50/50 rounded-lg border border-blue-100/50 text-blue-900 italic text-[10px] leading-relaxed">
+                              <span className="font-black text-[8px] uppercase not-italic block mb-1 text-blue-600">Address Details</span>
+                              {booking.address_note}
+                            </div>
+                          )}
+
+                          <div className="pt-1">
+                            {booking.status === "pending" ? (
+                              <div className="flex gap-2">
+                                <Button size="sm" variant="outline" className="flex-1 text-green-600 border-green-600 text-xs h-9" onClick={() => handleAcceptBooking(booking.id)}>Accept</Button>
+                                <Button size="sm" variant="outline" className="flex-1 text-red-600 border-red-600 text-xs h-9" onClick={() => handleRejectBooking(booking.id)}>Reject</Button>
+                              </div>
+                            ) : (booking.status === "confirmed" && booking.booking_type === "home_service") || booking.status === "en_route" ? (
+                              <div className="flex gap-2">
+                                <Button size="sm" variant="ghost" className="flex-1 text-xs h-9" onClick={() => handleViewBooking(booking)}>Details</Button>
+                                <Button size="sm" className={cn("flex-1 text-xs h-9", booking.status === "confirmed" ? "bg-blue-600" : "bg-purple-600")} onClick={() => handleUpdateStatus(booking.id, booking.status === "confirmed" ? "en_route" : "completed")}>
+                                  {booking.status === "confirmed" ? "Start Trip" : "Arrived"}
+                                </Button>
+                              </div>
+                            ) : (
+                              <Button size="sm" variant="ghost" className="w-full text-xs h-9" onClick={() => handleViewBooking(booking)}>View Full Details</Button>
                             )}
                           </div>
-                          {booking.status === "pending" ? (
-                            <div className="flex gap-2 pt-1">
-                              <Button size="sm" variant="outline" className="flex-1 text-green-600 border-green-600 text-xs" onClick={() => handleAcceptBooking(booking.id)}>Accept</Button>
-                              <Button size="sm" variant="outline" className="flex-1 text-red-600 border-red-600 text-xs" onClick={() => handleRejectBooking(booking.id)}>Reject</Button>
-                            </div>
-                          ) : (booking.status === "confirmed" && booking.booking_type === "home_service") || booking.status === "en_route" ? (
-                            <div className="flex gap-2 pt-1 text-xs">
-                              <Button size="sm" variant="ghost" className="flex-1 text-xs" onClick={() => handleViewBooking(booking)}>View Details</Button>
-                              <Button size="sm" className={cn("flex-1 text-xs", booking.status === "confirmed" ? "bg-blue-600" : "bg-purple-600")} onClick={() => handleUpdateStatus(booking.id, booking.status === "confirmed" ? "en_route" : "completed")}>
-                                {booking.status === "confirmed" ? "Start Trip" : "Arrived"}
-                              </Button>
-                            </div>
-                          ) : (
-                            <Button size="sm" variant="ghost" className="w-full text-xs" onClick={() => handleViewBooking(booking)}>View Details</Button>
-                          )}
                         </div>
                       ))}
                     </div>
