@@ -99,26 +99,28 @@ const ReviewsManagement = () => {
     return (
         <DashboardLayout>
             <div className="container mx-auto px-4 py-8 space-y-8">
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
                     <div>
-                        <h1 className="text-3xl font-bold tracking-tight">Reviews Management</h1>
+                        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Reviews Management</h1>
                         <p className="text-muted-foreground mt-1">Monitor and respond to customer feedback</p>
                     </div>
-                    <div className="flex gap-4">
-                        <Card className="w-32"><CardContent className="p-4 flex flex-col items-center justify-center"><span className="text-2xl font-bold flex items-center gap-1">{stats.average} <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" /></span><span className="text-xs text-muted-foreground">Avg Rating</span></CardContent></Card>
-                        <Card className="w-32"><CardContent className="p-4 flex flex-col items-center justify-center"><span className="text-2xl font-bold">{stats.total}</span><span className="text-xs text-muted-foreground">Total Reviews</span></CardContent></Card>
-                        <Card className="w-32"><CardContent className="p-4 flex flex-col items-center justify-center"><span className="text-2xl font-bold text-orange-500">{stats.unreplied}</span><span className="text-xs text-muted-foreground">Unreplied</span></CardContent></Card>
+                    <div className="grid grid-cols-3 gap-3 w-full lg:w-auto">
+                        <Card className="flex-1"><CardContent className="p-3 sm:p-4 flex flex-col items-center justify-center"><span className="text-lg sm:text-2xl font-bold flex items-center gap-1">{stats.average} <Star className="h-4 w-4 sm:h-5 sm:w-5 fill-yellow-400 text-yellow-400" /></span><span className="text-[10px] sm:text-xs text-muted-foreground text-center">Avg Rating</span></CardContent></Card>
+                        <Card className="flex-1"><CardContent className="p-3 sm:p-4 flex flex-col items-center justify-center"><span className="text-lg sm:text-2xl font-bold">{stats.total}</span><span className="text-[10px] sm:text-xs text-muted-foreground text-center">Total Reviews</span></CardContent></Card>
+                        <Card className="flex-1"><CardContent className="p-3 sm:p-4 flex flex-col items-center justify-center"><span className="text-lg sm:text-2xl font-bold text-orange-500">{stats.unreplied}</span><span className="text-[10px] sm:text-xs text-muted-foreground text-center">Unreplied</span></CardContent></Card>
                     </div>
                 </div>
 
-                <div className="flex items-center gap-4 bg-card p-4 rounded-lg border shadow-sm">
-                    <Filter className="h-5 w-5 text-muted-foreground" />
-                    <span className="font-medium">Filter by:</span>
-                    <div className="flex gap-2">
-                        <Button variant={filter === "all" ? "default" : "outline"} size="sm" onClick={() => setFilter("all")}>All Reviews</Button>
-                        <Button variant={filter === "unreplied" ? "default" : "outline"} size="sm" onClick={() => setFilter("unreplied")}>Unreplied</Button>
-                        <Button variant={filter === "5-star" ? "default" : "outline"} size="sm" onClick={() => setFilter("5-star")}>5 Stars</Button>
-                        <Button variant={filter === "critical" ? "default" : "outline"} size="sm" onClick={() => setFilter("critical")}>Critical (1-3)</Button>
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-card p-4 rounded-lg border shadow-sm">
+                    <div className="flex items-center gap-2">
+                        <Filter className="h-5 w-5 text-muted-foreground" />
+                        <span className="font-medium">Filter by:</span>
+                    </div>
+                    <div className="flex gap-2 overflow-x-auto pb-2 sm:pb-0 w-full no-scrollbar">
+                        <Button variant={filter === "all" ? "default" : "outline"} size="sm" className="whitespace-nowrap flex-shrink-0" onClick={() => setFilter("all")}>All Reviews</Button>
+                        <Button variant={filter === "unreplied" ? "default" : "outline"} size="sm" className="whitespace-nowrap flex-shrink-0" onClick={() => setFilter("unreplied")}>Unreplied</Button>
+                        <Button variant={filter === "5-star" ? "default" : "outline"} size="sm" className="whitespace-nowrap flex-shrink-0" onClick={() => setFilter("5-star")}>5 Stars</Button>
+                        <Button variant={filter === "critical" ? "default" : "outline"} size="sm" className="whitespace-nowrap flex-shrink-0" onClick={() => setFilter("critical")}>Critical (1-3)</Button>
                     </div>
                 </div>
 

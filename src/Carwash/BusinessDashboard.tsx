@@ -356,7 +356,7 @@ const BusinessDashboard = () => {
                     </Button>
                   </CardHeader>
                   <CardContent>
-                    <div className="overflow-x-auto -mx-6 px-6">
+                    <div className="hidden md:block overflow-x-auto -mx-6 px-6">
                       <Table>
                         <TableHeader>
                           <TableRow>
@@ -369,7 +369,7 @@ const BusinessDashboard = () => {
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {bookings.map((booking) => (
+                          {bookings.slice(0, 5).map((booking: any) => (
                             <TableRow key={booking.id}>
                               <TableCell>
                                 <div className="flex flex-col">

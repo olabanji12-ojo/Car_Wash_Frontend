@@ -34,12 +34,12 @@ export const CarwashList = ({
     return (
         <div className="space-y-8 pb-12">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div className="space-y-1">
-                    <h2 className="text-3xl font-extrabold tracking-tight text-gray-900">Recommended for You</h2>
-                    <div className="flex items-center gap-2 text-sm font-medium">
-                        <div className="flex items-center gap-1.5 px-2.5 py-1 bg-indigo-50 text-indigo-600 rounded-full">
-                            <MapPin className="h-3.5 w-3.5" />
-                            <span>
+                <div className="space-y-1.5 w-full">
+                    <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-gray-900 leading-tight">Recommended for You</h2>
+                    <div className="flex items-center gap-2 text-sm font-medium overflow-hidden">
+                        <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-indigo-50 text-indigo-600 rounded-full max-w-full">
+                            <MapPin className="h-3.5 w-3.5 flex-shrink-0" />
+                            <span className="truncate">
                                 {searchedAddress || (hasSearched ? "Searched Location" : "Lagos, Alimosho")}
                             </span>
                         </div>

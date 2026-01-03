@@ -37,16 +37,16 @@ export const QuickActions = ({ onSearch }: QuickActionsProps) => {
         {/* Blue Overlay similar to Hero.tsx but with gradient for better text readability */}
         <div className="absolute inset-0 bg-blue-900/80 backdrop-blur-[2px]" />
 
-        <div className="relative z-10 px-6 py-12 md:py-16 text-center">
+        <div className="relative z-10 px-4 py-8 md:px-6 md:py-16 text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <h1 className="text-3xl md:text-5xl font-extrabold text-white mb-4 tracking-tight">
+            <h1 className="text-2xl sm:text-3xl md:text-5xl font-extrabold text-white mb-3 md:mb-4 tracking-tight">
               Looking for a Car Wash?
             </h1>
-            <p className="text-blue-100 text-lg md:text-xl mb-8 max-w-2xl mx-auto">
+            <p className="text-blue-100 text-sm sm:text-base md:text-xl mb-6 md:mb-8 max-w-2xl mx-auto">
               Find top-rated stations or book a mobile service to come to you.
             </p>
           </motion.div>
@@ -63,8 +63,8 @@ export const QuickActions = ({ onSearch }: QuickActionsProps) => {
                 <button
                   onClick={() => setServiceMode('station')}
                   className={`px-6 py-2 rounded-xl text-sm font-bold transition-all duration-300 ${serviceMode === 'station'
-                      ? "bg-white text-blue-900 shadow-lg"
-                      : "text-white hover:bg-white/10"
+                    ? "bg-white text-blue-900 shadow-lg"
+                    : "text-white hover:bg-white/10"
                     }`}
                 >
                   Visit Station
@@ -72,8 +72,8 @@ export const QuickActions = ({ onSearch }: QuickActionsProps) => {
                 <button
                   onClick={() => setServiceMode('home')}
                   className={`px-6 py-2 rounded-xl text-sm font-bold transition-all duration-300 ${serviceMode === 'home'
-                      ? "bg-white text-blue-900 shadow-lg"
-                      : "text-white hover:bg-white/10"
+                    ? "bg-white text-blue-900 shadow-lg"
+                    : "text-white hover:bg-white/10"
                     }`}
                 >
                   Home Service

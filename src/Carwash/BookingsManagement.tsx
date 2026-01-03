@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { useCarwashBookings, useUpdateBookingStatus } from "@/hooks/useBookings";
+import { Badge } from "@/components/ui/badge";
 
 interface Booking {
   id: string;
@@ -168,7 +169,7 @@ const BookingsManagement = () => {
               </div>
             </div>
 
-            <div className="overflow-x-auto">
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-left">
                 <thead>
                   <tr className="border-b">
@@ -186,7 +187,7 @@ const BookingsManagement = () => {
                       <td className="py-2 px-4">
                         {booking.serviceType === "slot" ? "Slot" : "Home Service"}
                       </td>
-                      <td className="py-2 px-4">
+                      <td className="py-2 px-4 whitespace-nowrap">
                         {booking.date} {booking.time}
                       </td>
                       <td className="py-2 px-4">
@@ -214,6 +215,68 @@ const BookingsManagement = () => {
                   ))}
                 </tbody>
               </table>
+            </div>
+
+            {/* Mobile View - Cards */}
+            <div className="md:hidden space-y-4">
+              {filteredBookings.length > 0 ? (
+                filteredBookings.map((booking) => (
+                  <Card key={booking.id} className="overflow-hidden border-l-4 border-l-primary">
+                    <CardContent className="p-4">
+                      <div className="flex justify-between items-start mb-2">
+                        <div>
+                          <p className="font-bold text-lg">{booking.customerName}</p>
+                          <p className="text-sm text-muted-foreground">{booking.serviceName}</p>
+                        </div>
+                        <Badge variant={
+                          booking.status === "pending" ? "outline" :
+                            booking.status === "confirmed" ? "default" :
+                              booking.status === "completed" ? "secondary" : "destructive"
+                        } className={
+                          booking.status === "pending" ? "text-yellow-600 border-yellow-600" :
+                            booking.status === "confirmed" ? "bg-green-600 text-white" :
+                              booking.status === "completed" ? "bg-blue-600 text-white" : ""
+                        }>
+                          {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
+                        </Badge>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-y-2 text-sm mb-4">
+                        <div className="flex items-center gap-2">
+                          <Calendar className="h-4 w-4 text-muted-foreground" />
+                          <span>{booking.date}</span>
+                        </div>
+                        <div className="text-right">
+                          <span className="font-semibold">{booking.time}</span>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground uppercase text-[10px] font-bold">Type</span>
+                          <p>{booking.serviceType === "slot" ? "On-site Slot" : "Home Service"}</p>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-muted-foreground uppercase text-[10px] font-bold">Total</span>
+                          <p className="font-bold">₦{booking.totalAmount.toLocaleString()}</p>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-wrap gap-2 pt-2 border-t">
+                        <Button variant="outline" className="flex-1" size="sm" onClick={() => openBookingDetails(booking)}>View Details</Button>
+                        {booking.status === "pending" && (
+                          <>
+                            <Button className="flex-1 bg-green-600 hover:bg-green-700 h-9" size="sm" onClick={() => handleAcceptBooking(booking.id)}>Accept</Button>
+                            <Button variant="destructive" className="flex-1 h-9" size="sm" onClick={() => handleRejectBooking(booking.id)}>Reject</Button>
+                          </>
+                        )}
+                        {booking.status === "confirmed" && (
+                          <Button className="w-full bg-purple-600 hover:bg-purple-700 h-9" size="sm" onClick={() => handleCompleteBooking(booking.id)}>Mark Completed</Button>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">No bookings found matching your criteria.</div>
+              )}
             </div>
           </CardContent>
         </Card>
