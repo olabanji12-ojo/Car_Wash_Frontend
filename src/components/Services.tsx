@@ -9,8 +9,8 @@ const Services = () => {
   return (
     <section className="w-full py-20 bg-gradient-to-b from-section-bg to-background" id="services">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-16" data-aos="fade-up">
-          <h2 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">
+        <div className="text-center mb-12 md:mb-16" data-aos="fade-up">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 text-foreground leading-tight">
             Choose Your Experience
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">

@@ -8,31 +8,31 @@ const Hero = () => {
 
   return (
     <section
-      className="w-full py-24 md:py-32 px-4 relative bg-cover bg-center"
+      className="w-full py-12 sm:py-24 md:py-32 px-4 relative bg-cover bg-center min-h-[85vh] flex items-center"
       style={{ backgroundImage: `url(${heroBg})` }}
       data-aos="fade-in"
     >
       <div className="absolute inset-0 bg-gradient-to-br from-background/95 via-background/85 to-background/75 backdrop-blur-sm" />
       <div className="container mx-auto text-center relative z-10 max-w-4xl">
-        <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full mb-6" data-aos="fade-down">
-          <Sparkles className="h-4 w-4" />
-          <span className="text-sm font-medium">Your Car Deserves the Best</span>
+        <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-3 py-1.5 sm:px-4 sm:py-2 rounded-full mb-4 md:mb-6" data-aos="fade-down">
+          <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+          <span className="text-xs sm:text-sm font-medium">Your Car Deserves the Best</span>
         </div>
 
-        <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-foreground mb-6 leading-tight" data-aos="fade-up" data-aos-delay="100">
+        <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold text-foreground mb-4 md:mb-6 leading-tight" data-aos="fade-up" data-aos-delay="100">
           Experience the Joy of a
-          <br />
-          <span className="text-primary bg-clip-text">Spotlessly Clean Car</span>
+          <span className="hidden sm:inline"><br /></span>
+          <span className="text-primary bg-clip-text block sm:inline ml-0 sm:ml-2">Spotlessly Clean Car</span>
         </h1>
 
-        <p className="text-lg md:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto leading-relaxed" data-aos="fade-up" data-aos-delay="200">
-          Stop wasting weekends at the car wash. Book premium detailing services in seconds and get back to what matters—while we make your car shine like new.
+        <p className="text-base sm:text-lg md:text-xl text-muted-foreground mb-8 md:mb-10 max-w-2xl mx-auto leading-relaxed" data-aos="fade-up" data-aos-delay="200">
+          Stop wasting weekends at the car wash. Book premium detailing services in seconds and get back to what matters.
         </p>
 
-        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center" data-aos="fade-up" data-aos-delay="300">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center" data-aos="fade-up" data-aos-delay="300">
           <Button
             size="lg"
-            className="bg-primary hover:bg-primary/90 text-primary-foreground text-lg px-10 py-7 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105"
+            className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground text-base sm:text-lg px-8 sm:px-10 py-6 sm:py-7 shadow-xl hover:shadow-2xl transition-all duration-300 active:scale-95"
             onClick={() => navigate("/dashboard")}
           >
             <Search className="mr-2 h-5 w-5" />
@@ -41,7 +41,7 @@ const Hero = () => {
           <Button
             size="lg"
             variant="outline"
-            className="border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground text-lg px-10 py-7 transition-all duration-300"
+            className="w-full sm:w-auto border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground text-base sm:text-lg px-8 sm:px-10 py-6 sm:py-7 transition-all duration-300 active:scale-95"
             onClick={() => navigate("/dashboard")}
           >
             Book Home Service
