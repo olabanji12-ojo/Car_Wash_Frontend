@@ -15,9 +15,20 @@ self.addEventListener('install', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
+    // Skip non-GET requests and internal Vite/HMR requests during development
+    if (event.request.method !== 'GET' ||
+        event.request.url.includes('/@vite/') ||
+        event.request.url.includes('/@react-refresh') ||
+        event.request.url.includes('chrome-extension')) {
+        return;
+    }
+
     event.respondWith(
         caches.match(event.request).then((response) => {
-            return response || fetch(event.request);
+            return response || fetch(event.request).catch(() => {
+                // Return null if network fetch fails (dev server might be down or disconnected)
+                return null;
+            });
         })
     );
 });
