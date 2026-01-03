@@ -1,4 +1,4 @@
-import { Home, Search, Calendar, BookOpen, Heart, Car, ClipboardList, Star, Settings } from "lucide-react";
+import { Home, Search, Calendar, BookOpen, Heart, Car, ClipboardList, Star, Settings, Bell } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import {
   Sidebar,
@@ -19,6 +19,7 @@ const customerMenuItems = [
   { title: "My Bookings", url: "/dashboard/bookings", icon: BookOpen },
   { title: "Favorites", url: "/dashboard/favorites", icon: Heart },
   { title: "My Vehicles", url: "/dashboard/vehicles", icon: Car },
+  { title: "Notifications", url: "/dashboard/notifications", icon: Bell },
 ];
 
 const guestMenuItems = [
@@ -34,6 +35,7 @@ const businessMenuItems = [
   { title: "Bookings", url: "/bookings-management", icon: ClipboardList },
   { title: "Reviews", url: "/reviews-management", icon: Star },
   { title: "Complete Setup", url: "/post-onboarding", icon: ClipboardList },
+  { title: "Notifications", url: "/dashboard/notifications", icon: Bell },
   { title: "Settings", url: "/business-profile-settings", icon: Settings },
 ];
 

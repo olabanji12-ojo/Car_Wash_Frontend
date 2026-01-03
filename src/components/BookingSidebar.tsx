@@ -11,19 +11,17 @@ import { Phone, MapPin, Calendar as CalendarIcon, Home, Building2 } from "lucide
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 
+import { Carwash, Service } from "@/Contexts/CarwashService";
+
 interface BookingSidebarProps {
   carwashId: string;
   startingPrice: number;
-  services: Array<{
-    name: string;
-    description: string;
-    price: number;
-    features: string[];
-  }>;
+  services: Service[];
   phone: string;
+  hasHomeService?: boolean;
 }
 
-const BookingSidebar = ({ carwashId, startingPrice, services, phone }: BookingSidebarProps) => {
+const BookingSidebar = ({ carwashId, startingPrice, services, phone, hasHomeService }: BookingSidebarProps) => {
   const navigate = useNavigate();
   const [serviceType, setServiceType] = useState<"onsite" | "home">("onsite");
   const [selectedService, setSelectedService] = useState("");
@@ -63,13 +61,15 @@ const BookingSidebar = ({ carwashId, startingPrice, services, phone }: BookingSi
                   <span>On-site Service</span>
                 </Label>
               </div>
-              <div className="flex items-center space-x-2 p-3 rounded-lg border hover:bg-muted/50 cursor-pointer">
-                <RadioGroupItem value="home" id="home" />
-                <Label htmlFor="home" className="flex items-center gap-2 cursor-pointer flex-1">
-                  <Home className="h-4 w-4 text-primary" />
-                  <span>Home Service</span>
-                </Label>
-              </div>
+              {hasHomeService && (
+                <div className="flex items-center space-x-2 p-3 rounded-lg border hover:bg-muted/50 cursor-pointer">
+                  <RadioGroupItem value="home" id="home" />
+                  <Label htmlFor="home" className="flex items-center gap-2 cursor-pointer flex-1">
+                    <Home className="h-4 w-4 text-primary" />
+                    <span>Home Service</span>
+                  </Label>
+                </div>
+              )}
             </RadioGroup>
           </div>
 

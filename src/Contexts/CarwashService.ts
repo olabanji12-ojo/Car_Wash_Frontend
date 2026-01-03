@@ -10,6 +10,15 @@ export interface PaginatedCarwashes {
     success?: boolean;
 }
 
+export interface Service {
+    id: string;
+    name: string;
+    description: string;
+    price: number;
+    duration: number; // Duration in minutes
+    features?: string[];
+}
+
 export interface Carwash {
     id: string;
     name: string;
@@ -21,7 +30,7 @@ export interface Carwash {
     };
     photo_gallery?: string[];
     photos?: string[]; // Alternative field name
-    services: any[];
+    services: Service[];
     is_active: boolean;
     is_open?: boolean;
     rating: number;
@@ -34,6 +43,9 @@ export interface Carwash {
     operating_hours?: any[];
     distance_km?: number;
     distance_text?: string;
+    home_service?: boolean;
+    delivery_radius_km?: number;
+    search_mode?: 'station' | 'home';
     // Add other fields as needed
 }
 

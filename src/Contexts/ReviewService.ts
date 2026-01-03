@@ -30,7 +30,7 @@ const ReviewService = {
             } : {};
 
             const response = await axios.get(`${API_BASE_URL}/reviews/business/${carwashId}`, config);
-            return response.data;
+            return response.data.data || response.data;
         } catch (error: any) {
             console.error('Get reviews error:', error);
             throw error;
@@ -102,7 +102,7 @@ const ReviewService = {
             );
 
             toast.success("Review submitted successfully!");
-            return response.data;
+            return response.data.data || response.data;
         } catch (error: any) {
             console.error('Create review error:', error);
             const errorMessage = error.response?.data?.error || "Failed to submit review";

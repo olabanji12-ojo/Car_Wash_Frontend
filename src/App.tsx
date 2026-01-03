@@ -23,6 +23,7 @@ import CallbackPage from "./pages/CallbackPage";
 import BusinessDashboard from "./Carwash/BusinessDashboard";
 import BookingsManagement from "./Carwash/BookingsManagement";
 import ReviewsManagement from "./Carwash/ReviewsManagement";
+import WorkerTrackPage from "./pages/WorkerTrackPage";
 import { AuthProvider } from "./Contexts/AuthContext";
 import { FavoritesProvider } from "./Contexts/FavoritesContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
@@ -52,6 +53,7 @@ const App = () => (
               <Route path="/carwash/:id" element={<CarwashDetails />} />
               <Route path="/carwashes" element={<BrowseCarwashesPage />} />
               <Route path="/dashboard/*" element={<Dashboard />} />
+              <Route path="/track/:id" element={<WorkerTrackPage />} />
 
               {/* 🚗 CUSTOMER-ONLY ROUTES */}
               <Route

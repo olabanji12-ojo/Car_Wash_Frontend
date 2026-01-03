@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Star, MapPin, Heart } from "lucide-react";
+import { Star, MapPin, Heart, Clock as ClockIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useFavorites } from "@/Contexts/FavoritesContext";
 import { Carwash } from "@/Contexts/CarwashService";
@@ -54,6 +54,24 @@ export const CarwashCard = ({ carwash }: CarwashCardProps) => {
                 {carwash.distance_text}
               </Badge>
             )}
+
+            {carwash.search_mode === 'home' && carwash.home_service && carwash.distance_km !== undefined && carwash.delivery_radius_km !== undefined && carwash.distance_km > carwash.delivery_radius_km && (
+              <Badge variant="destructive" className="bg-red-500/90 text-white border-none shadow-sm backdrop-blur-md">
+                Out of Range (Home)
+              </Badge>
+            )}
+
+            {carwash.search_mode === 'home' && !carwash.home_service && (
+              <Badge variant="outline" className="bg-orange-500/90 text-white border-none shadow-sm backdrop-blur-md">
+                Station Only
+              </Badge>
+            )}
+
+            {carwash.search_mode === 'home' && carwash.home_service && carwash.distance_km !== undefined && carwash.delivery_radius_km !== undefined && carwash.distance_km <= carwash.delivery_radius_km && (
+              <Badge className="bg-blue-500/90 text-white border-none shadow-sm backdrop-blur-md">
+                Mobile Service Available
+              </Badge>
+            )}
           </div>
 
           <Button
@@ -84,6 +102,10 @@ export const CarwashCard = ({ carwash }: CarwashCardProps) => {
               <div className="flex items-center gap-1.5 text-xs text-gray-500">
                 <MapPin className="h-3.5 w-3.5 flex-shrink-0" />
                 <span className="truncate">{carwash.address}</span>
+              </div>
+              <div className="flex items-center gap-1.5 text-xs text-indigo-600 font-semibold bg-indigo-50 w-fit px-1.5 py-0.5 rounded">
+                <ClockIcon className="h-3 w-3 flex-shrink-0" />
+                <span>Est. Wait: 15-25 mins</span>
               </div>
             </div>
           </div>

@@ -7,6 +7,7 @@ import BrowseCarwashesPage from "@/components/dashboard/BrowseCarwashesPage";
 import MyBookingsPage from "./MyBookings";
 import Vehicles from "./Vehicles";
 import Favorites from "./Favorites";
+import NotificationsPage from "./Notifications";
 
 import { useState, useEffect } from "react";
 import CarwashService, { Carwash } from "@/Contexts/CarwashService";
@@ -66,17 +67,29 @@ const DashboardHome = () => {
         }
     };
 
-    const handleSearch = (lat: number, lng: number, address: string) => {
+    const handleSearch = (lat: number, lng: number, address: string, mode: 'station' | 'home') => {
         setLoading(true);
         setHasSearched(true);
         setSearchedAddress(address);
-        setSearchedLocation([lng, lat]); // Mapbox uses [lng, lat]
+        setSearchedLocation([lng, lat]);
 
         CarwashService.searchNearby(lat, lng)
             .then((data) => {
-                const carwashesArray = Array.isArray(data) ? data : [];
-                setCarwashes(carwashesArray);
-                toast.success(`Found ${carwashesArray.length} carwash${carwashesArray.length !== 1 ? 'es' : ''} nearby`);
+                let carwashesArray = Array.isArray(data) ? data : [];
+
+                // filter by home service if in home mode
+                if (mode === 'home') {
+                    carwashesArray = carwashesArray.filter(cw => cw.home_service === true);
+                }
+
+                // Attach search context to each carwash for specialized rendering in CarwashCard
+                const extendedCarwashes = carwashesArray.map(cw => ({
+                    ...cw,
+                    search_mode: mode
+                })) as any[];
+
+                setCarwashes(extendedCarwashes);
+                toast.success(`Found ${extendedCarwashes.length} results for ${mode === 'home' ? 'Home Service' : 'Station Visit'}`);
             })
             .catch((err) => {
                 console.error("Search failed", err);
@@ -111,6 +124,7 @@ const Dashboard = () => {
                 <Route path="bookings" element={<MyBookingsPage />} />
                 <Route path="favorites" element={<Favorites />} />
                 <Route path="vehicles" element={<Vehicles />} />
+                <Route path="notifications" element={<NotificationsPage />} />
             </Routes>
         </DashboardLayout>
     );

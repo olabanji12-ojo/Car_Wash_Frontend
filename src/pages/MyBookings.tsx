@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -9,16 +9,20 @@ import {
   XCircle,
   Calendar,
   Search,
-  MessageSquare
+  MessageSquare,
+  Car,
+  Truck,
+  Star,
+  User
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import BookingService, { BookingResponse } from "@/Contexts/BookingService";
+import { BookingResponse } from "@/Contexts/BookingService";
+import { ReviewModal } from "@/components/ReviewModal";
+import { useMyBookings, useUpdateBookingStatus } from "@/hooks/useBookings";
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { ReviewModal } from "@/components/ReviewModal";
-
-// ... existing imports
+import { LiveTrackingMap } from "@/components/dashboard/LiveTrackingMap";
 
 type BookingStatus = "pending" | "confirmed" | "completed" | "cancelled";
 
@@ -51,6 +55,13 @@ const statusConfig: Record<string, any> = {
     borderColor: "border-red-500",
     badgeText: "✗ DECLINED",
   },
+  en_route: {
+    icon: <Truck className="h-4 w-4" />,
+    textColor: "text-blue-600",
+    bgColor: "bg-blue-50",
+    borderColor: "border-blue-600",
+    badgeText: "🚚 EN ROUTE",
+  },
 };
 
 const BookingCard = ({
@@ -73,38 +84,135 @@ const BookingCard = ({
           <div className="flex-1">
             <div className="flex justify-between items-start mb-3">
               <div>
-                <h3 className="font-bold text-lg">Booking #{booking.queue_number}</h3>
-                <p className="text-sm text-muted-foreground">ID: {booking.id.slice(-6)}</p>
+                <h3 className="font-bold text-lg">
+                  {booking.booking_type === 'home_service'
+                    ? `Home Appointment`
+                    : `Slot Booking #${booking.queue_number} `}
+                </h3>
+                <div className="flex gap-2 mt-1">
+                  <Badge variant="outline" className="text-[10px] uppercase font-bold py-0 h-4">
+                    {booking.booking_type === 'home_service' ? 'Home' : 'On-site'}
+                  </Badge>
+                  <p className="text-[10px] text-muted-foreground">ID: {booking.id.slice(-6)}</p>
+                </div>
               </div>
               <Badge className={cn("text-xs font-bold", config.bgColor, config.textColor)}>
                 {config.badgeText}
               </Badge>
             </div>
 
-            <div className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm mb-3">
-              <p><span className="font-semibold">Date/Time:</span> {format(date, "PPP p")}</p>
-              <p><span className="font-semibold">Car ID:</span> {booking.car_id}</p>
+            <div className="space-y-3 sm:space-y-4 text-xs sm:text-sm mb-3">
+              <div className="grid grid-cols-2 gap-4 p-4 bg-muted/30 rounded-2xl border border-primary/5">
+                <div className="space-y-1">
+                  <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider flex items-center gap-1">
+                    <Calendar className="h-3 w-3" /> Date & Time
+                  </p>
+                  <p className="font-outfit font-bold text-sm">{format(date, "MMM dd, yyyy")}</p>
+                  <p className="font-outfit text-primary font-semibold">{format(date, "p")}</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider flex items-center gap-1">
+                    {booking.booking_type === 'home_service' ? (
+                      <><Clock className="h-3 w-3" /> Verification</>
+                    ) : (
+                      <><Search className="h-3 w-3" /> Queue Number</>
+                    )}
+                  </p>
+                  <p className="font-mono font-black text-xl text-primary tracking-widest bg-primary/5 px-2 py-0.5 rounded-lg inline-block border border-primary/10 shadow-sm">
+                    {booking.booking_type === 'home_service'
+                      ? (booking.verification_code || "----")
+                      : (booking.queue_number || "---")
+                    }
+                  </p>
+                  <p className="text-[10px] text-muted-foreground italic">
+                    {booking.booking_type === 'home_service' ? "Handshake Code" : "Show at Entrance"}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-4 px-1">
+                <div className="flex items-center gap-2">
+                  <Car className="h-4 w-4 text-muted-foreground" />
+                  <span className="font-bold text-xs uppercase tracking-tight">Car: {booking.car_id.slice(-6).toUpperCase()}</span>
+                </div>
+                {booking.queue_number && (
+                  <Badge variant="outline" className="text-[10px] font-bold border-primary/20 bg-primary/5">
+                    QUEUE #{booking.queue_number}
+                  </Badge>
+                )}
+              </div>
+
+              {booking.booking_type === 'home_service' && booking.address_note && (
+                <div className="p-3 bg-blue-50/30 rounded-xl border border-blue-100/50 text-blue-900/80 italic text-xs leading-relaxed">
+                  <p className="font-black text-[9px] uppercase not-italic mb-1 text-blue-600 flex items-center gap-1">
+                    <Truck className="h-3 w-3" /> Location Instructions
+                  </p>
+                  {booking.address_note}
+                </div>
+              )}
+
+              {booking.worker_id && (
+                <div className="flex items-center gap-3 p-3 bg-primary/5 rounded-2xl border border-primary/10 mt-4 animate-in fade-in zoom-in-95 duration-500">
+                  <div className="h-10 w-10 rounded-full bg-primary/10 overflow-hidden flex items-center justify-center border border-primary/20">
+                    {booking.worker_photo ? (
+                      <img src={booking.worker_photo} alt="Worker" className="h-full w-full object-cover" />
+                    ) : (
+                      <User className="h-5 w-5 text-primary" />
+                    )}
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase">Assigned Professional</p>
+                    <p className="text-sm font-bold">{booking.worker_name || "Assigned Worker"}</p>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Actions */}
+            {booking.status === "en_route" && booking.user_location && (
+              <div className="mt-4 space-y-3 animate-in fade-in slide-in-from-top-4 duration-1000">
+                <div className="flex items-center justify-between px-1">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-blue-600 animate-pulse" />
+                    <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest">Live Trip Tracking</p>
+                  </div>
+                  <Badge variant="outline" className="text-[10px] bg-blue-50 text-blue-600 border-blue-200 uppercase">En Route</Badge>
+                </div>
+                <LiveTrackingMap
+                  workerLocation={booking.worker_location?.coordinates as [number, number]}
+                  customerLocation={booking.user_location.coordinates as [number, number]}
+                />
+                <div className="p-3 bg-blue-50/50 rounded-xl border border-blue-100 flex items-center gap-3">
+                  <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white">
+                    <Truck className="h-4 w-4" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-blue-900">Worker is on their way!</p>
+                    <p className="text-[10px] text-blue-600/70 italic">Please stay available at the provided address.</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div className="flex justify-end mt-4 pt-4 border-t gap-2">
-              {booking.status === 'pending' && (
+              {booking.status === "completed" && (
+                <Button
+                  variant="default"
+                  className="w-full bg-green-600 hover:bg-green-700 mt-2"
+                  onClick={() => onReview(booking)}
+                >
+                  <Star className="h-4 w-4 mr-2" />
+                  Confirm & Rate Experience
+                </Button>
+              )}
+
+              {booking.status === "pending" && (
                 <Button
                   variant="destructive"
                   size="sm"
                   onClick={() => onCancel(booking.id)}
                 >
                   Cancel Booking
-                </Button>
-              )}
-              {booking.status === 'completed' && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onReview(booking)}
-                >
-                  <MessageSquare className="mr-2 h-4 w-4" />
-                  Leave Review
                 </Button>
               )}
             </div>
@@ -130,66 +238,37 @@ const EmptyState = ({ status }: { status: string }) => {
 };
 
 const MyBookingsPage = () => {
-  const [bookings, setBookings] = useState<BookingResponse[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: bookings = [], isLoading, refetch } = useMyBookings({
+    refetchInterval: (data) => data?.some((b: any) => b.status === "en_route") ? 3000 : 5000
+  });
+  const [reviewBooking, setReviewBooking] = useState<BookingResponse | null>(null);
+  const updateStatusMutation = useUpdateBookingStatus();
   const [activeTab, setActiveTab] = useState<string>("pending");
-
-  // Review Modal State
-  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
-  const [selectedBooking, setSelectedBooking] = useState<BookingResponse | null>(null);
-
-  useEffect(() => {
-    fetchBookings();
-  }, []);
-
-  const fetchBookings = () => {
-    setLoading(true);
-    BookingService.getMyBookings()
-      .then((data) => {
-        const bookingsArray = Array.isArray(data) ? data : [];
-        setBookings(bookingsArray);
-      })
-      .catch(err => {
-        console.error("Failed to fetch bookings", err);
-        toast.error("Failed to load bookings");
-        setBookings([]);
-      })
-      .finally(() => setLoading(false));
-  };
 
   const handleCancelBooking = async (id: string) => {
     if (!window.confirm("Are you sure you want to cancel this booking?")) return;
-
-    try {
-      await BookingService.cancelBooking(id);
-      setBookings(bookings.filter(b => b.id !== id));
-      toast.success("Booking cancelled successfully");
-    } catch (error: any) {
-      console.error("Failed to cancel booking", error);
-      const errorMessage = error.response?.data?.message || "Failed to cancel booking";
-      toast.error(errorMessage);
-    }
-  };
-
-  const handleReviewClick = (booking: BookingResponse) => {
-    setSelectedBooking(booking);
-    setIsReviewModalOpen(true);
-  };
-
-  const handleReviewSuccess = () => {
-    toast.success("Thank you for your feedback!");
-    // Optionally refresh bookings or mark as reviewed if backend supports it
+    updateStatusMutation.mutate({ id, status: "cancelled_by_user" });
   };
 
   const tabs = ["pending", "confirmed", "completed", "cancelled"];
 
-  const filteredBookings = bookings.filter(b => b.status === activeTab);
+  const filteredBookings = bookings.filter(b => {
+    if (activeTab === "confirmed") {
+      return b.status === "confirmed" || b.status === "en_route";
+    }
+    return b.status === activeTab;
+  });
+
   const bookingCounts = tabs.reduce((acc, tab) => {
-    acc[tab] = bookings.filter(b => b.status === tab).length;
+    if (tab === "confirmed") {
+      acc[tab] = bookings.filter(b => b.status === "confirmed" || b.status === "en_route").length;
+    } else {
+      acc[tab] = bookings.filter(b => b.status === tab).length;
+    }
     return acc;
   }, {} as Record<string, number>);
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="bg-gray-50/50 min-h-screen">
         <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
@@ -265,25 +344,27 @@ const MyBookingsPage = () => {
                 key={booking.id}
                 booking={booking}
                 onCancel={handleCancelBooking}
-                onReview={handleReviewClick}
+                onReview={(b) => setReviewBooking(b)}
               />
             ))
           ) : (
             <EmptyState status={activeTab} />
           )}
         </div>
-      </div>
 
-      {/* Review Modal */}
-      {selectedBooking && (
-        <ReviewModal
-          isOpen={isReviewModalOpen}
-          onClose={() => setIsReviewModalOpen(false)}
-          carwashId={selectedBooking.carwash_id}
-          orderId={selectedBooking.id} // Assuming order_id maps to booking id
-          onSuccess={handleReviewSuccess}
-        />
-      )}
+        {reviewBooking && (
+          <ReviewModal
+            isOpen={!!reviewBooking}
+            onClose={() => setReviewBooking(null)}
+            carwashId={reviewBooking.carwash_id}
+            orderId={reviewBooking.id}
+            onSuccess={() => {
+              toast.success("Thank you for your review!");
+              refetch();
+            }}
+          />
+        )}
+      </div>
     </div>
   );
 };

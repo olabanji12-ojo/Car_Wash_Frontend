@@ -22,6 +22,7 @@ import CarwashService, { Carwash } from "@/Contexts/CarwashService";
 import ReviewService, { Review } from "@/Contexts/ReviewService";
 import { toast } from "sonner";
 import { AddReviewDialog } from "@/components/AddReviewDialog";
+import { ExpandableText } from "@/components/ExpandableText";
 import { useAuth } from "../Contexts/AuthContext";
 import {
   DropdownMenu,
@@ -168,13 +169,15 @@ const CarwashDetails = () => {
     ? Math.min(...carwash.services.map(s => s.price || 0))
     : 0;
 
-  // Use carwash photos or fallback images
-  const images = carwash.photos && carwash.photos.length > 0
-    ? carwash.photos
-    : [
-      "https://images.unsplash.com/photo-1520340356584-f9917d1eea6f?w=800&h=600&fit=crop",
-      "https://images.unsplash.com/photo-1601362840469-51e4d8d58785?w=800&h=600&fit=crop"
-    ];
+  // Use photo_gallery, photos or fallback images
+  const images = (carwash.photo_gallery && carwash.photo_gallery.length > 0)
+    ? carwash.photo_gallery
+    : (carwash.photos && carwash.photos.length > 0)
+      ? carwash.photos
+      : [
+        "https://images.unsplash.com/photo-1520340356584-f9917d1eea6f?w=800&h=600&fit=crop",
+        "https://images.unsplash.com/photo-1601362840469-51e4d8d58785?w=800&h=600&fit=crop"
+      ];
 
   return (
     <div className="min-h-screen bg-background">
@@ -255,7 +258,7 @@ const CarwashDetails = () => {
           </div>
 
           {images.length > 1 && (
-            <div className="grid grid-cols-4 gap-2 md:gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
               {images.slice(0, 4).map((image: string, index: number) => (
                 <button
                   key={index}
@@ -347,8 +350,16 @@ const CarwashDetails = () => {
                         <p className="text-sm text-muted-foreground mb-4">
                           {service.description}
                         </p>
-                        <div className="text-2xl font-bold text-primary mb-4">
-                          ₦{service.price.toLocaleString()}
+                        <div className="flex items-center justify-between mb-4">
+                          <div className="text-2xl font-bold text-primary">
+                            ₦{service.price.toLocaleString()}
+                          </div>
+                          {service.duration && (
+                            <div className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground bg-muted/50 px-2 py-1 rounded-md">
+                              <Clock className="h-3.5 w-3.5" />
+                              {service.duration} mins
+                            </div>
+                          )}
                         </div>
                         {service.features && service.features.length > 0 && (
                           <ul className="space-y-2">
@@ -525,7 +536,30 @@ const CarwashDetails = () => {
                           ))}
                         </div>
 
-                        <p className="text-muted-foreground">{review.comment || 'No comment provided'}</p>
+                        <div className="space-y-4">
+                          <ExpandableText
+                            text={review.comment || 'No comment provided'}
+                            className="text-muted-foreground"
+                            limit={150}
+                          />
+
+                          {review.response && (
+                            <div className="bg-blue-50/50 rounded-lg p-4 border border-blue-100 ml-4 sm:ml-8 relative">
+                              <div className="absolute top-1/2 left-[-20px] sm:left-[-32px] -translate-y-1/2 w-4 sm:w-8 h-[2px] bg-blue-100 hidden sm:block"></div>
+                              <div className="flex items-center gap-2 mb-2">
+                                <Badge className="bg-blue-600 hover:bg-blue-700 text-[10px] h-5">Owner Response</Badge>
+                                <span className="text-[10px] text-muted-foreground italic">
+                                  {review.response_date ? new Date(review.response_date).toLocaleDateString() : "Recently"}
+                                </span>
+                              </div>
+                              <ExpandableText
+                                text={review.response}
+                                className="text-sm text-blue-900 italic font-medium"
+                                limit={100}
+                              />
+                            </div>
+                          )}
+                        </div>
                       </CardContent>
                     </Card>
                   ))}
@@ -547,6 +581,7 @@ const CarwashDetails = () => {
             startingPrice={startingPrice}
             services={carwash.services || []}
             phone={carwash.phone || ''}
+            hasHomeService={carwash.home_service}
           />
         </div>
       </div>

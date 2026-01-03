@@ -9,12 +9,13 @@ import heroBg from "@/assets/hero-bg.jpg";
 
 
 interface QuickActionsProps {
-  onSearch: (lat: number, lng: number, address: string) => void;
+  onSearch: (lat: number, lng: number, address: string, mode: 'station' | 'home') => void;
 }
 
 export const QuickActions = ({ onSearch }: QuickActionsProps) => {
   const navigate = useNavigate();
   const [selectedLocation, setSelectedLocation] = useState<{ lat: number, lng: number, address: string } | null>(null);
+  const [serviceMode, setServiceMode] = useState<'station' | 'home'>('station');
 
   const handlePlaceSelected = (lat: number, lng: number, address: string) => {
     console.log("Selected:", address, lat, lng);
@@ -23,7 +24,7 @@ export const QuickActions = ({ onSearch }: QuickActionsProps) => {
 
   const handleSearchClick = () => {
     if (selectedLocation) {
-      onSearch(selectedLocation.lat, selectedLocation.lng, selectedLocation.address);
+      onSearch(selectedLocation.lat, selectedLocation.lng, selectedLocation.address, serviceMode);
     }
   };
 
@@ -51,12 +52,36 @@ export const QuickActions = ({ onSearch }: QuickActionsProps) => {
           </motion.div>
 
           <motion.div
-            className="mx-auto max-w-3xl bg-white p-2 rounded-2xl shadow-xl ring-1 ring-black/5"
+            className="mx-auto max-w-3xl"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
-            <div className="flex flex-col md:flex-row gap-3">
+            {/* Service Type Toggle Capsules */}
+            <div className="flex justify-center mb-4">
+              <div className="bg-white/10 backdrop-blur-md p-1.5 rounded-2xl flex gap-2 border border-white/20">
+                <button
+                  onClick={() => setServiceMode('station')}
+                  className={`px-6 py-2 rounded-xl text-sm font-bold transition-all duration-300 ${serviceMode === 'station'
+                      ? "bg-white text-blue-900 shadow-lg"
+                      : "text-white hover:bg-white/10"
+                    }`}
+                >
+                  Visit Station
+                </button>
+                <button
+                  onClick={() => setServiceMode('home')}
+                  className={`px-6 py-2 rounded-xl text-sm font-bold transition-all duration-300 ${serviceMode === 'home'
+                      ? "bg-white text-blue-900 shadow-lg"
+                      : "text-white hover:bg-white/10"
+                    }`}
+                >
+                  Home Service
+                </button>
+              </div>
+            </div>
+
+            <div className="bg-white p-2 rounded-2xl shadow-xl ring-1 ring-black/5 flex flex-col md:flex-row gap-3">
               <div className="flex-1 relative group">
                 <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 z-10">
                   <MapPin className="h-5 w-5" />
@@ -64,7 +89,7 @@ export const QuickActions = ({ onSearch }: QuickActionsProps) => {
                 <div className="[&>div]:bg-transparent [&_input]:text-gray-900 [&_input]:placeholder:text-gray-500 [&_input]:pl-11 [&_input]:h-12 [&_input]:text-lg [&_input]:border-none [&_input]:ring-0 [&_input]:shadow-none">
                   <LocationSearchBar
                     onPlaceSelected={handlePlaceSelected}
-                    placeholder="Enter Location to search nearby Carwashes..."
+                    placeholder={serviceMode === 'home' ? "Where should we come to?" : "Enter Location to search nearby Carwashes..."}
                   />
                 </div>
               </div>

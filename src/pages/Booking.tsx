@@ -18,7 +18,12 @@ import {
   Home,
   Wallet,
   CreditCard,
-  MapPin
+  MapPin,
+  Info,
+  AlertCircle,
+  CheckCircle,
+  MapIcon,
+  Clock
 } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
@@ -28,6 +33,7 @@ import CarwashService, { Carwash } from "@/Contexts/CarwashService";
 import UserService, { UserProfile } from "@/Contexts/UserService";
 import { useAuth } from "@/Contexts/AuthContext";
 import { LocationSearchBar } from "@/components/LocationSearchBar";
+import { cn } from "@/lib/utils";
 
 interface BookingInitialState {
   carwashId: string;
@@ -97,6 +103,8 @@ const Booking = () => {
   const [serviceType, setServiceType] = useState<"onsite" | "home">(initialState?.serviceType || "onsite");
   const [clientAddress, setClientAddress] = useState("");
   const [userCoordinates, setUserCoordinates] = useState<[number, number] | null>(null);
+  const [distanceKm, setDistanceKm] = useState<number | null>(null);
+  const [isWithinRadius, setIsWithinRadius] = useState<boolean | null>(null);
 
   // Step 2: Scheduling
   const [date, setDate] = useState(initialState?.date || "");
@@ -124,6 +132,19 @@ const Booking = () => {
 
   const [availableSlots, setAvailableSlots] = useState<any[]>([]);
   const [isLoadingSlots, setIsLoadingSlots] = useState(false);
+
+  // --- Helpers ---
+  const calculateHaversineDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+    const R = 6371; // km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  };
 
   // --- Effects ---
 
@@ -178,6 +199,25 @@ const Booking = () => {
       setIsLoading(false);
     }
   }, [initialState?.carwashId]);
+
+  // Distance Validation Effect
+  useEffect(() => {
+    if (serviceType === "home" && userCoordinates && carwash?.location?.coordinates) {
+      const uLng = userCoordinates[0];
+      const uLat = userCoordinates[1];
+      const cwLng = carwash.location.coordinates[0];
+      const cwLat = carwash.location.coordinates[1];
+
+      const dist = calculateHaversineDistance(uLat, uLng, cwLat, cwLng);
+      setDistanceKm(dist);
+
+      const radius = carwash.delivery_radius_km || 10; // default to 10 if missing
+      setIsWithinRadius(dist <= radius);
+    } else {
+      setDistanceKm(null);
+      setIsWithinRadius(null);
+    }
+  }, [serviceType, userCoordinates, carwash]);
 
   useEffect(() => {
     const fetchCars = async () => {
@@ -235,6 +275,10 @@ const Booking = () => {
           }
           if (addressMode === "new" && (!clientAddress.trim() || !userCoordinates)) {
             toast.error("Please enter and select your address for home service");
+            return false;
+          }
+          if (isWithinRadius === false) {
+            toast.error(`You are outside the service range (${distanceKm?.toFixed(1)}km). Direct limit is ${carwash?.delivery_radius_km || 10}km.`);
             return false;
           }
         }
@@ -296,29 +340,53 @@ const Booking = () => {
       }
 
       const bookingDateTime = selectedSlotRaw ? new Date(selectedSlotRaw) : new Date(`${date}T${convertTo24Hour(timeSlot)}`);
+
+      // Step 0: Detailed Logging (Step-by-step debug)
+      console.log("🚀 Initializing Booking Creation...");
+      console.log("📍 Service Type:", serviceType);
+      console.log("🛰️ User Coordinates:", userCoordinates);
+
       const userLocation = serviceType === "home" && userCoordinates
         ? { type: 'Point', coordinates: userCoordinates }
         : undefined;
 
-      await BookingService.createBooking({
+      const payload = {
         car_id: finalCarId,
         carwash_id: initialState.carwashId,
         booking_time: bookingDateTime.toISOString(),
-        booking_type: serviceType === "home" ? "home_service" : "slot_booking",
+        booking_type: (serviceType === "home" ? "home_service" : "slot_booking") as "home_service" | "slot_booking",
         user_location: userLocation as any,
         address_note: clientAddress,
         notes: `Service: ${selectedService?.name || "Basic Slot"} \nInstructions: ${specialInstructions}`,
         status: "pending"
-      });
+      };
 
-      toast.success("Booking confirmed successfully!");
+      console.log("📦 Outgoing Payload:", JSON.stringify(payload, null, 2));
+
+      // Extra check: If home service but no coords, stop early
+      if (serviceType === "home" && (!userCoordinates || userCoordinates[0] === 0)) {
+        console.error("🛑 Blocked: Missing valid geolocation for home service.");
+        toast.error("Please pick a valid location on the map/search before booking a home service.");
+        return;
+      }
+
+      const response = await BookingService.createBooking(payload);
+      console.log("✅ Booking Success:", response);
+
+      toast.success("Booking confirmed! Check your email to see that your booking has been confirmed.");
       setTimeout(() => {
-        navigate("/");
+        navigate("/dashboard");
       }, 2000);
 
     } catch (error: any) {
-      console.error(error);
-      const errorMessage = error.response?.data?.error || "Failed to create booking. Please try again.";
+      console.error("❌ Booking Error Caught:", error);
+
+      // Go backend standard response uses .message for error descriptions
+      const backendMessage = error.response?.data?.message;
+      const genericMessage = "Failed to create booking. Please try again.";
+      const errorMessage = backendMessage || error.response?.data?.error || genericMessage;
+
+      console.log("📡 Backend Message:", backendMessage);
       toast.error(errorMessage);
     }
   };
@@ -377,14 +445,16 @@ const Booking = () => {
                   <h3 className="font-semibold text-lg mb-2">Visit Carwash</h3>
                   <p className="text-sm text-muted-foreground">Book a slot and drive in to get your car cleaned.</p>
                 </div>
-                <div
-                  className={`p-6 rounded-xl border-2 cursor-pointer transition-all ${serviceType === "home" ? "border-primary bg-primary/5" : "border-muted hover:border-primary/50"}`}
-                  onClick={() => setServiceType("home")}
-                >
-                  <Home className={`h-8 w-8 mb-4 ${serviceType === "home" ? "text-primary" : "text-muted-foreground"}`} />
-                  <h3 className="font-semibold text-lg mb-2">Home Service</h3>
-                  <p className="text-sm text-muted-foreground">We come to your location to clean your car.</p>
-                </div>
+                {carwash?.home_service && (
+                  <div
+                    className={`p-6 rounded-xl border-2 cursor-pointer transition-all ${serviceType === "home" ? "border-primary bg-primary/5" : "border-muted hover:border-primary/50"}`}
+                    onClick={() => setServiceType("home")}
+                  >
+                    <Home className={`h-8 w-8 mb-4 ${serviceType === "home" ? "text-primary" : "text-muted-foreground"}`} />
+                    <h3 className="font-semibold text-lg mb-2">Home Service</h3>
+                    <p className="text-sm text-muted-foreground">We come to your location to clean your car.</p>
+                  </div>
+                )}
               </div>
 
               {serviceType === "home" && (
@@ -464,6 +534,30 @@ const Booking = () => {
                         )}
                       </div>
                     )}
+
+                    {serviceType === "home" && distanceKm !== null && (
+                      <div className={cn(
+                        "p-4 rounded-lg border flex items-start gap-3 mt-2 animate-in fade-in slide-in-from-top-2",
+                        isWithinRadius ? "bg-green-50 border-green-100 text-green-800" : "bg-red-50 border-red-100 text-red-800"
+                      )}>
+                        {isWithinRadius ? (
+                          <CheckCircle className="h-5 w-5 mt-0.5 flex-shrink-0" />
+                        ) : (
+                          <AlertCircle className="h-5 w-5 mt-0.5 flex-shrink-0" />
+                        )}
+                        <div className="flex-1">
+                          <p className="font-semibold text-sm">
+                            {isWithinRadius ? "Eligible for Home Service" : "Outside Service Area"}
+                          </p>
+                          <p className="text-xs opacity-90">
+                            {isWithinRadius
+                              ? `Your location is ${distanceKm.toFixed(1)}km away, within our ${carwash?.delivery_radius_km || 10}km radius.`
+                              : `Your location is ${distanceKm.toFixed(1)}km away. Our limit is ${carwash?.delivery_radius_km || 10}km.`
+                            }
+                          </p>
+                        </div>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               )}
@@ -507,7 +601,7 @@ const Booking = () => {
                           <Loader2 className="h-8 w-8 animate-spin text-primary" />
                         </div>
                       ) : availableSlots.length > 0 ? (
-                        <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                        <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 gap-2 sm:gap-3">
                           {availableSlots.map((slot: any, idx: number) => {
                             const dateObj = new Date(slot.start_time);
                             const startTime = dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -534,11 +628,11 @@ const Booking = () => {
                               >
                                 {!isAvailable ? (
                                   <div className="flex flex-col items-center gap-0.5">
-                                    <span className="text-base font-bold text-gray-700">{startTime}</span>
-                                    <span className="text-[10px] sm:text-xs text-gray-400 font-medium whitespace-nowrap">Slot Taken</span>
+                                    <span className="text-sm font-bold text-gray-700">{startTime}</span>
+                                    <span className="text-[9px] sm:text-xs text-gray-400 font-medium whitespace-nowrap">Slot Taken</span>
                                   </div>
                                 ) : (
-                                  <span className="text-sm font-semibold">{startTime}</span>
+                                  <span className="text-sm font-bold">{startTime}</span>
                                 )}
                               </Button>
                             );
@@ -596,7 +690,7 @@ const Booking = () => {
                     </div>
                   </RadioGroup>
                   {selectedCarId === "new" && (
-                    <div className="grid grid-cols-2 gap-4 pt-4 border-t">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t">
                       <div className="space-y-2">
                         <Label>Make</Label>
                         <Input placeholder="e.g. Toyota" value={vehicleMake} onChange={(e) => setVehicleMake(e.target.value)} />
@@ -650,7 +744,15 @@ const Booking = () => {
                             <div className="font-medium">{service.name}</div>
                             <div className="text-sm text-muted-foreground">{service.description}</div>
                           </div>
-                          <div className="font-bold text-primary whitespace-nowrap ml-2">₦{service.price.toLocaleString()}</div>
+                          <div className="flex flex-col items-end gap-1 ml-2">
+                            <div className="font-bold text-primary whitespace-nowrap">₦{service.price.toLocaleString()}</div>
+                            {service.duration && (
+                              <div className="flex items-center gap-1 text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+                                <Clock className="h-3 w-3" />
+                                {service.duration}m
+                              </div>
+                            )}
+                          </div>
                         </Label>
                       </div>
                     ))}
@@ -662,12 +764,12 @@ const Booking = () => {
                 <CardHeader>
                   <CardTitle>Add-ons</CardTitle>
                 </CardHeader>
-                <CardContent className="grid sm:grid-cols-2 gap-4">
-                  <CardContent className="grid sm:grid-cols-2 gap-4">
+                <CardContent>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {(carwash?.addons || []).length > 0 ? (
                       (carwash?.addons || []).map((addon: any) => (
                         <div
-                          key={addon.name} // Using name as ID if ID is missing, or generate one
+                          key={addon.name}
                           className="flex items-start space-x-3 p-4 rounded-lg border hover:border-primary cursor-pointer active:scale-[0.98] transition-transform"
                           onClick={() => handleAddonToggle(addon.name)}
                         >
@@ -680,11 +782,11 @@ const Booking = () => {
                         </div>
                       ))
                     ) : (
-                      <div className="col-span-2 text-center text-muted-foreground py-4">
+                      <div className="col-span-full text-center text-muted-foreground py-4">
                         No add-ons available for this car wash.
                       </div>
                     )}
-                  </CardContent>
+                  </div>
                 </CardContent>
               </Card>
             </motion.div>
@@ -717,6 +819,15 @@ const Booking = () => {
                       <span className="text-muted-foreground">Date & Time</span>
                       <p className="font-medium">{date} at {timeSlot}</p>
                     </div>
+                    {selectedService?.duration && (
+                      <div>
+                        <span className="text-muted-foreground">Est. Duration</span>
+                        <p className="font-medium flex items-center gap-1.5 text-blue-600">
+                          <Clock className="h-4 w-4" />
+                          {selectedService.duration} mins
+                        </p>
+                      </div>
+                    )}
                     <div className="col-span-2">
                       <span className="text-muted-foreground">Vehicle</span>
                       <p className="font-medium">
@@ -797,7 +908,11 @@ const Booking = () => {
             )}
 
             {step < 4 ? (
-              <Button onClick={nextStep} className="w-24 sm:w-32">
+              <Button
+                onClick={nextStep}
+                className="w-24 sm:w-32"
+                disabled={step === 1 && serviceType === "home" && (isWithinRadius === false || !userCoordinates)}
+              >
                 Next <ChevronRight className="ml-2 h-4 w-4" />
               </Button>
             ) : (

@@ -27,7 +27,22 @@ export interface BookingResponse {
     booking_type: 'slot_booking' | 'home_service';
     status: string;
     queue_number: number;
+    verification_code?: string;
+    worker_id?: string;
+    worker_name?: string;
+    worker_photo?: string;
     created_at: string;
+    address_note?: string;
+    total_price?: number;
+    customer_name?: string;
+    worker_location?: {
+        type: 'Point';
+        coordinates: [number, number]; // [longitude, latitude]
+    };
+    user_location?: {
+        type: 'Point';
+        coordinates: [number, number]; // [longitude, latitude]
+    };
 }
 
 // Helper function to get auth headers
@@ -136,11 +151,11 @@ const BookingService = {
     /**
      * Update booking status (Business Owner)
      */
-    async updateBookingStatus(bookingId: string, status: string): Promise<BookingResponse> {
+    async updateBookingStatus(bookingId: string, status: string, verificationCode?: string): Promise<BookingResponse> {
         try {
             const response = await axios.patch(
                 `${API_BASE_URL}/bookings/${bookingId}/status`,
-                { status },
+                { status, verification_code: verificationCode },
                 {
                     withCredentials: true,
                     headers: getAuthHeaders()
@@ -187,6 +202,25 @@ const BookingService = {
             console.error('Get available slots error:', error);
             // Return empty array instead of throwing to avoid breaking the UI completely
             return [];
+        }
+    },
+
+    /**
+     * Update worker live location (Provider)
+     */
+    async updateWorkerLocation(bookingId: string, lat: number, lng: number): Promise<void> {
+        try {
+            await axios.patch(
+                `${API_BASE_URL}/bookings/${bookingId}/location`,
+                { lat, lng },
+                {
+                    withCredentials: true,
+                    headers: getAuthHeaders()
+                }
+            );
+        } catch (error: any) {
+            console.error('Update worker location error:', error);
+            // Silent error to avoid background spam
         }
     },
 };

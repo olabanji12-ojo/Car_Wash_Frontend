@@ -14,6 +14,8 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
+import { useReviews } from "@/hooks/useBookings";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface Review {
     id: string;
@@ -28,58 +30,29 @@ interface Review {
 
 const ReviewsManagement = () => {
     const navigate = useNavigate();
-    const [reviews, setReviews] = useState<Review[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+    const queryClient = useQueryClient();
     const [filter, setFilter] = useState("all");
     const [replyingTo, setReplyingTo] = useState<string | null>(null);
     const [replyText, setReplyText] = useState("");
-    const [stats, setStats] = useState({
-        average: 0,
-        total: 0,
-        unreplied: 0
-    });
 
-    useEffect(() => {
-        fetchReviews();
-    }, []);
+    const storedUser = localStorage.getItem('user');
+    const user = storedUser ? JSON.parse(storedUser) : null;
 
-    const fetchReviews = async () => {
-        try {
-            setIsLoading(true);
-            const storedUser = localStorage.getItem('user');
-            if (!storedUser) {
-                navigate('/login');
-                return;
-            }
+    // Use React Query Hook
+    const { data: fetchedReviews = [], isLoading } = useReviews(user?.carwash_id);
 
-            const user = JSON.parse(storedUser);
-            if (!user.carwash_id) {
-                toast.error("No carwash found for this account");
-                return;
-            }
+    const reviews = Array.isArray(fetchedReviews) ? fetchedReviews : [];
 
-            const { default: ReviewService } = await import('@/Contexts/ReviewService');
-            const response = await ReviewService.getReviewsByBusinessId(user.carwash_id);
-            const fetchedReviews = Array.isArray(response) ? response : [];
+    // Calculate stats from reviews
+    const total = reviews.length;
+    const sum = reviews.reduce((acc: number, r: any) => acc + r.rating, 0);
+    const average = total > 0 ? (sum / total).toFixed(1) : 0;
+    const unreplied = reviews.filter((r: any) => !r.response).length;
 
-            const total = fetchedReviews.length;
-            const sum = fetchedReviews.reduce((acc: number, r: Review) => acc + r.rating, 0);
-            const average = total > 0 ? (sum / total).toFixed(1) : 0;
-            const unreplied = fetchedReviews.filter((r: Review) => !r.response).length;
-
-            setStats({
-                average: Number(average),
-                total,
-                unreplied
-            });
-
-            setReviews(fetchedReviews);
-        } catch (error) {
-            console.error("Failed to fetch reviews:", error);
-            toast.error("Failed to load reviews");
-        } finally {
-            setIsLoading(false);
-        }
+    const stats = {
+        average: Number(average),
+        total,
+        unreplied
     };
 
     const handleReplySubmit = async (reviewId: string) => {
@@ -91,10 +64,12 @@ const ReviewsManagement = () => {
         try {
             const { default: ReviewService } = await import('@/Contexts/ReviewService');
             await ReviewService.replyToReview(reviewId, replyText);
-            setReviews(reviews.map(r => r.id === reviewId ? { ...r, response: replyText, response_date: new Date().toISOString() } : r));
+
+            // Invalidate query to refresh
+            queryClient.invalidateQueries({ queryKey: ["reviews", user?.carwash_id] });
+
             setReplyingTo(null);
             setReplyText("");
-            setStats(prev => ({ ...prev, unreplied: prev.unreplied - 1 }));
         } catch (error) {
             console.error("Failed to reply:", error);
         }

@@ -1,8 +1,7 @@
+@import "@fontsource/plus-jakarta-sans";
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-@import "@fontsource/plus-jakarta-sans";
 
 /* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
 All colors MUST be HSL.
@@ -43,9 +42,9 @@ All colors MUST be HSL.
     /* Custom tokens for carwash app */
     --hero-gradient-start: 217 91% 60%;
     --hero-gradient-end: 189 94% 43%;
-    
+
     --section-bg: 210 40% 98%;
-    
+
     --card-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
     --card-shadow-hover: 0 4px 6px -1px rgb(0 0 0 / 0.1);
 
@@ -87,9 +86,9 @@ All colors MUST be HSL.
     --border: 215 25% 27%;
     --input: 215 25% 27%;
     --ring: 217 91% 60%;
-    
+
     --section-bg: 215 28% 20%;
-    
+
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;

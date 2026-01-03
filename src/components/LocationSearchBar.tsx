@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Input } from "@/components/ui/input";
-import { MapPin, Loader2 } from "lucide-react";
+import { MapPin, Loader2, XCircle, Search, Navigation } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface LocationSearchBarProps {
     onPlaceSelected: (lat: number, lng: number, address: string) => void;
@@ -22,6 +23,12 @@ export const LocationSearchBar: React.FC<LocationSearchBarProps> = ({
     const [suggestions, setSuggestions] = useState<MapboxFeature[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [showSuggestions, setShowSuggestions] = useState(false);
+
+    const clearSearch = () => {
+        setQuery('');
+        setSuggestions([]);
+        onPlaceSelected(0, 0, '');
+    };
 
     const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 
@@ -47,6 +54,39 @@ export const LocationSearchBar: React.FC<LocationSearchBarProps> = ({
         }
     };
 
+    const handleLocateMe = () => {
+        if (!navigator.geolocation) {
+            console.error('Geolocation is not supported by your browser');
+            return;
+        }
+
+        setIsLoading(true);
+        navigator.geolocation.getCurrentPosition(
+            async (position) => {
+                const { latitude, longitude } = position.coords;
+                try {
+                    // Reverse geocoding to get the address
+                    const response = await fetch(
+                        `https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json?access_token=${MAPBOX_TOKEN}`
+                    );
+                    const data = await response.json();
+                    const address = data.features?.[0]?.place_name || `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
+
+                    setQuery(address);
+                    onPlaceSelected(latitude, longitude, address);
+                } catch (error) {
+                    console.error('Reverse geocoding error:', error);
+                } finally {
+                    setIsLoading(false);
+                }
+            },
+            (error) => {
+                console.error('Geolocation error:', error);
+                setIsLoading(false);
+            }
+        );
+    };
+
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
         setQuery(value);
@@ -65,16 +105,43 @@ export const LocationSearchBar: React.FC<LocationSearchBarProps> = ({
 
     return (
         <div className="relative">
-            <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground z-10" />
-            {isLoading && (
+            <MapPin className={cn(
+                "absolute left-3 top-3 h-4 w-4 z-10 transition-colors",
+                query ? "text-primary" : "text-muted-foreground"
+            )} />
+            {isLoading ? (
                 <Loader2 className="absolute right-3 top-3 h-4 w-4 text-muted-foreground animate-spin z-10" />
+            ) : (
+                <div className="absolute right-3 top-3 flex items-center gap-1 z-10">
+                    {query && (
+                        <button
+                            type="button"
+                            onClick={clearSearch}
+                            className="text-muted-foreground hover:text-red-500 p-0.5"
+                        >
+                            <XCircle className="h-4 w-4" />
+                        </button>
+                    )}
+                    <button
+                        type="button"
+                        onClick={handleLocateMe}
+                        className="text-muted-foreground hover:text-primary p-0.5"
+                        title="Find my location"
+                    >
+                        <Navigation className="h-4 w-4" />
+                    </button>
+                </div>
             )}
             <Input
                 type="text"
                 value={query}
                 onChange={handleInputChange}
                 placeholder={placeholder}
-                className={`pl-10 ${className}`}
+                className={cn(
+                    "pl-10 pr-10",
+                    query && "border-primary/50 bg-primary/5",
+                    className
+                )}
                 onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
                 onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
             />

@@ -15,6 +15,7 @@ import {
   MessageSquare,
 } from "lucide-react";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
+import { useCarwashBookings, useUpdateBookingStatus } from "@/hooks/useBookings";
 
 interface Booking {
   id: string;
@@ -54,107 +55,50 @@ const mockMessages: Message[] = [
 
 const BookingsManagement = () => {
   const navigate = useNavigate();
-  const [bookings, setBookings] = useState<Booking[]>([]);
-  const [filteredBookings, setFilteredBookings] = useState<Booking[]>([]);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [dateFilter, setDateFilter] = useState<string>("");
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState<string>("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
 
-  // Fetch real bookings from backend
-  useEffect(() => {
-    const fetchBookings = async () => {
-      try {
-        setIsLoading(true);
-        const storedUser = localStorage.getItem('user');
-        if (!storedUser) {
-          toast.error("Please log in to view bookings");
-          navigate('/login');
-          return;
-        }
+  const storedUser = localStorage.getItem('user');
+  const user = storedUser ? JSON.parse(storedUser) : null;
 
-        const user = JSON.parse(storedUser);
-        if (!user.carwash_id) {
-          toast.error("No carwash found for this account");
-          setIsLoading(false);
-          return;
-        }
+  const { data: rawBookings = [], isLoading } = useCarwashBookings(user?.carwash_id);
+  const updateStatusMutation = useUpdateBookingStatus();
 
-        const { default: BookingService } = await import('@/Contexts/BookingService');
-        const fetchedBookings = await BookingService.getBookingsByCarwash(user.carwash_id);
+  // Transform raw bookings to the local Booking interface
+  const bookings: Booking[] = (Array.isArray(rawBookings) ? rawBookings : []).map((b: any) => ({
+    id: b.id || b._id,
+    customerName: b.customer_name || 'Unknown Customer',
+    serviceType: b.booking_type === 'home_service' ? 'home' : 'slot',
+    date: b.booking_time ? new Date(b.booking_time).toISOString().split('T')[0] : '',
+    time: b.booking_time ? new Date(b.booking_time).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '',
+    status: b.status || 'pending',
+    serviceName: b.service_name || 'Car Wash',
+    addOns: b.add_ons || [],
+    paymentStatus: b.payment_status || 'pending',
+    totalAmount: b.total_price || 0,
+    address: b.address_note || b.user_location?.address || '',
+  }));
 
-        const transformedBookings: Booking[] = (Array.isArray(fetchedBookings) ? fetchedBookings : []).map((b: any) => ({
-          id: b.id || b._id,
-          customerName: b.customer_name || 'Unknown Customer',
-          serviceType: b.booking_type === 'home_service' ? 'home' : 'slot',
-          date: b.booking_time ? new Date(b.booking_time).toISOString().split('T')[0] : '',
-          time: b.booking_time ? new Date(b.booking_time).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '',
-          status: b.status || 'pending',
-          serviceName: b.service_name || 'Car Wash',
-          addOns: b.add_ons || [],
-          paymentStatus: b.payment_status || 'pending',
-          totalAmount: b.total_price || 0,
-          address: b.address_note || b.user_location?.address || '',
-        }));
+  const filteredBookings = bookings.filter((booking) => {
+    const matchesStatus = statusFilter === "all" || booking.status === statusFilter;
+    const matchesDate = !dateFilter || booking.date.includes(dateFilter);
+    return matchesStatus && matchesDate;
+  });
 
-        setBookings(transformedBookings);
-      } catch (error) {
-        console.error('Failed to fetch bookings:', error);
-        toast.error("Failed to load bookings");
-        setBookings([]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchBookings();
-  }, [navigate]);
-
-  useEffect(() => {
-    let filtered = bookings;
-    if (statusFilter !== "all") {
-      filtered = filtered.filter((booking) => booking.status === statusFilter);
-    }
-    if (dateFilter) {
-      filtered = filtered.filter((booking) => booking.date.includes(dateFilter));
-    }
-    setFilteredBookings(filtered);
-  }, [statusFilter, dateFilter, bookings]);
-
-  const handleAcceptBooking = async (id: string) => {
-    try {
-      const { default: BookingService } = await import('@/Contexts/BookingService');
-      await BookingService.updateBookingStatus(id, "confirmed");
-      setBookings(bookings.map((booking) => booking.id === id ? { ...booking, status: "confirmed" } : booking));
-      toast.success("Booking confirmed");
-    } catch (error) {
-      toast.error("Failed to confirm booking");
-    }
+  const handleAcceptBooking = (id: string) => {
+    updateStatusMutation.mutate({ id, status: "confirmed" });
   };
 
-  const handleRejectBooking = async (id: string) => {
-    try {
-      const { default: BookingService } = await import('@/Contexts/BookingService');
-      await BookingService.updateBookingStatus(id, "cancelled");
-      setBookings(bookings.map((booking) => booking.id === id ? { ...booking, status: "cancelled" } : booking));
-      toast.success("Booking rejected");
-    } catch (error) {
-      toast.error("Failed to reject booking");
-    }
+  const handleRejectBooking = (id: string) => {
+    updateStatusMutation.mutate({ id, status: "cancelled" });
   };
 
-  const handleCompleteBooking = async (id: string) => {
-    try {
-      const { default: BookingService } = await import('@/Contexts/BookingService');
-      await BookingService.updateBookingStatus(id, "completed");
-      setBookings(bookings.map((booking) => booking.id === id ? { ...booking, status: "completed" } : booking));
-      toast.success("Booking marked as completed");
-    } catch (error) {
-      toast.error("Failed to update status");
-    }
+  const handleCompleteBooking = (id: string) => {
+    updateStatusMutation.mutate({ id, status: "completed" });
   };
 
   const openBookingDetails = (booking: Booking) => {
@@ -248,8 +192,8 @@ const BookingsManagement = () => {
                       <td className="py-2 px-4">
                         <span className={
                           booking.status === "pending" ? "text-yellow-600" :
-                          booking.status === "confirmed" ? "text-green-600" :
-                          booking.status === "cancelled" ? "text-red-600" : "text-blue-600"
+                            booking.status === "confirmed" ? "text-green-600" :
+                              booking.status === "cancelled" ? "text-red-600" : "text-blue-600"
                         }>
                           {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
                         </span>

@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { Progress } from "@/components/ui/progress";
 import { useNavigate } from "react-router-dom";
 import CarwashService from "@/Contexts/CarwashService";
@@ -37,6 +38,8 @@ interface BusinessInfo {
   lat?: number;
   lng?: number;
   maxCarsPerSlot: number;
+  homeService: boolean;
+  deliveryRadiusKM: number;
 }
 
 interface OperatingHour {
@@ -73,6 +76,8 @@ const PostOnboarding = () => {
     phone: "",
     email: mockUser.email,
     maxCarsPerSlot: 1,
+    homeService: false,
+    deliveryRadiusKM: 10,
   });
   const navigate = useNavigate();
   const { refreshUser } = useAuth(); // Get refreshUser from AuthContext
@@ -180,6 +185,8 @@ const PostOnboarding = () => {
         open_hours: openHoursMap,
         services: formattedServices,
         max_cars_per_slot: businessInfo.maxCarsPerSlot,
+        home_service: businessInfo.homeService,
+        delivery_radius_km: businessInfo.homeService ? businessInfo.deliveryRadiusKM : 0,
         is_active: true,
         has_location: true,
         has_onboarded: true
@@ -387,6 +394,40 @@ const PostOnboarding = () => {
                 />
                 <p className="text-xs text-gray-500">How many cars can you service concurrently in a 30-minute window?</p>
               </div>
+
+              {/* Home Service Settings */}
+              <div className="pt-4 border-t space-y-4">
+                <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                  <div className="space-y-0.5">
+                    <Label className="text-sm font-semibold text-blue-900">Offer Home Service</Label>
+                    <p className="text-xs text-blue-700">We will send workers to client locations</p>
+                  </div>
+                  <Switch
+                    checked={businessInfo.homeService}
+                    onCheckedChange={(checked) => setBusinessInfo({ ...businessInfo, homeService: checked })}
+                  />
+                </div>
+
+                {businessInfo.homeService && (
+                  <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
+                    <Label htmlFor="deliveryRadius" className="text-sm font-semibold">
+                      Delivery Radius (KM) <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="deliveryRadius"
+                      type="number"
+                      min="1"
+                      max="100"
+                      value={businessInfo.deliveryRadiusKM}
+                      onChange={(e) => setBusinessInfo({ ...businessInfo, deliveryRadiusKM: parseInt(e.target.value) || 0 })}
+                      placeholder="10"
+                      className="text-sm sm:text-base"
+                    />
+                    <p className="text-xs text-gray-500">How far are you willing to travel from your base station?</p>
+                  </div>
+                )}
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-sm">Email</Label>
                 <Input

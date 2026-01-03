@@ -39,6 +39,8 @@ interface BusinessData {
   photos: { id: string; url: string }[];
   hours: { day: string; open: string; close: string; closed: boolean }[];
   maxCarsPerSlot: number;
+  homeService: boolean;
+  deliveryRadiusKM: number;
   payoutMethod: PayoutMethod;
   notifications: { email: boolean; sms: boolean; push: boolean };
 }
@@ -64,6 +66,8 @@ const mockBusinessData: BusinessData = {
     { day: "Sunday", open: "08:00", close: "20:00", closed: true },
   ],
   maxCarsPerSlot: 5,
+  homeService: true,
+  deliveryRadiusKM: 10,
   payoutMethod: {
     type: "bank",
     bankName: "First Bank",
@@ -78,7 +82,9 @@ const mockBusinessData: BusinessData = {
 
 const BusinessProfileSettings = () => {
   const navigate = useNavigate();
+
   /* Removed for MVP Demo: "payout-methods" | "notifications" | "account" */
+  
   const [activeTab, setActiveTab] = useState<"business-info" | "hours">("business-info");
   const [businessData, setBusinessData] = useState<BusinessData>(mockBusinessData);
   const [isLoading, setIsLoading] = useState(true);
@@ -130,6 +136,8 @@ const BusinessProfileSettings = () => {
           photos: (carwashData.photo_gallery || []).map((url: string, index: number) => ({ id: `${index}`, url })),
           hours: transformedHours,
           maxCarsPerSlot: carwashData.max_cars_per_slot || 1,
+          homeService: carwashData.home_service || false,
+          deliveryRadiusKM: carwashData.delivery_radius_km || 10,
           payoutMethod: { type: '', bankName: '', accountNumber: '' },
           notifications: { email: true, sms: false, push: true },
         });
@@ -162,6 +170,8 @@ const BusinessProfileSettings = () => {
             address: businessData.address,
             open_hours: openHoursMap,
             max_cars_per_slot: businessData.maxCarsPerSlot,
+            home_service: businessData.homeService,
+            delivery_radius_km: businessData.homeService ? businessData.deliveryRadiusKM : 0,
           };
           if (photos.length > 0) {
             await CarwashService.uploadCarwashPhotos(carwashId, photos);
@@ -300,6 +310,32 @@ const BusinessProfileSettings = () => {
                     <div className="space-y-2">
                       <Label htmlFor="maxCarsPerSlot">Max Cars Per Slot</Label>
                       <Input id="maxCarsPerSlot" type="number" value={businessData.maxCarsPerSlot} onChange={(e) => setBusinessData({ ...businessData, maxCarsPerSlot: parseInt(e.target.value) || 0 })} />
+                    </div>
+
+                    <div className="pt-4 border-t space-y-4">
+                      <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                        <div className="space-y-0.5">
+                          <Label className="text-sm font-semibold text-blue-900">Offer Home Service</Label>
+                          <p className="text-xs text-blue-700">Workers travel to client locations</p>
+                        </div>
+                        <Switch
+                          checked={businessData.homeService}
+                          onCheckedChange={(checked) => setBusinessData({ ...businessData, homeService: checked })}
+                        />
+                      </div>
+
+                      {businessData.homeService && (
+                        <div className="space-y-2">
+                          <Label htmlFor="deliveryRadius">Delivery Radius (KM)</Label>
+                          <Input
+                            id="deliveryRadius"
+                            type="number"
+                            value={businessData.deliveryRadiusKM}
+                            onChange={(e) => setBusinessData({ ...businessData, deliveryRadiusKM: parseInt(e.target.value) || 0 })}
+                          />
+                          <p className="text-xs text-muted-foreground">Maximum travel distance from your base station</p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}

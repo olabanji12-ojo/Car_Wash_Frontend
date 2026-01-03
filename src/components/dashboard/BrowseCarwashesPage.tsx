@@ -34,8 +34,7 @@ export const BrowseCarwashesPage = () => {
                 // For now, since the schema might not explicitly have 'offers_home_service',
                 // we'll simulate it or check description.
                 if (serviceType === "home") {
-                    // Logic to prioritize or filter carwashes with "home" or "doorstep" in description
-                    // or if they have a specific flag (TODO: verify backend support)
+                    filteredData = filteredData.filter(cw => cw.home_service === true);
                 }
 
                 setCarwashes(filteredData);
