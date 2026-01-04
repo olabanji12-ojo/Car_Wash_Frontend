@@ -59,7 +59,7 @@ export const QuickActions = ({ onSearch }: QuickActionsProps) => {
           >
             {/* Service Type Toggle Capsules */}
             <div className="flex justify-center mb-4">
-              <div className="bg-white/10 backdrop-blur-md p-1.5 rounded-2xl flex gap-2 border border-white/20">
+              <div className="bg-white/10 backdrop-blur-md p-1.5 rounded-2xl flex flex-wrap justify-center gap-2 border border-white/20">
                 <button
                   onClick={() => setServiceMode('station')}
                   className={`px-6 py-2 rounded-xl text-sm font-bold transition-all duration-300 ${serviceMode === 'station'

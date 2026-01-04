@@ -278,8 +278,8 @@ const BusinessDashboard = () => {
                   <CardHeader className="pb-3 sm:pb-4">
                     <CardTitle className="text-base sm:text-lg">Key Metrics</CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-2 lg:grid-cols-1 gap-4">
+                  <CardContent className="p-3 sm:p-4">
+                    <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-1 gap-4">
                       <div className="flex items-center gap-3">
                         <div className="p-2 rounded-lg bg-blue-50">
                           <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
