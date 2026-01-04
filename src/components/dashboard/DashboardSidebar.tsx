@@ -34,7 +34,6 @@ const businessMenuItems = [
   { title: "Business Dashboard", url: "/business-dashboard", icon: Home },
   { title: "Bookings", url: "/bookings-management", icon: ClipboardList },
   { title: "Reviews", url: "/reviews-management", icon: Star },
-  { title: "Complete Setup", url: "/post-onboarding", icon: ClipboardList },
   { title: "Notifications", url: "/dashboard/notifications", icon: Bell },
   { title: "Settings", url: "/business-profile-settings", icon: Settings },
 ];
