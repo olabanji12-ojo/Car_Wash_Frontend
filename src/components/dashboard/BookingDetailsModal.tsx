@@ -27,7 +27,7 @@ interface BookingDetailsModalProps {
     onClose: () => void;
     onAccept?: (id: string) => void;
     onReject?: (id: string) => void;
-    onUpdateStatus?: (id: string, status: string) => void;
+    onUpdateStatus?: (id: string, status: string, code?: string) => void;
     workers?: Worker[];
     onAssignWorker?: (bookingId: string, workerId: string) => Promise<void>;
 }

@@ -98,8 +98,18 @@ const BookingsManagement = () => {
     updateStatusMutation.mutate({ id, status: "cancelled" });
   };
 
-  const handleCompleteBooking = (id: string) => {
-    updateStatusMutation.mutate({ id, status: "completed" });
+  const handleCompleteBooking = (id: string, code?: string) => {
+    const booking = bookings.find((b) => b.id === id);
+    if (booking?.serviceType === "home" && !code) {
+      const promptCode = window.prompt("Enter customer's 4-digit verification code:");
+      if (promptCode) {
+        updateStatusMutation.mutate({ id, status: "completed", code: promptCode });
+      } else {
+        toast.error("Verification code required for home service");
+      }
+    } else {
+      updateStatusMutation.mutate({ id, status: "completed", code });
+    }
   };
 
   const openBookingDetails = (booking: Booking) => {

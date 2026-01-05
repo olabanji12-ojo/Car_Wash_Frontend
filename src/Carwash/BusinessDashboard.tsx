@@ -148,18 +148,18 @@ const BusinessDashboard = () => {
     updateStatusMutation.mutate({ id, status: "cancelled" });
   };
 
-  const handleUpdateStatus = (id: string, status: string) => {
+  const handleUpdateStatus = (id: string, status: string, code?: string) => {
     const booking = bookings.find((b: any) => b.id === id);
-    if (status === "completed" && booking?.booking_type === "home_service") {
-      const code = window.prompt("Please enter the customer's 4-digit verification code to complete this home service:");
-      if (!code) {
+    if (status === "completed" && booking?.booking_type === "home_service" && !code) {
+      const promptCode = window.prompt("Please enter the customer's 4-digit verification code to complete this home service:");
+      if (!promptCode) {
         toast.error("Verification code is required to complete home service.");
         return;
       }
-      updateStatusMutation.mutate({ id, status, code });
+      updateStatusMutation.mutate({ id, status, code: promptCode });
       return;
     }
-    updateStatusMutation.mutate({ id, status });
+    updateStatusMutation.mutate({ id, status, code });
   };
 
   const handleAssignWorker = async (bookingId: string, workerId: string) => {
