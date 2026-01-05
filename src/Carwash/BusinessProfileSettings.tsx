@@ -17,8 +17,10 @@ import {
   Bell,
   LogOut,
   AlertTriangle,
+  Plus,
 } from "lucide-react";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
+import { Separator } from "@/components/ui/separator";
 
 // Define TypeScript interface for payoutMethod
 interface PayoutMethod {
@@ -41,6 +43,9 @@ interface BusinessData {
   maxCarsPerSlot: number;
   homeService: boolean;
   deliveryRadiusKM: number;
+  basePrice: number;
+  services: { id?: string; name: string; price: number; duration: number; description: string }[];
+  addons: { name: string; price: number; description?: string }[];
   payoutMethod: PayoutMethod;
   notifications: { email: boolean; sms: boolean; push: boolean };
 }
@@ -68,6 +73,9 @@ const mockBusinessData: BusinessData = {
   maxCarsPerSlot: 5,
   homeService: true,
   deliveryRadiusKM: 10,
+  basePrice: 5000,
+  services: [],
+  addons: [],
   payoutMethod: {
     type: "bank",
     bankName: "First Bank",
@@ -85,7 +93,7 @@ const BusinessProfileSettings = () => {
 
   /* Removed for MVP Demo: "payout-methods" | "notifications" | "account" */
 
-  const [activeTab, setActiveTab] = useState<"business-info" | "hours">("business-info");
+  const [activeTab, setActiveTab] = useState<"business-info" | "hours" | "services">("business-info");
   const [businessData, setBusinessData] = useState<BusinessData>(mockBusinessData);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -138,6 +146,9 @@ const BusinessProfileSettings = () => {
           maxCarsPerSlot: carwashData.max_cars_per_slot || 1,
           homeService: carwashData.home_service || false,
           deliveryRadiusKM: carwashData.delivery_radius_km || 10,
+          basePrice: carwashData.base_price || 5000,
+          services: carwashData.services || [],
+          addons: carwashData.addons || [],
           payoutMethod: { type: '', bankName: '', accountNumber: '' },
           notifications: { email: true, sms: false, push: true },
         });
@@ -177,8 +188,14 @@ const BusinessProfileSettings = () => {
             await CarwashService.uploadCarwashPhotos(carwashId, photos);
             setPhotos([]);
           }
-        } else {
+        } else if (activeTab === "hours") {
           updateData = { open_hours: openHoursMap };
+        } else if (activeTab === "services") {
+          updateData = {
+            base_price: businessData.basePrice,
+            services: businessData.services,
+            addons: businessData.addons
+          };
         }
       }
 
@@ -240,6 +257,7 @@ const BusinessProfileSettings = () => {
                 {[
                   { id: "business-info", label: "Business Info", icon: User },
                   { id: "hours", label: "Operating Hours", icon: Clock },
+                  { id: "services", label: "Services & Pricing", icon: DollarSign },
                   // { id: "payout-methods", label: "Payout Methods", icon: DollarSign }, // Hidden for MVP
                   // { id: "notifications", label: "Notifications", icon: Bell }, // Hidden for MVP
                   // { id: "account", label: "Account Actions", icon: AlertTriangle }, // Hidden for MVP
@@ -264,6 +282,7 @@ const BusinessProfileSettings = () => {
                 <CardTitle>
                   {activeTab === "business-info" && "Business Information"}
                   {activeTab === "hours" && "Operating Hours"}
+                  {activeTab === "services" && "Services & Pricing"}
                   {/* {activeTab === "payout-methods" && "Payout Methods"} */}
                   {/* {activeTab === "notifications" && "Notification Preferences"} */}
                   {/* {activeTab === "account" && "Account Actions"} */}
@@ -413,6 +432,141 @@ const BusinessProfileSettings = () => {
                         {dayHour.closed && <span className="text-muted-foreground text-sm">Closed</span>}
                       </div>
                     ))}
+                  </div>
+                )}
+                {activeTab === "services" && (
+                  <div className="space-y-8">
+                    {/* Base Price Section */}
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-semibold flex items-center gap-2">
+                        <DollarSign className="h-5 w-5 text-primary" /> Base Pricing
+                      </h3>
+                      <div className="space-y-2 max-w-sm">
+                        <Label htmlFor="basePrice">Default Base Price (NGN)</Label>
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">₦</span>
+                          <Input
+                            id="basePrice"
+                            type="number"
+                            value={businessData.basePrice}
+                            onChange={(e) => setBusinessData({ ...businessData, basePrice: parseInt(e.target.value) || 0 })}
+                            className="pl-7"
+                          />
+                        </div>
+                        <p className="text-xs text-muted-foreground">This is the default price shown when no specific service is selected.</p>
+                      </div>
+                    </div>
+
+                    <Separator />
+
+                    {/* Services Section */}
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center">
+                        <h3 className="text-lg font-semibold flex items-center gap-2">
+                          <User className="h-5 w-5 text-primary" /> Service Packages
+                        </h3>
+                        <Button size="sm" onClick={() => {
+                          const name = prompt("Service Name:");
+                          if (!name) return;
+                          const price = parseInt(prompt("Price (NGN):") || "0");
+                          const duration = parseInt(prompt("Duration (minutes):") || "30");
+                          const description = prompt("Description:") || "";
+                          setBusinessData({
+                            ...businessData,
+                            services: [...businessData.services, { name, price, duration, description }]
+                          });
+                        }}>
+                          <Plus className="h-4 w-4 mr-2" /> Add Service
+                        </Button>
+                      </div>
+                      <div className="grid gap-3">
+                        {businessData.services.length === 0 ? (
+                          <div className="text-center py-6 border-2 border-dashed rounded-lg text-muted-foreground">
+                            No services added yet.
+                          </div>
+                        ) : (
+                          businessData.services.map((service, idx) => (
+                            <div key={idx} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                              <div>
+                                <div className="font-bold">{service.name}</div>
+                                <div className="text-sm text-muted-foreground">₦{service.price.toLocaleString()} • {service.duration} mins</div>
+                              </div>
+                              <div className="flex gap-2">
+                                <Button size="icon" variant="ghost" onClick={() => {
+                                  const name = prompt("Edit Service Name:", service.name) || service.name;
+                                  const price = parseInt(prompt("Edit Price (NGN):", service.price.toString()) || service.price.toString());
+                                  const duration = parseInt(prompt("Edit Duration (minutes):", service.duration.toString()) || service.duration.toString());
+                                  const description = prompt("Edit Description:", service.description) || service.description;
+                                  const newServices = [...businessData.services];
+                                  newServices[idx] = { ...service, name, price, duration, description };
+                                  setBusinessData({ ...businessData, services: newServices });
+                                }}>
+                                  <Upload className="h-4 w-4" />
+                                </Button>
+                                <Button size="icon" variant="ghost" className="text-red-500" onClick={() => {
+                                  if (confirm("Delete this service?")) {
+                                    setBusinessData({
+                                      ...businessData,
+                                      services: businessData.services.filter((_, i) => i !== idx)
+                                    });
+                                  }
+                                }}>
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </div>
+
+                    <Separator />
+
+                    {/* Addons Section */}
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center">
+                        <h3 className="text-lg font-semibold flex items-center gap-2">
+                          <Plus className="h-5 w-5 text-primary" /> Optional Add-ons
+                        </h3>
+                        <Button size="sm" onClick={() => {
+                          const name = prompt("Add-on Name:");
+                          if (!name) return;
+                          const price = parseInt(prompt("Price (NGN):") || "0");
+                          setBusinessData({
+                            ...businessData,
+                            addons: [...businessData.addons, { name, price }]
+                          });
+                        }}>
+                          <Plus className="h-4 w-4 mr-2" /> Add Add-on
+                        </Button>
+                      </div>
+                      <div className="grid gap-3">
+                        {businessData.addons.length === 0 ? (
+                          <div className="text-center py-6 border-2 border-dashed rounded-lg text-muted-foreground">
+                            No add-ons added yet.
+                          </div>
+                        ) : (
+                          businessData.addons.map((addon, idx) => (
+                            <div key={idx} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                              <div>
+                                <div className="font-bold">{addon.name}</div>
+                                <div className="text-sm text-muted-foreground">₦{addon.price.toLocaleString()}</div>
+                              </div>
+                              <Button size="icon" variant="ghost" className="text-red-500" onClick={() => {
+                                if (confirm("Delete this add-on?")) {
+                                  setBusinessData({
+                                    ...businessData,
+                                    addons: businessData.addons.filter((_, i) => i !== idx)
+                                  });
+                                }
+                              }}>
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </div>
                   </div>
                 )}
 

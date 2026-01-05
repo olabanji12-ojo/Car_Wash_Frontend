@@ -24,6 +24,7 @@ import BusinessDashboard from "./Carwash/BusinessDashboard";
 import BookingsManagement from "./Carwash/BookingsManagement";
 import ReviewsManagement from "./Carwash/ReviewsManagement";
 import WorkerTrackPage from "./pages/WorkerTrackPage";
+import NotificationsPage from "./pages/Notifications";
 import { AuthProvider } from "./Contexts/AuthContext";
 import { FavoritesProvider } from "./Contexts/FavoritesContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
@@ -121,6 +122,14 @@ const App = () => (
                 element={
                   <ProtectedRoute allowedRoles={['car_owner', 'business_owner']}>
                     <Profile />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/notifications"
+                element={
+                  <ProtectedRoute allowedRoles={['car_owner', 'business_owner']}>
+                    <NotificationsPage />
                   </ProtectedRoute>
                 }
               />

@@ -19,7 +19,7 @@ const customerMenuItems = [
   { title: "My Bookings", url: "/dashboard/bookings", icon: BookOpen },
   { title: "Favorites", url: "/dashboard/favorites", icon: Heart },
   { title: "My Vehicles", url: "/dashboard/vehicles", icon: Car },
-  { title: "Notifications", url: "/dashboard/notifications", icon: Bell },
+  { title: "Notifications", url: "/notifications", icon: Bell },
 ];
 
 const guestMenuItems = [
@@ -34,7 +34,7 @@ const businessMenuItems = [
   { title: "Business Dashboard", url: "/business-dashboard", icon: Home },
   { title: "Bookings", url: "/bookings-management", icon: ClipboardList },
   { title: "Reviews", url: "/reviews-management", icon: Star },
-  { title: "Notifications", url: "/dashboard/notifications", icon: Bell },
+  { title: "Notifications", url: "/notifications", icon: Bell },
   { title: "Settings", url: "/business-profile-settings", icon: Settings },
 ];
 

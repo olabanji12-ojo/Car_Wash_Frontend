@@ -8,7 +8,6 @@ import BrowseCarwashesPage from "@/components/dashboard/BrowseCarwashesPage";
 import MyBookingsPage from "./MyBookings";
 import Vehicles from "./Vehicles";
 import Favorites from "./Favorites";
-import NotificationsPage from "./Notifications";
 
 import { useState, useEffect } from "react";
 import CarwashService, { Carwash } from "@/Contexts/CarwashService";
@@ -135,7 +134,6 @@ const Dashboard = () => {
                 <Route path="bookings" element={<MyBookingsPage />} />
                 <Route path="favorites" element={<Favorites />} />
                 <Route path="vehicles" element={<Vehicles />} />
-                <Route path="notifications" element={<NotificationsPage />} />
             </Routes>
         </DashboardLayout>
     );
