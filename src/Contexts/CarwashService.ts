@@ -46,6 +46,7 @@ export interface Carwash {
     home_service?: boolean;
     delivery_radius_km?: number;
     search_mode?: 'station' | 'home';
+    base_price?: number;
     // Add other fields as needed
 }
 

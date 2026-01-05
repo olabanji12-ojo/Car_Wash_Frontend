@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -13,7 +13,9 @@ import API_BASE_URL from '../Contexts/baseUrl';
 
 const Login = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { login } = useAuth();
+  const from = location.state?.from || "/dashboard";
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -29,6 +31,7 @@ const Login = () => {
       const response = await AuthService.login(email, password);
       login(response);
       toast.success('Logged in successfully');
+      navigate(from, { replace: true });
     } catch (error: any) {
       console.error('Login error:', error);
       // The error toast is already shown in AuthService
@@ -121,7 +124,7 @@ const Login = () => {
 
             <div className="mt-4 text-center text-sm">
               Don&apos;t have an account?{" "}
-              <Button variant="link" className="p-0 text-primary font-semibold" onClick={() => navigate('/signup')}>
+              <Button variant="link" className="p-0 text-primary font-semibold" onClick={() => navigate('/signup', { state: { from } })}>
                 Sign up
               </Button>
             </div>

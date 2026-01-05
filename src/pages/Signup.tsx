@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -15,7 +15,9 @@ import API_BASE_URL from '../Contexts/baseUrl';
 
 const Signup = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { login } = useAuth();
+  const from = location.state?.from || "/dashboard";
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -83,7 +85,7 @@ const Signup = () => {
       console.log('✅ [handleSignup] Registration successful, response:', response);
 
       toast.success('Account created! Please verify your email.', { style: { color: '#10B981' } });
-      navigate('/verify-email', { state: { email } });
+      navigate('/verify-email', { state: { email, from } });
 
     } catch (error: any) {
       console.error('❌ [handleSignup] Registration failed:', {
@@ -250,7 +252,7 @@ const Signup = () => {
 
             <div className="mt-4 text-center text-sm">
               Already have an account?{" "}
-              <Button variant="link" className="p-0 text-primary font-semibold" onClick={() => navigate('/login')}>
+              <Button variant="link" className="p-0 text-primary font-semibold" onClick={() => navigate('/login', { state: { from } })}>
                 Login
               </Button>
             </div>

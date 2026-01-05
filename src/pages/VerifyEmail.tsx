@@ -16,6 +16,8 @@ const VerifyEmail = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [isVerified, setIsVerified] = useState(false);
 
+    const from = location.state?.from || "/dashboard";
+
     useEffect(() => {
         // Get email from navigation state or query param
         const stateEmail = location.state?.email;
@@ -28,9 +30,9 @@ const VerifyEmail = () => {
         } else {
             // If no email found, redirect to login
             toast.error("No email found for verification");
-            navigate('/login');
+            navigate('/login', { state: { from } });
         }
-    }, [location, navigate]);
+    }, [location, navigate, from]);
 
     const handleVerify = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -48,7 +50,7 @@ const VerifyEmail = () => {
 
             // Redirect to login after 2 seconds
             setTimeout(() => {
-                navigate('/login');
+                navigate('/login', { state: { from, email } });
             }, 2000);
         } catch (error) {
             // Error is handled in AuthService
@@ -72,7 +74,7 @@ const VerifyEmail = () => {
                         </div>
                         <Button
                             className="w-full"
-                            onClick={() => navigate('/login')}
+                            onClick={() => navigate('/login', { state: { from, email } })}
                         >
                             Continue to Login <ArrowRight className="ml-2 h-4 w-4" />
                         </Button>

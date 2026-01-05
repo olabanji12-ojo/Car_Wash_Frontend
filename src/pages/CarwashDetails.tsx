@@ -165,10 +165,10 @@ const CarwashDetails = () => {
     );
   }
 
-  // Calculate starting price from services if available
+  // Calculate starting price from services if available, fallback to base_price or 0
   const startingPrice = carwash.services && carwash.services.length > 0
     ? Math.min(...carwash.services.map(s => s.price || 0))
-    : 0;
+    : (carwash.base_price || 0);
 
   // Use photo_gallery, photos or fallback images
   const images = (carwash.photo_gallery && carwash.photo_gallery.length > 0)
@@ -181,7 +181,7 @@ const CarwashDetails = () => {
       ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-24 sm:pb-0">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
@@ -590,6 +590,7 @@ const CarwashDetails = () => {
             <BookingSidebar
               carwashId={id || "1"}
               startingPrice={startingPrice}
+              basePrice={carwash.base_price}
               services={carwash.services || []}
               phone={carwash.phone || ''}
               hasHomeService={carwash.home_service}
