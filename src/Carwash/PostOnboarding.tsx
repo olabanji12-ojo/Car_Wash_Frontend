@@ -40,6 +40,7 @@ interface BusinessInfo {
   maxCarsPerSlot: number;
   homeService: boolean;
   deliveryRadiusKM: number;
+  basePrice: number;
 }
 
 interface OperatingHour {
@@ -78,6 +79,7 @@ const PostOnboarding = () => {
     maxCarsPerSlot: 1,
     homeService: false,
     deliveryRadiusKM: 10,
+    basePrice: 5000,
   });
   const navigate = useNavigate();
   const { refreshUser } = useAuth(); // Get refreshUser from AuthContext
@@ -187,6 +189,7 @@ const PostOnboarding = () => {
         max_cars_per_slot: businessInfo.maxCarsPerSlot,
         home_service: businessInfo.homeService,
         delivery_radius_km: businessInfo.homeService ? businessInfo.deliveryRadiusKM : 0,
+        base_price: businessInfo.basePrice,
         is_active: true,
         has_location: true,
         has_onboarded: true
@@ -378,6 +381,23 @@ const PostOnboarding = () => {
                   placeholder="+234 801 234 5678"
                   className="text-sm sm:text-base"
                 />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="basePrice" className="text-sm font-semibold">
+                  Default Base Price (NGN) <span className="text-red-500">*</span>
+                </Label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">₦</span>
+                  <Input
+                    id="basePrice"
+                    type="number"
+                    value={businessInfo.basePrice}
+                    onChange={(e) => setBusinessInfo({ ...businessInfo, basePrice: parseFloat(e.target.value) || 0 })}
+                    placeholder="5000"
+                    className="pl-7 text-sm sm:text-base"
+                  />
+                </div>
+                <p className="text-xs text-gray-500">The minimum price shown to customers for a basic wash slot.</p>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="maxCarsPerSlot" className="text-sm font-semibold">

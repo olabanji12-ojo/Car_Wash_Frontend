@@ -245,7 +245,7 @@ const Booking = () => {
   };
 
   const calculateTotal = () => {
-    const servicePrice = selectedService?.price || 0;
+    const servicePrice = selectedService?.price || carwash?.base_price || 5000;
     const addonsPrice = selectedAddons.reduce((total, addonName) => {
       const addon = carwash?.addons?.find((a: any) => a.name === addonName);
       return total + (addon?.price || 0);
