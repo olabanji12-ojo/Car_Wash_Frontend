@@ -88,7 +88,7 @@ export const DashboardHeader = () => {
                                         <DropdownMenuItem
                                             key={notif.id}
                                             className={`flex flex-col items-start gap-1 p-3 cursor-pointer ${!notif.is_read ? 'bg-blue-50/50' : ''}`}
-                                            onClick={() => navigate('/dashboard/notifications')}
+                                            onClick={() => navigate('/notifications')}
                                         >
                                             <div className="flex w-full items-start justify-between gap-2">
                                                 <p className={`text-xs leading-none ${!notif.is_read ? 'font-semibold' : ''}`}>
@@ -120,7 +120,7 @@ export const DashboardHeader = () => {
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
                                 className="w-full justify-center text-xs font-medium text-blue-600 cursor-pointer"
-                                onClick={() => navigate('/dashboard/notifications')}
+                                onClick={() => navigate('/notifications')}
                             >
                                 View all notifications
                             </DropdownMenuItem>
