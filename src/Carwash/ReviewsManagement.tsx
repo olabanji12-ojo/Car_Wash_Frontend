@@ -129,12 +129,12 @@ const ReviewsManagement = () => {
                     </div>
                 </div>
 
-                <div className="flex flex-col gap-3 bg-card p-3 rounded-lg border shadow-sm w-full overflow-visible">
-                    <div className="flex items-center gap-2 flex-shrink-0 px-1">
+                <div className="flex flex-col gap-3 bg-card p-3 rounded-lg border shadow-sm w-full">
+                    <div className="flex items-center gap-2 px-1">
                         <Filter className="h-4 w-4 text-muted-foreground" />
                         <span className="text-sm font-semibold">Filter Reviews</span>
                     </div>
-                    <div className="flex gap-2 overflow-x-auto pb-2 px-1 w-full -mx-1 no-scrollbar touch-pan-x">
+                    <div className="flex gap-2 overflow-x-auto pb-1 px-1 w-full no-scrollbar touch-pan-x">
                         <Button variant={filter === "all" ? "default" : "outline"} size="sm" className="whitespace-nowrap flex-shrink-0" onClick={() => setFilter("all")}>All Reviews</Button>
                         <Button variant={filter === "unreplied" ? "default" : "outline"} size="sm" className="whitespace-nowrap flex-shrink-0" onClick={() => setFilter("unreplied")}>Unreplied</Button>
                         <Button variant={filter === "5-star" ? "default" : "outline"} size="sm" className="whitespace-nowrap flex-shrink-0" onClick={() => setFilter("5-star")}>5 Stars</Button>
