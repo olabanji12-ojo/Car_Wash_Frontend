@@ -104,7 +104,7 @@ const ReviewsManagement = () => {
                         <h1 className="text-xl md:text-3xl font-bold tracking-tight">Reviews Management</h1>
                         <p className="text-xs md:text-base text-muted-foreground mt-0.5 md:mt-1">Feedback from your customers</p>
                     </div>
-                    <div className="grid grid-cols-3 gap-2 w-full lg:max-w-xl">
+                    <div className="grid grid-cols-2 xs:grid-cols-3 gap-2 w-full lg:max-w-xl">
                         <Card className="shadow-none border-muted/50 bg-muted/5">
                             <CardContent className="p-2 sm:p-4 flex flex-col items-center justify-center text-center">
                                 <span className="text-base sm:text-2xl font-bold flex items-center gap-0.5 sm:gap-1">
@@ -129,7 +129,7 @@ const ReviewsManagement = () => {
                     </div>
                 </div>
 
-                <div className="flex flex-col sm:flex-row items-center gap-3 bg-card p-3 rounded-lg border shadow-sm overflow-hidden">
+                <div className="flex flex-col sm:flex-row items-center gap-3 bg-card p-3 rounded-lg border shadow-sm container-fluid">
                     <div className="flex items-center gap-2 flex-shrink-0">
                         <Filter className="h-4 w-4 text-muted-foreground" />
                         <span className="text-sm font-medium">Filter:</span>

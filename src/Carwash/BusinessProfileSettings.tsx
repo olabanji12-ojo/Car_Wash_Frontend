@@ -84,7 +84,7 @@ const BusinessProfileSettings = () => {
   const navigate = useNavigate();
 
   /* Removed for MVP Demo: "payout-methods" | "notifications" | "account" */
-  
+
   const [activeTab, setActiveTab] = useState<"business-info" | "hours">("business-info");
   const [businessData, setBusinessData] = useState<BusinessData>(mockBusinessData);
   const [isLoading, setIsLoading] = useState(true);
@@ -343,18 +343,34 @@ const BusinessProfileSettings = () => {
                 {activeTab === "hours" && (
                   <div className="space-y-4">
                     {businessData.hours.map((dayHour, index) => (
-                      <div key={dayHour.day} className="flex items-center gap-4 p-4 border rounded-lg">
-                        <div className="w-24 font-medium">{dayHour.day}</div>
-                        <Switch
-                          checked={!dayHour.closed}
-                          onCheckedChange={(checked) => {
-                            const newHours = [...businessData.hours];
-                            newHours[index].closed = !checked;
-                            setBusinessData({ ...businessData, hours: newHours });
-                          }}
-                        />
+                      <div key={dayHour.day} className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 border rounded-lg">
+                        <div className="flex items-center justify-between w-full sm:w-24">
+                          <div className="font-medium">{dayHour.day}</div>
+                          <div className="sm:hidden">
+                            <Switch
+                              checked={!dayHour.closed}
+                              onCheckedChange={(checked) => {
+                                const newHours = [...businessData.hours];
+                                newHours[index].closed = !checked;
+                                setBusinessData({ ...businessData, hours: newHours });
+                              }}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="hidden sm:block">
+                          <Switch
+                            checked={!dayHour.closed}
+                            onCheckedChange={(checked) => {
+                              const newHours = [...businessData.hours];
+                              newHours[index].closed = !checked;
+                              setBusinessData({ ...businessData, hours: newHours });
+                            }}
+                          />
+                        </div>
+
                         {!dayHour.closed && (
-                          <>
+                          <div className="flex items-center gap-2 sm:gap-4 w-full sm:w-auto overflow-x-auto py-1">
                             <Select
                               value={dayHour.open}
                               onValueChange={(value) => {
@@ -363,7 +379,7 @@ const BusinessProfileSettings = () => {
                                 setBusinessData({ ...businessData, hours: newHours });
                               }}
                             >
-                              <SelectTrigger className="w-32">
+                              <SelectTrigger className="w-full sm:w-32 min-w-[100px]">
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
@@ -373,7 +389,7 @@ const BusinessProfileSettings = () => {
                                 })}
                               </SelectContent>
                             </Select>
-                            <span>to</span>
+                            <span className="text-muted-foreground">to</span>
                             <Select
                               value={dayHour.close}
                               onValueChange={(value) => {
@@ -382,7 +398,7 @@ const BusinessProfileSettings = () => {
                                 setBusinessData({ ...businessData, hours: newHours });
                               }}
                             >
-                              <SelectTrigger className="w-32">
+                              <SelectTrigger className="w-full sm:w-32 min-w-[100px]">
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
@@ -392,9 +408,9 @@ const BusinessProfileSettings = () => {
                                 })}
                               </SelectContent>
                             </Select>
-                          </>
+                          </div>
                         )}
-                        {dayHour.closed && <span className="text-muted-foreground">Closed</span>}
+                        {dayHour.closed && <span className="text-muted-foreground text-sm">Closed</span>}
                       </div>
                     ))}
                   </div>
