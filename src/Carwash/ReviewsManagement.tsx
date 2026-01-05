@@ -107,34 +107,34 @@ const ReviewsManagement = () => {
                     <div className="grid grid-cols-3 gap-1.5 sm:gap-2 w-full lg:max-w-xl">
                         <Card className="shadow-none border-muted/50 bg-muted/5">
                             <CardContent className="p-2 sm:p-4 flex flex-col items-center justify-center text-center">
-                                <span className="text-base sm:text-2xl font-bold flex items-center gap-0.5 sm:gap-1">
+                                <span className="text-sm sm:text-2xl font-bold flex items-center gap-0.5 sm:gap-1">
                                     {stats.average}
                                     <Star className="h-3 w-3 sm:h-5 sm:w-5 fill-yellow-400 text-yellow-400" />
                                 </span>
-                                <span className="text-[8px] sm:text-xs text-muted-foreground uppercase tracking-wider font-semibold">Rating</span>
+                                <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider font-semibold">Rating</span>
                             </CardContent>
                         </Card>
                         <Card className="shadow-none border-muted/50 bg-muted/5">
                             <CardContent className="p-2 sm:p-4 flex flex-col items-center justify-center text-center">
-                                <span className="text-base sm:text-2xl font-bold">{stats.total}</span>
-                                <span className="text-[8px] sm:text-xs text-muted-foreground uppercase tracking-wider font-semibold">Total</span>
+                                <span className="text-sm sm:text-2xl font-bold">{stats.total}</span>
+                                <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider font-semibold">Total</span>
                             </CardContent>
                         </Card>
                         <Card className="shadow-none border-muted/50 bg-muted/5">
                             <CardContent className="p-2 sm:p-4 flex flex-col items-center justify-center text-center">
-                                <span className="text-base sm:text-2xl font-bold text-orange-500">{stats.unreplied}</span>
-                                <span className="text-[8px] sm:text-xs text-muted-foreground uppercase tracking-wider font-semibold">New</span>
+                                <span className="text-sm sm:text-2xl font-bold text-orange-500">{stats.unreplied}</span>
+                                <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider font-semibold">New</span>
                             </CardContent>
                         </Card>
                     </div>
                 </div>
 
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 bg-card p-3 rounded-lg border shadow-sm w-full">
-                    <div className="flex items-center gap-2 flex-shrink-0">
+                <div className="flex flex-col gap-3 bg-card p-3 rounded-lg border shadow-sm w-full overflow-visible">
+                    <div className="flex items-center gap-2 flex-shrink-0 px-1">
                         <Filter className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm font-medium">Filter:</span>
+                        <span className="text-sm font-semibold">Filter Reviews</span>
                     </div>
-                    <div className="flex gap-2 overflow-x-auto pb-1 sm:pb-0 w-full scrollbar-hide">
+                    <div className="flex gap-2 overflow-x-auto pb-2 px-1 w-full -mx-1 no-scrollbar touch-pan-x">
                         <Button variant={filter === "all" ? "default" : "outline"} size="sm" className="whitespace-nowrap flex-shrink-0" onClick={() => setFilter("all")}>All Reviews</Button>
                         <Button variant={filter === "unreplied" ? "default" : "outline"} size="sm" className="whitespace-nowrap flex-shrink-0" onClick={() => setFilter("unreplied")}>Unreplied</Button>
                         <Button variant={filter === "5-star" ? "default" : "outline"} size="sm" className="whitespace-nowrap flex-shrink-0" onClick={() => setFilter("5-star")}>5 Stars</Button>
