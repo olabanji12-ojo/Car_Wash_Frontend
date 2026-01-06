@@ -165,8 +165,10 @@ const CarwashDetails = () => {
     );
   }
 
-  // Use carwash base price as the starting price
-  const startingPrice = carwash.base_price || 5000;
+  // Calculate starting price from services if available
+  const startingPrice = carwash.services && carwash.services.length > 0
+    ? Math.min(...carwash.services.map(s => s.price || 0))
+    : (carwash.base_price || 5000);
 
   // Use photo_gallery, photos or fallback images
   const images = (carwash.photo_gallery && carwash.photo_gallery.length > 0)

@@ -18,13 +18,14 @@ import { Carwash, Service } from "@/Contexts/CarwashService";
 interface BookingSidebarProps {
   carwashId: string;
   startingPrice: number;
+  basePrice?: number;
   services: Service[];
   phone: string;
   address: string;
   hasHomeService?: boolean;
 }
 
-const BookingSidebar = ({ carwashId, startingPrice, services, phone, address, hasHomeService }: BookingSidebarProps) => {
+const BookingSidebar = ({ carwashId, startingPrice, basePrice, services, phone, address, hasHomeService }: BookingSidebarProps) => {
   const navigate = useNavigate();
   const [serviceType, setServiceType] = useState<"onsite" | "home">("onsite");
   const [selectedService, setSelectedService] = useState("");

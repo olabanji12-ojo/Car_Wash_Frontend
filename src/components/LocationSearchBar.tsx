@@ -138,7 +138,7 @@ export const LocationSearchBar: React.FC<LocationSearchBarProps> = ({
                 onChange={handleInputChange}
                 placeholder={placeholder}
                 className={cn(
-                    "pl-10 pr-10",
+                    "pl-9 sm:pl-10 pr-9 sm:pr-10 text-sm sm:text-base",
                     query && "border-primary/50 bg-primary/5",
                     className
                 )}

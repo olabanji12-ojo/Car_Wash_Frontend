@@ -121,6 +121,7 @@ const Booking = () => {
   const [vehiclePlate, setVehiclePlate] = useState("");
 
   const [selectedService, setSelectedService] = useState<any>(initialState?.selectedService || null);
+  console.log("🛠️ Current selectedService:", selectedService);
   const [selectedAddons, setSelectedAddons] = useState<string[]>([]);
   const [specialInstructions, setSpecialInstructions] = useState("");
 
@@ -296,6 +297,7 @@ const Booking = () => {
       case 3:
         if (!selectedService && !selectedSlotRaw) {
           // If no specific service is picked, we at least need them to confirm they want a basic slot
+          // This addresses the "without explicit user intent" issue
           toast.error("Please select a service or confirm a basic slot booking");
           return false;
         }
@@ -949,7 +951,7 @@ const Booking = () => {
           </div>
         </div>
       </div>
-    </div>
+    </div >
   );
 };
 

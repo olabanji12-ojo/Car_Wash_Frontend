@@ -81,15 +81,15 @@ export const QuickActions = ({ onSearch }: QuickActionsProps) => {
               </div>
             </div>
 
-            <div className="bg-white p-2 rounded-2xl shadow-xl ring-1 ring-black/5 flex flex-col md:flex-row gap-3">
-              <div className="flex-1 relative group">
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 z-10">
-                  <MapPin className="h-5 w-5" />
+            <div className="bg-white p-2 rounded-2xl shadow-xl ring-1 ring-black/5 flex flex-col md:flex-row gap-2 sm:gap-3">
+              <div className="flex-1 relative group min-w-0">
+                <div className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-gray-400 z-10">
+                  <MapPin className="h-4 w-4 sm:h-5 sm:w-5" />
                 </div>
-                <div className="[&>div]:bg-transparent [&_input]:text-gray-900 [&_input]:placeholder:text-gray-500 [&_input]:pl-11 [&_input]:h-12 [&_input]:text-lg [&_input]:border-none [&_input]:ring-0 [&_input]:shadow-none">
+                <div className="[&>div]:bg-transparent [&_input]:text-gray-900 [&_input]:placeholder:text-gray-400 [&_input]:pl-10 sm:[&_input]:pl-11 [&_input]:h-10 sm:[&_input]:h-12 [&_input]:text-base sm:[&_input]:text-lg [&_input]:border-none [&_input]:ring-0 [&_input]:shadow-none w-full">
                   <LocationSearchBar
                     onPlaceSelected={handlePlaceSelected}
-                    placeholder={serviceMode === 'home' ? "Where should we come to?" : "Enter Location to search nearby Carwashes..."}
+                    placeholder={serviceMode === 'home' ? "Where should we come to?" : "Enter Location..."}
                   />
                 </div>
               </div>

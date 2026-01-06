@@ -8,7 +8,6 @@ import BrowseCarwashesPage from "@/components/dashboard/BrowseCarwashesPage";
 import MyBookingsPage from "./MyBookings";
 import Vehicles from "./Vehicles";
 import Favorites from "./Favorites";
-import NotificationsPage from "./Notifications";
 
 import { useState, useEffect } from "react";
 import CarwashService, { Carwash } from "@/Contexts/CarwashService";

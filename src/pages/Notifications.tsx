@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Bell, Clock, Check, Trash2 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 
