@@ -20,10 +20,11 @@ interface BookingSidebarProps {
   startingPrice: number;
   services: Service[];
   phone: string;
+  address: string;
   hasHomeService?: boolean;
 }
 
-const BookingSidebar = ({ carwashId, startingPrice, services, phone, hasHomeService }: BookingSidebarProps) => {
+const BookingSidebar = ({ carwashId, startingPrice, services, phone, address, hasHomeService }: BookingSidebarProps) => {
   const navigate = useNavigate();
   const [serviceType, setServiceType] = useState<"onsite" | "home">("onsite");
   const [selectedService, setSelectedService] = useState("");
@@ -125,9 +126,15 @@ const BookingSidebar = ({ carwashId, startingPrice, services, phone, hasHomeServ
               Call Us
             </a>
           </Button>
-          <Button variant="outline" className="w-full gap-2">
-            <MapPin className="h-4 w-4" />
-            Get Directions
+          <Button variant="outline" className="w-full gap-2" asChild>
+            <a
+              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <MapPin className="h-4 w-4" />
+              Get Directions
+            </a>
           </Button>
         </CardContent>
       </Card>

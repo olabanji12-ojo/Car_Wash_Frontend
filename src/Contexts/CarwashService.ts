@@ -11,12 +11,19 @@ export interface PaginatedCarwashes {
 }
 
 export interface Service {
-    id: string;
+    id?: string;
     name: string;
     description: string;
     price: number;
     duration: number; // Duration in minutes
     features?: string[];
+}
+
+export interface Addon {
+    id?: string;
+    name: string;
+    description?: string;
+    price: number;
 }
 
 export interface Carwash {
@@ -31,6 +38,7 @@ export interface Carwash {
     photo_gallery?: string[];
     photos?: string[]; // Alternative field name
     services: Service[];
+    addons: Addon[];
     is_active: boolean;
     is_open?: boolean;
     rating: number;
@@ -39,14 +47,14 @@ export interface Carwash {
     phone?: string;
     about?: string;
     features?: string[];
-    addons?: any[];
     operating_hours?: any[];
     distance_km?: number;
     distance_text?: string;
     home_service?: boolean;
     delivery_radius_km?: number;
     search_mode?: 'station' | 'home';
-    // Add other fields as needed
+    base_price: number;
+    max_cars_per_slot?: number;
 }
 
 const CarwashService = {

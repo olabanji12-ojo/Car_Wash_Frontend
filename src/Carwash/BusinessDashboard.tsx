@@ -548,7 +548,7 @@ const BusinessDashboard = () => {
                         {!notif.is_read && <div className="h-2 w-2 rounded-full bg-blue-600 flex-shrink-0 mt-1" />}
                       </div>
                     ))}
-                    <Button variant="outline" className="w-full text-xs sm:text-sm" size="sm">View All Notifications</Button>
+                    <Button variant="outline" className="w-full text-xs sm:text-sm" size="sm" onClick={() => navigate("/notifications")}>View All Notifications</Button>
                   </CardContent>
                 </Card>
               </div>

@@ -165,10 +165,8 @@ const CarwashDetails = () => {
     );
   }
 
-  // Calculate starting price from services if available
-  const startingPrice = carwash.services && carwash.services.length > 0
-    ? Math.min(...carwash.services.map(s => s.price || 0))
-    : 0;
+  // Use carwash base price as the starting price
+  const startingPrice = carwash.base_price || 5000;
 
   // Use photo_gallery, photos or fallback images
   const images = (carwash.photo_gallery && carwash.photo_gallery.length > 0)
@@ -247,19 +245,20 @@ const CarwashDetails = () => {
       {/* Hero Image Gallery */}
       <div className="container mx-auto px-4 py-4 sm:py-6">
         <div className="grid gap-3 sm:gap-4">
-          <div className="relative aspect-video md:aspect-[21/9] rounded-xl overflow-hidden shadow-lg border">
+          <div className="relative aspect-[4/3] sm:aspect-video md:aspect-[21/9] rounded-xl overflow-hidden shadow-lg border">
             <img
               src={images[selectedImage]}
               alt={carwash.name}
               className="w-full h-full object-cover transition-all duration-500 hover:scale-105"
             />
             <div className="absolute top-4 left-4 flex gap-2">
-              <Badge className={cn("px-2.5 py-1 font-bold", carwash.is_open ? "bg-green-600" : "bg-red-600")}>
-                {carwash.is_open ? "Open Now" : "Closed"}
+              <Badge className="bg-primary/90 text-white backdrop-blur-sm border-none px-3 py-1 font-bold shadow-sm">
+                Verified Provider
               </Badge>
               {startingPrice > 0 && (
                 <Badge variant="secondary" className="px-2.5 py-1 font-bold bg-white/90 text-primary">
-                  From ₦{startingPrice.toLocaleString()}
+                  <Star className="h-3 w-3 mr-1 fill-primary" />
+                  Top Rated
                 </Badge>
               )}
             </div>
@@ -303,9 +302,9 @@ const CarwashDetails = () => {
                   <span className="text-sm">({reviews.length} reviews)</span>
                 </div>
 
-                <Badge variant="outline">
-                  <Clock className="h-3 w-3 mr-1" />
-                  {carwash.is_open ? "Open Now" : "Closed"}
+                <Badge variant="secondary" className="bg-blue-50 text-blue-700 border-blue-100 font-bold px-3">
+                  <Star className="h-3 w-3 mr-1 fill-blue-700" />
+                  Verified Business
                 </Badge>
               </div>
 
@@ -316,8 +315,8 @@ const CarwashDetails = () => {
                 </div>
                 <div className="flex items-center gap-2">
                   <Phone className="h-5 w-5" />
-                  <a href={`tel:${carwash.phone}`} className="hover:text-primary">
-                    {carwash.phone}
+                  <a href={`tel:${carwash.phone}`} className="hover:text-primary transition-colors">
+                    {carwash.phone || 'No phone number available'}
                   </a>
                 </div>
               </div>
@@ -434,23 +433,29 @@ const CarwashDetails = () => {
             {carwash.addons && carwash.addons.length > 0 && <Separator />}
 
             {/* Opening Hours */}
-            {carwash.operating_hours && carwash.operating_hours.length > 0 && (
+            {carwash.operating_hours && (
               <div>
                 <h2 className="text-2xl font-bold mb-6">Opening Hours</h2>
                 <Card>
                   <CardContent className="p-0">
                     <div className="divide-y">
-                      {carwash.operating_hours.map((schedule: any, index: number) => (
+                      {/* Handle both array and object formats for operating_hours */}
+                      {(Array.isArray(carwash.operating_hours)
+                        ? carwash.operating_hours
+                        : Object.entries(carwash.operating_hours || {}).map(([day, range]: [string, any]) => ({
+                          day: day.charAt(0).toUpperCase() + day.slice(1),
+                          hours: range.start && range.end ? `${range.start} - ${range.end}` : "Closed",
+                          status: range.start && range.end ? "open" : "closed"
+                        }))
+                      ).map((schedule: any, index: number) => (
                         <div key={index} className="flex items-center justify-between p-4 hover:bg-muted/50 transition-colors">
                           <span className="font-medium">{schedule.day}</span>
                           <div className="flex items-center gap-3">
                             <span className="text-muted-foreground">{schedule.hours}</span>
-                            {schedule.status === "closed" ? (
+                            {schedule.status === "closed" || schedule.hours === "Closed" ? (
                               <Badge variant="destructive">Closed</Badge>
                             ) : (
-                              <Badge variant="outline" className="text-green-600 border-green-600">
-                                Open
-                              </Badge>
+                              <Badge variant="outline" className="text-green-600 border-green-600 bg-green-50">Open</Badge>
                             )}
                           </div>
                         </div>
@@ -461,7 +466,7 @@ const CarwashDetails = () => {
               </div>
             )}
 
-            {carwash.operating_hours && carwash.operating_hours.length > 0 && <Separator />}
+            <Separator />
 
             {/* Location */}
             <div>
@@ -582,7 +587,7 @@ const CarwashDetails = () => {
                 </Card>
               )}
             </div>
-          </div>
+          </div >
 
 
           {/* Booking Sidebar */}
@@ -592,6 +597,7 @@ const CarwashDetails = () => {
               startingPrice={startingPrice}
               services={carwash.services || []}
               phone={carwash.phone || ''}
+              address={carwash.address || ''}
               hasHomeService={carwash.home_service}
             />
           </div>
@@ -608,8 +614,18 @@ const CarwashDetails = () => {
           <Button
             className="flex-1 bg-blue-600 hover:bg-blue-700 h-12 rounded-xl font-bold text-base shadow-lg shadow-blue-200"
             onClick={() => {
-              const element = document.getElementById('booking-section');
-              element?.scrollIntoView({ behavior: 'smooth' });
+              if (user) {
+                navigate("/booking", {
+                  state: {
+                    carwashId: id,
+                    serviceType: "onsite",
+                    selectedService: carwash.services?.[0] || null,
+                  },
+                });
+              } else {
+                toast.info("Please sign in to continue with your booking");
+                navigate("/login", { state: { from: `/carwash/${id}` } });
+              }
             }}
           >
             Book Now

@@ -17,8 +17,21 @@ import {
   Bell,
   LogOut,
   AlertTriangle,
+  Plus,
+  Pencil,
+  Briefcase,
+  Tag,
 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
+import { Separator } from "@/components/ui/separator";
 
 // Define TypeScript interface for payoutMethod
 interface PayoutMethod {
@@ -41,6 +54,9 @@ interface BusinessData {
   maxCarsPerSlot: number;
   homeService: boolean;
   deliveryRadiusKM: number;
+  basePrice: number;
+  services: any[];
+  addons: any[];
   payoutMethod: PayoutMethod;
   notifications: { email: boolean; sms: boolean; push: boolean };
 }
@@ -68,6 +84,9 @@ const mockBusinessData: BusinessData = {
   maxCarsPerSlot: 5,
   homeService: true,
   deliveryRadiusKM: 10,
+  basePrice: 5000,
+  services: [],
+  addons: [],
   payoutMethod: {
     type: "bank",
     bankName: "First Bank",
@@ -84,13 +103,21 @@ const BusinessProfileSettings = () => {
   const navigate = useNavigate();
 
   /* Removed for MVP Demo: "payout-methods" | "notifications" | "account" */
-  
-  const [activeTab, setActiveTab] = useState<"business-info" | "hours">("business-info");
+
+  const [activeTab, setActiveTab] = useState<"business-info" | "hours" | "services-pricing">("business-info");
   const [businessData, setBusinessData] = useState<BusinessData>(mockBusinessData);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [photos, setPhotos] = useState<File[]>([]);
   const [carwashId, setCarwashId] = useState<string>('');
+
+  // Service CRUD state
+  const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
+  const [editingService, setEditingService] = useState<any>(null);
+
+  // Addon CRUD state
+  const [isAddonModalOpen, setIsAddonModalOpen] = useState(false);
+  const [editingAddon, setEditingAddon] = useState<any>(null);
 
   useEffect(() => {
     const fetchCarwashData = async () => {
@@ -138,6 +165,9 @@ const BusinessProfileSettings = () => {
           maxCarsPerSlot: carwashData.max_cars_per_slot || 1,
           homeService: carwashData.home_service || false,
           deliveryRadiusKM: carwashData.delivery_radius_km || 10,
+          basePrice: carwashData.base_price || 5000,
+          services: carwashData.services || [],
+          addons: carwashData.addons || [],
           payoutMethod: { type: '', bankName: '', accountNumber: '' },
           notifications: { email: true, sms: false, push: true },
         });
@@ -157,7 +187,7 @@ const BusinessProfileSettings = () => {
       const { default: CarwashService } = await import('@/Contexts/CarwashService');
       let updateData: any = {};
 
-      if (activeTab === "business-info" || activeTab === "hours") {
+      if (activeTab === "business-info" || activeTab === "hours" || activeTab === "services-pricing") {
         const openHoursMap: Record<string, { start: string; end: string }> = {};
         businessData.hours.forEach(h => {
           if (!h.closed) openHoursMap[h.day.toLowerCase()] = { start: h.open, end: h.close };
@@ -177,8 +207,14 @@ const BusinessProfileSettings = () => {
             await CarwashService.uploadCarwashPhotos(carwashId, photos);
             setPhotos([]);
           }
-        } else {
+        } else if (activeTab === "hours") {
           updateData = { open_hours: openHoursMap };
+        } else if (activeTab === "services-pricing") {
+          updateData = {
+            base_price: businessData.basePrice,
+            services: businessData.services,
+            addons: businessData.addons,
+          };
         }
       }
 
@@ -222,198 +258,466 @@ const BusinessProfileSettings = () => {
 
   if (isLoading) {
     return (
-      <DashboardLayout>
-        <div className="min-h-[60vh] flex items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-        </div>
-      </DashboardLayout>
+      <>
+        <DashboardLayout>
+          <div className="min-h-[60vh] flex items-center justify-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          </div>
+        </DashboardLayout>
+      </>
     );
   }
 
   return (
-    <DashboardLayout>
-      <div className="container mx-auto px-4 py-8">
-        <div className="grid lg:grid-cols-4 gap-8">
-          <div className="lg:col-span-1">
-            <Card className="sticky top-20">
-              <CardContent className="p-4 space-y-2">
-                {[
-                  { id: "business-info", label: "Business Info", icon: User },
-                  { id: "hours", label: "Operating Hours", icon: Clock },
-                  // { id: "payout-methods", label: "Payout Methods", icon: DollarSign }, // Hidden for MVP
-                  // { id: "notifications", label: "Notifications", icon: Bell }, // Hidden for MVP
-                  // { id: "account", label: "Account Actions", icon: AlertTriangle }, // Hidden for MVP
-                ].map((tab) => (
-                  <Button
-                    key={tab.id}
-                    variant={activeTab === tab.id ? "default" : "ghost"}
-                    className="w-full justify-start gap-2"
-                    onClick={() => setActiveTab(tab.id as any)}
-                  >
-                    <tab.icon className="h-5 w-5" />
-                    {tab.label}
-                  </Button>
-                ))}
-              </CardContent>
-            </Card>
-          </div>
+    <>
+      <DashboardLayout>
+        <div className="container mx-auto px-4 py-8">
+          <div className="grid lg:grid-cols-4 gap-8">
+            <div className="lg:col-span-1">
+              <Card className="sticky top-20">
+                <CardContent className="p-4 space-y-2">
+                  {[
+                    { id: "business-info", label: "Business Info", icon: User },
+                    { id: "hours", label: "Operating Hours", icon: Clock },
+                    { id: "services-pricing", label: "Services & Pricing", icon: DollarSign },
+                    // { id: "payout-methods", label: "Payout Methods", icon: DollarSign }, // Hidden for MVP
+                    // { id: "notifications", label: "Notifications", icon: Bell }, // Hidden for MVP
+                    // { id: "account", label: "Account Actions", icon: AlertTriangle }, // Hidden for MVP
+                  ].map((tab) => (
+                    <Button
+                      key={tab.id}
+                      variant={activeTab === tab.id ? "default" : "ghost"}
+                      className="w-full justify-start gap-2"
+                      onClick={() => setActiveTab(tab.id as any)}
+                    >
+                      <tab.icon className="h-5 w-5" />
+                      {tab.label}
+                    </Button>
+                  ))}
+                </CardContent>
+              </Card>
+            </div>
 
-          <div className="lg:col-span-3">
-            <Card>
-              <CardHeader>
-                <CardTitle>
-                  {activeTab === "business-info" && "Business Information"}
-                  {activeTab === "hours" && "Operating Hours"}
-                  {/* {activeTab === "payout-methods" && "Payout Methods"} */}
-                  {/* {activeTab === "notifications" && "Notification Preferences"} */}
-                  {/* {activeTab === "account" && "Account Actions"} */}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {activeTab === "business-info" && (
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="name">Business Name</Label>
-                      <Input id="name" value={businessData.name} onChange={(e) => setBusinessData({ ...businessData, name: e.target.value })} />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="description">Description</Label>
-                      <Textarea id="description" value={businessData.description} onChange={(e) => setBusinessData({ ...businessData, description: e.target.value })} rows={4} />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="address">Address</Label>
-                      <Input id="address" value={businessData.address} onChange={(e) => setBusinessData({ ...businessData, address: e.target.value })} />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="phone">Phone Number</Label>
-                      <Input id="phone" value={businessData.phone} onChange={(e) => setBusinessData({ ...businessData, phone: e.target.value })} />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Photos</Label>
-                      <input type="file" accept="image/*" multiple className="hidden" id="photo-upload" onChange={handlePhotoUpload} />
-                      <label htmlFor="photo-upload" className="bg-blue-600 text-white px-4 py-2 rounded-md cursor-pointer hover:bg-blue-700 inline-flex gap-2"><Upload className="h-4 w-4" />Upload Photos</label>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-4">
-                        {businessData.photos.map(p => (
-                          <div key={p.id} className="relative">
-                            <img src={p.url} className="w-full h-32 object-cover rounded-md" />
-                            <Button variant="ghost" size="icon" className="absolute top-1 right-1 text-red-500" onClick={() => handleDeletePhoto(p.id)}><Trash2 className="h-4 w-4" /></Button>
-                          </div>
-                        ))}
-                        {photos.map((p, i) => (
-                          <div key={i} className="relative">
-                            <img src={URL.createObjectURL(p)} className="w-full h-32 object-cover rounded-md" />
-                            <Button variant="ghost" size="icon" className="absolute top-1 right-1 text-red-500" onClick={() => handleDeletePhoto(i)}><Trash2 className="h-4 w-4" /></Button>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="maxCarsPerSlot">Max Cars Per Slot</Label>
-                      <Input id="maxCarsPerSlot" type="number" value={businessData.maxCarsPerSlot} onChange={(e) => setBusinessData({ ...businessData, maxCarsPerSlot: parseInt(e.target.value) || 0 })} />
-                    </div>
-
-                    <div className="pt-4 border-t space-y-4">
-                      <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
-                        <div className="space-y-0.5">
-                          <Label className="text-sm font-semibold text-blue-900">Offer Home Service</Label>
-                          <p className="text-xs text-blue-700">Workers travel to client locations</p>
+            <div className="lg:col-span-3">
+              <Card>
+                <CardHeader>
+                  <CardTitle>
+                    {activeTab === "business-info" && "Business Information"}
+                    {activeTab === "hours" && "Operating Hours"}
+                    {activeTab === "services-pricing" && "Services & Pricing"}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {activeTab === "services-pricing" && (
+                    <div className="space-y-6">
+                      {/* Base Price Section */}
+                      <div className="p-4 bg-primary/5 rounded-xl border border-primary/10 space-y-3">
+                        <div className="flex items-center gap-2 text-primary">
+                          <DollarSign className="h-5 w-5" />
+                          <h3 className="font-bold">Base Station Price</h3>
                         </div>
-                        <Switch
-                          checked={businessData.homeService}
-                          onCheckedChange={(checked) => setBusinessData({ ...businessData, homeService: checked })}
-                        />
+                        <p className="text-xs text-muted-foreground">The default starting price for a basic wash slot reservation.</p>
+                        <div className="flex items-center gap-3">
+                          <div className="relative flex-1 max-w-[200px]">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 font-bold text-muted-foreground">₦</span>
+                            <Input
+                              type="number"
+                              className="pl-7 font-black text-lg"
+                              value={businessData.basePrice}
+                              onChange={(e) => setBusinessData({ ...businessData, basePrice: parseInt(e.target.value) || 0 })}
+                            />
+                          </div>
+                          <Badge variant="outline" className="h-10 px-4 py-0 flex items-center bg-background">Standard Pricing</Badge>
+                        </div>
                       </div>
 
-                      {businessData.homeService && (
-                        <div className="space-y-2">
-                          <Label htmlFor="deliveryRadius">Delivery Radius (KM)</Label>
-                          <Input
-                            id="deliveryRadius"
-                            type="number"
-                            value={businessData.deliveryRadiusKM}
-                            onChange={(e) => setBusinessData({ ...businessData, deliveryRadiusKM: parseInt(e.target.value) || 0 })}
+                      <Separator />
+
+                      {/* Services Section */}
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <Briefcase className="h-5 w-5 text-blue-600" />
+                            <h3 className="font-bold text-lg">Main Services</h3>
+                          </div>
+                          <Button
+                            size="sm"
+                            className="gap-2"
+                            onClick={() => {
+                              setEditingService({ name: "", description: "", price: 0, duration: 30 });
+                              setIsServiceModalOpen(true);
+                            }}
+                          >
+                            <Plus className="h-4 w-4" /> Add Service
+                          </Button>
+                        </div>
+
+                        <div className="grid gap-3">
+                          {businessData.services.length > 0 ? (
+                            businessData.services.map((service, index) => (
+                              <div key={index} className="flex items-center justify-between p-4 border rounded-xl hover:bg-muted/30 transition-colors">
+                                <div className="space-y-1">
+                                  <div className="font-bold flex items-center gap-2">
+                                    {service.name}
+                                    <Badge variant="secondary" className="text-[10px] h-5">{service.duration} mins</Badge>
+                                  </div>
+                                  <p className="text-sm text-muted-foreground line-clamp-1">{service.description}</p>
+                                  <p className="text-sm font-black text-primary">₦{service.price.toLocaleString()}</p>
+                                </div>
+                                <div className="flex gap-2">
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => {
+                                      setEditingService({ ...service, index });
+                                      setIsServiceModalOpen(true);
+                                    }}
+                                  >
+                                    <Pencil className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="text-red-500"
+                                    onClick={() => {
+                                      const newServices = [...businessData.services];
+                                      newServices.splice(index, 1);
+                                      setBusinessData({ ...businessData, services: newServices });
+                                    }}
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </div>
+                            ))
+                          ) : (
+                            <div className="text-center py-6 border-2 border-dashed rounded-xl text-muted-foreground">
+                              No services added yet. Click "Add Service" to start.
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <Separator />
+
+                      {/* Add-ons Section */}
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <Tag className="h-5 w-5 text-purple-600" />
+                            <h3 className="font-bold text-lg">Add-ons</h3>
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="gap-2"
+                            onClick={() => {
+                              setEditingAddon({ name: "", description: "", price: 0 });
+                              setIsAddonModalOpen(true);
+                            }}
+                          >
+                            <Plus className="h-4 w-4" /> Add Add-on
+                          </Button>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          {businessData.addons.length > 0 ? (
+                            businessData.addons.map((addon, index) => (
+                              <div key={index} className="p-4 border rounded-xl hover:bg-muted/30 transition-colors flex flex-col justify-between gap-3">
+                                <div className="space-y-1">
+                                  <div className="font-bold">{addon.name}</div>
+                                  <p className="text-xs text-muted-foreground line-clamp-2">{addon.description}</p>
+                                  <p className="text-sm font-black text-purple-600">₦{addon.price.toLocaleString()}</p>
+                                </div>
+                                <div className="flex justify-end gap-2 border-t pt-2">
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-8 px-2"
+                                    onClick={() => {
+                                      setEditingAddon({ ...addon, index });
+                                      setIsAddonModalOpen(true);
+                                    }}
+                                  >
+                                    <Pencil className="h-3 w-3 mr-1" /> Edit
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-8 px-2 text-red-500"
+                                    onClick={() => {
+                                      const newAddons = [...businessData.addons];
+                                      newAddons.splice(index, 1);
+                                      setBusinessData({ ...businessData, addons: newAddons });
+                                    }}
+                                  >
+                                    <Trash2 className="h-3 w-3 mr-1" /> Delete
+                                  </Button>
+                                </div>
+                              </div>
+                            ))
+                          ) : (
+                            <div className="col-span-full text-center py-6 border-2 border-dashed rounded-xl text-muted-foreground text-sm">
+                              No add-ons managed yet.
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  {activeTab === "business-info" && (
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="name">Business Name</Label>
+                        <Input id="name" value={businessData.name} onChange={(e) => setBusinessData({ ...businessData, name: e.target.value })} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="description">Description</Label>
+                        <Textarea id="description" value={businessData.description} onChange={(e) => setBusinessData({ ...businessData, description: e.target.value })} rows={4} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="address">Address</Label>
+                        <Input id="address" value={businessData.address} onChange={(e) => setBusinessData({ ...businessData, address: e.target.value })} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="phone">Phone Number</Label>
+                        <Input id="phone" value={businessData.phone} onChange={(e) => setBusinessData({ ...businessData, phone: e.target.value })} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Photos</Label>
+                        <input type="file" accept="image/*" multiple className="hidden" id="photo-upload" onChange={handlePhotoUpload} />
+                        <label htmlFor="photo-upload" className="bg-blue-600 text-white px-4 py-2 rounded-md cursor-pointer hover:bg-blue-700 inline-flex gap-2"><Upload className="h-4 w-4" />Upload Photos</label>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-4">
+                          {businessData.photos.map(p => (
+                            <div key={p.id} className="relative">
+                              <img src={p.url} className="w-full h-32 object-cover rounded-md" />
+                              <Button variant="ghost" size="icon" className="absolute top-1 right-1 text-red-500" onClick={() => handleDeletePhoto(p.id)}><Trash2 className="h-4 w-4" /></Button>
+                            </div>
+                          ))}
+                          {photos.map((p, i) => (
+                            <div key={i} className="relative">
+                              <img src={URL.createObjectURL(p)} className="w-full h-32 object-cover rounded-md" />
+                              <Button variant="ghost" size="icon" className="absolute top-1 right-1 text-red-500" onClick={() => handleDeletePhoto(i)}><Trash2 className="h-4 w-4" /></Button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="maxCarsPerSlot">Max Cars Per Slot</Label>
+                        <Input id="maxCarsPerSlot" type="number" value={businessData.maxCarsPerSlot} onChange={(e) => setBusinessData({ ...businessData, maxCarsPerSlot: parseInt(e.target.value) || 0 })} />
+                      </div>
+
+                      <div className="pt-4 border-t space-y-4">
+                        <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                          <div className="space-y-0.5">
+                            <Label className="text-sm font-semibold text-blue-900">Offer Home Service</Label>
+                            <p className="text-xs text-blue-700">Workers travel to client locations</p>
+                          </div>
+                          <Switch
+                            checked={businessData.homeService}
+                            onCheckedChange={(checked) => setBusinessData({ ...businessData, homeService: checked })}
                           />
-                          <p className="text-xs text-muted-foreground">Maximum travel distance from your base station</p>
                         </div>
-                      )}
-                    </div>
-                  </div>
-                )}
 
-                {activeTab === "hours" && (
-                  <div className="space-y-4">
-                    {businessData.hours.map((dayHour, index) => (
-                      <div key={dayHour.day} className="flex items-center gap-4 p-4 border rounded-lg">
-                        <div className="w-24 font-medium">{dayHour.day}</div>
-                        <Switch
-                          checked={!dayHour.closed}
-                          onCheckedChange={(checked) => {
-                            const newHours = [...businessData.hours];
-                            newHours[index].closed = !checked;
-                            setBusinessData({ ...businessData, hours: newHours });
-                          }}
-                        />
-                        {!dayHour.closed && (
-                          <>
-                            <Select
-                              value={dayHour.open}
-                              onValueChange={(value) => {
-                                const newHours = [...businessData.hours];
-                                newHours[index].open = value;
-                                setBusinessData({ ...businessData, hours: newHours });
-                              }}
-                            >
-                              <SelectTrigger className="w-32">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {Array.from({ length: 24 }, (_, i) => {
-                                  const hour = i.toString().padStart(2, '0');
-                                  return <SelectItem key={hour} value={`${hour}:00`}>{`${hour}:00`}</SelectItem>;
-                                })}
-                              </SelectContent>
-                            </Select>
-                            <span>to</span>
-                            <Select
-                              value={dayHour.close}
-                              onValueChange={(value) => {
-                                const newHours = [...businessData.hours];
-                                newHours[index].close = value;
-                                setBusinessData({ ...businessData, hours: newHours });
-                              }}
-                            >
-                              <SelectTrigger className="w-32">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {Array.from({ length: 24 }, (_, i) => {
-                                  const hour = i.toString().padStart(2, '0');
-                                  return <SelectItem key={hour} value={`${hour}:00`}>{`${hour}:00`}</SelectItem>;
-                                })}
-                              </SelectContent>
-                            </Select>
-                          </>
+                        {businessData.homeService && (
+                          <div className="space-y-2">
+                            <Label htmlFor="deliveryRadius">Delivery Radius (KM)</Label>
+                            <Input
+                              id="deliveryRadius"
+                              type="number"
+                              value={businessData.deliveryRadiusKM}
+                              onChange={(e) => setBusinessData({ ...businessData, deliveryRadiusKM: parseInt(e.target.value) || 0 })}
+                            />
+                            <p className="text-xs text-muted-foreground">Maximum travel distance from your base station</p>
+                          </div>
                         )}
-                        {dayHour.closed && <span className="text-muted-foreground">Closed</span>}
                       </div>
-                    ))}
-                  </div>
-                )}
+                    </div>
+                  )}
 
-                {/* {activeTab === "account" && (
+                  {activeTab === "hours" && (
+                    <div className="space-y-4">
+                      {businessData.hours.map((dayHour, index) => (
+                        <div key={dayHour.day} className="flex items-center gap-4 p-4 border rounded-lg">
+                          <div className="w-24 font-medium">{dayHour.day}</div>
+                          <Switch
+                            checked={!dayHour.closed}
+                            onCheckedChange={(checked) => {
+                              const newHours = [...businessData.hours];
+                              newHours[index].closed = !checked;
+                              setBusinessData({ ...businessData, hours: newHours });
+                            }}
+                          />
+                          {!dayHour.closed && (
+                            <>
+                              <Select
+                                value={dayHour.open}
+                                onValueChange={(value) => {
+                                  const newHours = [...businessData.hours];
+                                  newHours[index].open = value;
+                                  setBusinessData({ ...businessData, hours: newHours });
+                                }}
+                              >
+                                <SelectTrigger className="w-32">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {Array.from({ length: 24 }, (_, i) => {
+                                    const hour = i.toString().padStart(2, '0');
+                                    return <SelectItem key={hour} value={`${hour}:00`}>{`${hour}:00`}</SelectItem>;
+                                  })}
+                                </SelectContent>
+                              </Select>
+                              <span>to</span>
+                              <Select
+                                value={dayHour.close}
+                                onValueChange={(value) => {
+                                  const newHours = [...businessData.hours];
+                                  newHours[index].close = value;
+                                  setBusinessData({ ...businessData, hours: newHours });
+                                }}
+                              >
+                                <SelectTrigger className="w-32">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {Array.from({ length: 24 }, (_, i) => {
+                                    const hour = i.toString().padStart(2, '0');
+                                    return <SelectItem key={hour} value={`${hour}:00`}>{`${hour}:00`}</SelectItem>;
+                                  })}
+                                </SelectContent>
+                              </Select>
+                            </>
+                          )}
+                          {dayHour.closed && <span className="text-muted-foreground">Closed</span>}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* {activeTab === "account" && (
                   <div className="space-y-4">
                     <Button variant="outline" className="w-full gap-2" onClick={() => navigate("/logout")}><LogOut className="h-5 w-5" />Log Out</Button>
                   </div>
                 )} */}
 
-                {/* Always show save button for the remaining tabs */}
-                <Button className="mt-4" onClick={handleSave} disabled={isSaving}>{isSaving ? "Saving..." : "Save Changes"}</Button>
-              </CardContent>
-            </Card>
+                  {/* Always show save button for the remaining tabs */}
+                  <Button className="mt-4" onClick={handleSave} disabled={isSaving}>{isSaving ? "Saving..." : "Save Changes"}</Button>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </div>
-      </div>
-    </DashboardLayout>
+      </DashboardLayout>
+
+      {/* Service Modal */}
+      <Dialog open={isServiceModalOpen} onOpenChange={setIsServiceModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{editingService?.index !== undefined ? "Edit Service" : "Add New Service"}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Service Name</Label>
+              <Input
+                placeholder="e.g. Executive Full Wash"
+                value={editingService?.name || ""}
+                onChange={(e) => setEditingService({ ...editingService, name: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Description</Label>
+              <Textarea
+                placeholder="What does this service include?"
+                value={editingService?.description || ""}
+                onChange={(e) => setEditingService({ ...editingService, description: e.target.value })}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Price (₦)</Label>
+                <Input
+                  type="number"
+                  value={editingService?.price || 0}
+                  onChange={(e) => setEditingService({ ...editingService, price: parseInt(e.target.value) || 0 })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Duration (mins)</Label>
+                <Input
+                  type="number"
+                  value={editingService?.duration || 30}
+                  onChange={(e) => setEditingService({ ...editingService, duration: parseInt(e.target.value) || 0 })}
+                />
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsServiceModalOpen(false)}>Cancel</Button>
+            <Button onClick={() => {
+              const newServices = [...businessData.services];
+              if (editingService.index !== undefined) {
+                const { index, ...data } = editingService;
+                newServices[index] = data;
+              } else {
+                newServices.push(editingService);
+              }
+              setBusinessData({ ...businessData, services: newServices });
+              setIsServiceModalOpen(false);
+            }}>Save Service</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Addon Modal */}
+      <Dialog open={isAddonModalOpen} onOpenChange={setIsAddonModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{editingAddon?.index !== undefined ? "Edit Add-on" : "Add New Add-on"}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Add-on Name</Label>
+              <Input
+                placeholder="e.g. Engine Steam Cleaning"
+                value={editingAddon?.name || ""}
+                onChange={(e) => setEditingAddon({ ...editingAddon, name: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Description</Label>
+              <Textarea
+                placeholder="Brief details about the add-on"
+                value={editingAddon?.description || ""}
+                onChange={(e) => setEditingAddon({ ...editingAddon, description: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Price (₦)</Label>
+              <Input
+                type="number"
+                value={editingAddon?.price || 0}
+                onChange={(e) => setEditingAddon({ ...editingAddon, price: parseInt(e.target.value) || 0 })}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsAddonModalOpen(false)}>Cancel</Button>
+            <Button onClick={() => {
+              const newAddons = [...businessData.addons];
+              if (editingAddon.index !== undefined) {
+                const { index, ...data } = editingAddon;
+                newAddons[index] = data;
+              } else {
+                newAddons.push(editingAddon);
+              }
+              setBusinessData({ ...businessData, addons: newAddons });
+              setIsAddonModalOpen(false);
+            }}>Save Add-on</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
 

@@ -33,20 +33,13 @@ export const CarwashCard = ({ carwash }: CarwashCardProps) => {
       <CardContent className="p-0">
         <div className="relative aspect-[16/10] overflow-hidden">
           <img
-            src={carwash.photo_gallery?.[0] || "https://images.unsplash.com/photo-1520340356584-f9917d1eea6f?w=400&h=300&fit=crop"}
+            src={carwash.photo_gallery?.[0] || carwash.photos?.[0] || "https://images.unsplash.com/photo-1520340356584-f9917d1eea6f?w=400&h=300&fit=crop"}
             alt={carwash.name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-in-out"
           />
 
           {/* Top Badges */}
           <div className="absolute top-3 left-3 flex flex-wrap gap-2">
-            <Badge
-              variant={carwash.is_active ? "default" : "secondary"}
-              className={`${carwash.is_active ? "bg-green-500 hover:bg-green-600 text-white" : "bg-gray-500"} border-none shadow-sm backdrop-blur-md`}
-            >
-              <div className={`w-1.5 h-1.5 rounded-full mr-1.5 ${carwash.is_active ? "bg-white animate-pulse" : "bg-gray-300"}`} />
-              {carwash.is_active ? "Open Now" : "Closed"}
-            </Badge>
 
             {carwash.distance_text && (
               <Badge variant="secondary" className="bg-white/90 text-indigo-600 border-none shadow-sm backdrop-blur-md font-medium">
@@ -87,7 +80,7 @@ export const CarwashCard = ({ carwash }: CarwashCardProps) => {
           <div className="absolute bottom-3 right-3">
             <div className="bg-white/95 px-3 py-1.5 rounded-full shadow-lg backdrop-blur-md border border-white/20">
               <p className="text-sm font-bold text-indigo-700">
-                {carwash.services?.[0]?.price ? `₦${carwash.services[0].price.toLocaleString()}` : "N/A"}
+                ₦{(carwash.base_price || 5000).toLocaleString()}
               </p>
             </div>
           </div>

@@ -245,12 +245,16 @@ const Booking = () => {
   };
 
   const calculateTotal = () => {
-    const servicePrice = selectedService?.price || 0;
-    const addonsPrice = selectedAddons.reduce((total, addonName) => {
+    // Additive Logic: Base Price + Selected Service Upgrade + Selected Add-ons
+    const baseWashPrice = carwash?.base_price || 5000;
+    const serviceUpgradePrice = selectedService?.price || 0;
+
+    const addonsPrice = (selectedAddons || []).reduce((total, addonName) => {
       const addon = carwash?.addons?.find((a: any) => a.name === addonName);
-      return total + (addon?.price || 0);
+      return total + (Number(addon?.price) || 0);
     }, 0);
-    return servicePrice + addonsPrice;
+
+    return baseWashPrice + serviceUpgradePrice + addonsPrice;
   };
 
   const convertTo24Hour = (timeStr: string) => {
@@ -290,6 +294,11 @@ const Booking = () => {
         }
         return true;
       case 3:
+        if (!selectedService && !selectedSlotRaw) {
+          // If no specific service is picked, we at least need them to confirm they want a basic slot
+          toast.error("Please select a service or confirm a basic slot booking");
+          return false;
+        }
         if (selectedCarId === "new") {
           if (!vehicleMake || !vehicleModel || !vehicleYear || !vehicleColor || !vehiclePlate) {
             toast.error("Please fill in all vehicle details");
@@ -357,7 +366,7 @@ const Booking = () => {
         booking_type: (serviceType === "home" ? "home_service" : "slot_booking") as "home_service" | "slot_booking",
         user_location: userLocation as any,
         address_note: clientAddress,
-        notes: `Service: ${selectedService?.name || "Basic Slot"} \nInstructions: ${specialInstructions}`,
+        notes: `Service: ${selectedService?.name || "Basic Slot"} \nAdd-ons: ${selectedAddons.join(", ") || "None"} \nInstructions: ${specialInstructions}`,
         status: "pending"
       };
 
@@ -733,7 +742,7 @@ const Booking = () => {
                       <RadioGroupItem value="basic" id="basic" />
                       <Label htmlFor="basic" className="flex-1 cursor-pointer">
                         <div className="font-medium">Basic Slot Booking</div>
-                        <div className="text-sm text-muted-foreground">Standard wash slot reservation</div>
+                        <div className="text-sm text-muted-foreground">Standard wash slot reservation (₦{(carwash?.base_price || 5000).toLocaleString()})</div>
                       </Label>
                     </div>
                     {carwash?.services?.map((service: any, idx: number) => (
@@ -840,21 +849,38 @@ const Booking = () => {
                   </div>
                   <Separator />
                   <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span>Base Price</span>
-                      <span>₦{(selectedService?.price || 0).toLocaleString()}</span>
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-muted-foreground">Standard Base Wash</span>
+                      <span className="font-semibold">₦{(carwash?.base_price || 5000).toLocaleString()}</span>
                     </div>
-                    {selectedAddons.map(name => {
-                      const addon = carwash?.addons?.find((a: any) => a.name === name);
-                      return (
-                        <div key={name} className="flex justify-between text-sm text-muted-foreground">
-                          <span>{addon?.name}</span>
-                          <span>+₦{addon?.price.toLocaleString()}</span>
+
+                    {selectedService && (
+                      <div className="flex justify-between items-center text-sm">
+                        <div className="flex flex-col">
+                          <span className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider">Service Upgrade</span>
+                          <span className="font-semibold">{selectedService.name}</span>
                         </div>
-                      );
-                    })}
+                        <span className="font-bold text-primary">+₦{selectedService.price.toLocaleString()}</span>
+                      </div>
+                    )}
+
+                    {selectedAddons.length > 0 && (
+                      <div className="space-y-1 pt-1 border-t border-dashed">
+                        <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Selected Add-ons</span>
+                        {selectedAddons.map(name => {
+                          const addon = carwash?.addons?.find((a: any) => a.name === name);
+                          return (
+                            <div key={name} className="flex justify-between text-xs font-medium">
+                              <span>{addon?.name}</span>
+                              <span className="text-primary">+₦{addon?.price.toLocaleString()}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+
                     <Separator />
-                    <div className="flex justify-between text-lg font-bold">
+                    <div className="flex justify-between text-lg font-black pt-1">
                       <span>Total</span>
                       <span className="text-primary">₦{calculateTotal().toLocaleString()}</span>
                     </div>

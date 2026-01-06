@@ -135,7 +135,6 @@ const Dashboard = () => {
                 <Route path="bookings" element={<MyBookingsPage />} />
                 <Route path="favorites" element={<Favorites />} />
                 <Route path="vehicles" element={<Vehicles />} />
-                <Route path="notifications" element={<NotificationsPage />} />
             </Routes>
         </DashboardLayout>
     );
