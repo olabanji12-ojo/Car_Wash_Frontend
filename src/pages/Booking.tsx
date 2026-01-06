@@ -121,6 +121,7 @@ const Booking = () => {
   const [vehiclePlate, setVehiclePlate] = useState("");
 
   const [selectedService, setSelectedService] = useState<any>(initialState?.selectedService || null);
+  console.log("🛠️ Current selectedService:", selectedService);
   const [selectedAddons, setSelectedAddons] = useState<string[]>([]);
   const [specialInstructions, setSpecialInstructions] = useState("");
 
@@ -245,11 +246,16 @@ const Booking = () => {
   };
 
   const calculateTotal = () => {
+    // If a specific service is selected, use its price.
+    // Otherwise, use the carwash's base price.
+    // Ensure we never default to 0 if a base price exists.
     const servicePrice = selectedService?.price || carwash?.base_price || 5000;
-    const addonsPrice = selectedAddons.reduce((total, addonName) => {
+
+    const addonsPrice = (selectedAddons || []).reduce((total, addonName) => {
       const addon = carwash?.addons?.find((a: any) => a.name === addonName);
       return total + (addon?.price || 0);
     }, 0);
+
     return servicePrice + addonsPrice;
   };
 
@@ -290,6 +296,12 @@ const Booking = () => {
         }
         return true;
       case 3:
+        if (!selectedService && !selectedSlotRaw) {
+          // If no specific service is picked, we at least need them to confirm they want a basic slot
+          // This addresses the "without explicit user intent" issue
+          toast.error("Please select a service or confirm a basic slot booking");
+          return false;
+        }
         if (selectedCarId === "new") {
           if (!vehicleMake || !vehicleModel || !vehicleYear || !vehicleColor || !vehiclePlate) {
             toast.error("Please fill in all vehicle details");
@@ -357,7 +369,7 @@ const Booking = () => {
         booking_type: (serviceType === "home" ? "home_service" : "slot_booking") as "home_service" | "slot_booking",
         user_location: userLocation as any,
         address_note: clientAddress,
-        notes: `Service: ${selectedService?.name || "Basic Slot"} \nInstructions: ${specialInstructions}`,
+        notes: `Service: ${selectedService?.name || "Basic Slot"} \nAdd-ons: ${selectedAddons.join(", ") || "None"} \nInstructions: ${specialInstructions}`,
         status: "pending"
       };
 
@@ -733,7 +745,7 @@ const Booking = () => {
                       <RadioGroupItem value="basic" id="basic" />
                       <Label htmlFor="basic" className="flex-1 cursor-pointer">
                         <div className="font-medium">Basic Slot Booking</div>
-                        <div className="text-sm text-muted-foreground">Standard wash slot reservation</div>
+                        <div className="text-sm text-muted-foreground">Standard wash slot reservation (₦{(carwash?.base_price || 5000).toLocaleString()})</div>
                       </Label>
                     </div>
                     {carwash?.services?.map((service: any, idx: number) => (
@@ -923,7 +935,7 @@ const Booking = () => {
           </div>
         </div>
       </div>
-    </div>
+    </div >
   );
 };
 

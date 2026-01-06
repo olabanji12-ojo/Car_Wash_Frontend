@@ -76,6 +76,8 @@ const CarwashDetails = () => {
       console.log('✅ Carwash data:', response);
       // Backend returns { success: true, data: {...} }
       const carwashData = response.data || response;
+      console.log('📋 Carwash services:', carwashData.services);
+      console.log('📋 Carwash addons:', carwashData.addons);
       setCarwash(carwashData);
       setError(null);
     } catch (err) {
@@ -247,15 +249,15 @@ const CarwashDetails = () => {
       {/* Hero Image Gallery */}
       <div className="container mx-auto px-4 py-4 sm:py-6">
         <div className="grid gap-3 sm:gap-4">
-          <div className="relative aspect-video md:aspect-[21/9] rounded-xl overflow-hidden shadow-lg border">
+          <div className="relative aspect-[4/3] sm:aspect-video md:aspect-[21/9] rounded-xl overflow-hidden shadow-lg border">
             <img
               src={images[selectedImage]}
               alt={carwash.name}
               className="w-full h-full object-cover transition-all duration-500 hover:scale-105"
             />
             <div className="absolute top-4 left-4 flex gap-2">
-              <Badge className={cn("px-2.5 py-1 font-bold", carwash.is_open ? "bg-green-600" : "bg-red-600")}>
-                {carwash.is_open ? "Open Now" : "Closed"}
+              <Badge className="bg-primary/90 text-white backdrop-blur-sm border-none px-3 py-1 font-bold shadow-sm">
+                Verified Provider
               </Badge>
               {startingPrice > 0 && (
                 <Badge variant="secondary" className="px-2.5 py-1 font-bold bg-white/90 text-primary">
@@ -303,9 +305,9 @@ const CarwashDetails = () => {
                   <span className="text-sm">({reviews.length} reviews)</span>
                 </div>
 
-                <Badge variant="outline">
-                  <Clock className="h-3 w-3 mr-1" />
-                  {carwash.is_open ? "Open Now" : "Closed"}
+                <Badge variant="outline" className="text-primary border-primary">
+                  <Star className="h-3 w-3 mr-1 fill-primary" />
+                  Top Rated
                 </Badge>
               </div>
 
@@ -316,7 +318,7 @@ const CarwashDetails = () => {
                 </div>
                 <div className="flex items-center gap-2">
                   <Phone className="h-5 w-5" />
-                  <a href={`tel:${carwash.phone}`} className="hover:text-primary">
+                  <a href={`tel:${(carwash.phone || '').replace(/\D/g, '')}`} className="hover:text-primary">
                     {carwash.phone}
                   </a>
                 </div>
@@ -609,8 +611,18 @@ const CarwashDetails = () => {
           <Button
             className="flex-1 bg-blue-600 hover:bg-blue-700 h-12 rounded-xl font-bold text-base shadow-lg shadow-blue-200"
             onClick={() => {
-              const element = document.getElementById('booking-section');
-              element?.scrollIntoView({ behavior: 'smooth' });
+              if (user) {
+                navigate("/booking", {
+                  state: {
+                    carwashId: id,
+                    serviceType: "onsite",
+                    selectedService: carwash.services?.[0] || null
+                  }
+                });
+              } else {
+                toast.info("Please sign in to continue with your booking");
+                navigate("/login", { state: { from: `/carwash/${id}` } });
+              }
             }}
           >
             Book Now

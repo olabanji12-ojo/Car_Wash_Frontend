@@ -126,9 +126,15 @@ const BookingSidebar = ({ carwashId, startingPrice, basePrice, services, phone, 
               Call Us
             </a>
           </Button>
-          <Button variant="outline" className="w-full gap-2">
-            <MapPin className="h-4 w-4" />
-            Get Directions
+          <Button variant="outline" className="w-full gap-2" asChild>
+            <a
+              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(carwashId + " " + (phone || ""))}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <MapPin className="h-4 w-4" />
+              Get Directions
+            </a>
           </Button>
         </CardContent>
       </Card>
