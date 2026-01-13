@@ -8,8 +8,6 @@ import { Bell, Clock, Check, Trash2 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 
-import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
-
 const NotificationsPage = () => {
     const { user } = useAuth();
     const queryClient = useQueryClient();

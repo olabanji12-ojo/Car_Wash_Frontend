@@ -29,6 +29,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
 
 // Define TypeScript interface for payoutMethod
 interface PayoutMethod {
@@ -240,60 +241,86 @@ const BusinessProfileSettings = () => {
 
   return (
     <DashboardLayout>
-      <div className="container mx-auto px-4 py-8">
-        <div className="grid lg:grid-cols-4 gap-8">
-          <div className="lg:col-span-1">
-            <Card className="sticky top-20">
-              <CardContent className="p-4 space-y-2">
+      <div className="container mx-auto px-4 py-8 font-outfit">
+        <div className="flex flex-col gap-8">
+          {/* Header & Mobile-First Navigation */}
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div className="space-y-1">
+                <h1 className="text-3xl md:text-5xl font-black tracking-tight text-foreground uppercase">Settings</h1>
+                <p className="text-sm md:text-lg text-muted-foreground font-medium italic">Fine-tune your business presence</p>
+              </div>
+              <Button
+                onClick={handleSave}
+                disabled={isSaving}
+                className="w-full sm:w-auto h-12 rounded-full px-8 font-black bg-primary text-white shadow-lg shadow-primary/20 hover:scale-105 transition-all"
+              >
+                {isSaving ? "SAVING..." : "SAVE ALL CHANGES"}
+              </Button>
+            </div>
+
+            {/* Premium Scrollable Tabs */}
+            <div className="bg-card/50 p-2 rounded-[2rem] border border-border/50 shadow-sm overflow-hidden ring-1 ring-border/5">
+              <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1 px-1 touch-pan-x">
                 {[
-                  { id: "business-info", label: "Business Info", icon: User },
-                  { id: "hours", label: "Operating Hours", icon: Clock },
-                  { id: "services-pricing", label: "Services & Pricing", icon: DollarSign },
+                  { id: "business-info", label: "BUSINESS INFO", icon: User },
+                  { id: "hours", label: "OPERATING HOURS", icon: Clock },
+                  { id: "services-pricing", label: "SERVICES & PRICING", icon: DollarSign },
                 ].map((tab) => (
                   <Button
                     key={tab.id}
                     variant={activeTab === tab.id ? "default" : "ghost"}
-                    className="w-full justify-start gap-2"
+                    className={cn(
+                      "whitespace-nowrap flex-shrink-0 rounded-full h-12 px-8 font-black transition-all",
+                      activeTab === tab.id ? "shadow-lg shadow-primary/20" : "text-muted-foreground"
+                    )}
                     onClick={() => setActiveTab(tab.id as any)}
                   >
-                    <tab.icon className="h-5 w-5" />
+                    <tab.icon className="h-5 w-5 mr-3" />
                     {tab.label}
                   </Button>
                 ))}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </div>
 
-          <div className="lg:col-span-3">
-            <Card>
-              <CardHeader>
-                <CardTitle>
-                  {activeTab === "business-info" && "Business Information"}
-                  {activeTab === "hours" && "Operating Hours"}
-                  {activeTab === "services-pricing" && "Services & Pricing"}
+          <div className="w-full max-w-5xl mx-auto">
+            <Card className="border-none rounded-[2.5rem] shadow-card ring-1 ring-border/5 overflow-hidden">
+              <CardHeader className="p-8 border-b border-border/50 bg-primary/[0.02]">
+                <CardTitle className="text-2xl font-black text-primary tracking-tight uppercase flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                    {activeTab === "business-info" && <User className="h-6 w-6" />}
+                    {activeTab === "hours" && <Clock className="h-6 w-6" />}
+                    {activeTab === "services-pricing" && <DollarSign className="h-6 w-6" />}
+                  </div>
+                  {activeTab === "business-info" && "Business Identity"}
+                  {activeTab === "hours" && "Times of Operation"}
+                  {activeTab === "services-pricing" && "Menu & Pricing"}
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="p-8 space-y-10">
                 {activeTab === "services-pricing" && (
                   <div className="space-y-6">
                     {/* Base Price Section */}
-                    <div className="p-4 bg-primary/5 rounded-xl border border-primary/10 space-y-3">
-                      <div className="flex items-center gap-2 text-primary">
-                        <DollarSign className="h-5 w-5" />
-                        <h3 className="font-bold">Base Station Price</h3>
+                    <div className="p-6 bg-primary/5 rounded-[1.5rem] border border-primary/20 space-y-4 group transition-all hover:bg-primary/10">
+                      <div className="flex items-center gap-3 text-primary">
+                        <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20">
+                          <DollarSign className="h-5 w-5" />
+                        </div>
+                        <h3 className="font-black text-lg tracking-tight">BASE STATION PRICE</h3>
                       </div>
-                      <p className="text-xs text-muted-foreground">The default starting price for a basic wash slot reservation.</p>
-                      <div className="flex items-center gap-3">
-                        <div className="relative flex-1 max-w-[200px]">
-                          <span className="absolute left-3 top-1/2 -translate-y-1/2 font-bold text-muted-foreground">₦</span>
+                      <p className="text-sm text-muted-foreground font-medium pl-1">This is the starting cost for customers who reserve a slot at your station.</p>
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                        <div className="relative w-full sm:max-w-[240px]">
+                          <span className="absolute left-4 top-1/2 -translate-y-1/2 font-black text-primary text-xl">₦</span>
                           <Input
                             type="number"
-                            className="pl-7 font-black text-lg"
+                            className="pl-10 h-14 font-black text-2xl rounded-2xl border-2 border-primary/10 focus-visible:ring-primary shadow-inner"
                             value={businessData.basePrice}
                             onChange={(e) => setBusinessData({ ...businessData, basePrice: parseInt(e.target.value) || 0 })}
                           />
                         </div>
-                        <Badge variant="outline" className="h-10 px-4 py-0 flex items-center bg-background">Standard Pricing</Badge>
+                        <Badge variant="outline" className="h-12 px-6 rounded-full flex items-center bg-white font-black text-primary shadow-sm border-primary/10 tracking-widest uppercase">Premium Standard</Badge>
                       </div>
                     </div>
 

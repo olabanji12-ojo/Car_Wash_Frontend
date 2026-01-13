@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { Star, MessageSquare, Filter, Calendar, User } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
@@ -98,106 +100,146 @@ const ReviewsManagement = () => {
 
     return (
         <DashboardLayout>
-            <div className="w-full px-2 sm:px-4 py-4 sm:py-8 space-y-6">
-                <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4">
+            <div className="w-full px-3 sm:px-6 py-4 sm:py-8 space-y-8 font-outfit">
+                <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6">
                     <div className="w-full xl:w-auto">
-                        <h1 className="text-xl md:text-3xl font-bold tracking-tight">Reviews Management</h1>
-                        <p className="text-xs md:text-base text-muted-foreground mt-0.5 md:mt-1">Feedback from your customers</p>
+                        <h1 className="text-3xl md:text-4xl font-black tracking-tight text-foreground">Reviews Management</h1>
+                        <p className="text-sm md:text-lg text-muted-foreground mt-1 font-medium italic">Your direct line to customer happiness</p>
                     </div>
-                    <div className="grid grid-cols-3 gap-1.5 sm:gap-2 w-full lg:max-w-xl">
-                        <Card className="shadow-none border-muted/50 bg-muted/5">
-                            <CardContent className="p-2 sm:p-4 flex flex-col items-center justify-center text-center">
-                                <span className="text-sm sm:text-2xl font-bold flex items-center gap-0.5 sm:gap-1">
+                    <div className="grid grid-cols-3 gap-3 w-full lg:max-w-2xl">
+                        <Card className="shadow-card ring-1 ring-border/5 border-none bg-primary/5">
+                            <CardContent className="p-3 sm:p-5 flex flex-col items-center justify-center text-center">
+                                <span className="text-lg sm:text-3xl font-black flex items-center gap-1 text-primary">
                                     {stats.average}
-                                    <Star className="h-3 w-3 sm:h-5 sm:w-5 fill-yellow-400 text-yellow-400" />
+                                    <Star className="h-4 w-4 sm:h-6 sm:w-6 fill-yellow-400 text-yellow-400" />
                                 </span>
-                                <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider font-semibold">Rating</span>
+                                <span className="text-[9px] sm:text-[11px] text-primary/70 uppercase tracking-widest font-black mt-1">Avg Rating</span>
                             </CardContent>
                         </Card>
-                        <Card className="shadow-none border-muted/50 bg-muted/5">
-                            <CardContent className="p-2 sm:p-4 flex flex-col items-center justify-center text-center">
-                                <span className="text-sm sm:text-2xl font-bold">{stats.total}</span>
-                                <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider font-semibold">Total</span>
+                        <Card className="shadow-card ring-1 ring-border/5 border-none bg-accent/5">
+                            <CardContent className="p-3 sm:p-5 flex flex-col items-center justify-center text-center">
+                                <span className="text-lg sm:text-3xl font-black text-accent">{stats.total}</span>
+                                <span className="text-[9px] sm:text-[11px] text-accent/70 uppercase tracking-widest font-black mt-1">Total Feed</span>
                             </CardContent>
                         </Card>
-                        <Card className="shadow-none border-muted/50 bg-muted/5">
-                            <CardContent className="p-2 sm:p-4 flex flex-col items-center justify-center text-center">
-                                <span className="text-sm sm:text-2xl font-bold text-orange-500">{stats.unreplied}</span>
-                                <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider font-semibold">New</span>
+                        <Card className="shadow-card ring-1 ring-border/5 border-none bg-orange-50">
+                            <CardContent className="p-3 sm:p-5 flex flex-col items-center justify-center text-center">
+                                <span className="text-lg sm:text-3xl font-black text-orange-600">{stats.unreplied}</span>
+                                <span className="text-[9px] sm:text-[11px] text-orange-600/70 uppercase tracking-widest font-black mt-1">New Action</span>
                             </CardContent>
                         </Card>
                     </div>
                 </div>
 
-                <div className="flex flex-col gap-3 bg-card p-3 rounded-lg border shadow-sm w-full">
-                    <div className="flex items-center gap-2 px-1">
-                        <Filter className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm font-semibold">Filter Reviews</span>
+                <div className="flex flex-col gap-4 bg-card rounded-2xl border border-border/50 shadow-sm p-4 w-full overflow-hidden">
+                    <div className="flex items-center gap-2.5 px-1 border-b border-border/50 pb-3">
+                        <Filter className="h-4 w-4 text-primary" />
+                        <span className="text-xs font-black uppercase tracking-widest text-primary/80">Search Filters</span>
                     </div>
                     <div className="flex gap-2 overflow-x-auto pb-1 px-1 w-full no-scrollbar touch-pan-x">
-                        <Button variant={filter === "all" ? "default" : "outline"} size="sm" className="whitespace-nowrap flex-shrink-0" onClick={() => setFilter("all")}>All Reviews</Button>
-                        <Button variant={filter === "unreplied" ? "default" : "outline"} size="sm" className="whitespace-nowrap flex-shrink-0" onClick={() => setFilter("unreplied")}>Unreplied</Button>
-                        <Button variant={filter === "5-star" ? "default" : "outline"} size="sm" className="whitespace-nowrap flex-shrink-0" onClick={() => setFilter("5-star")}>5 Stars</Button>
-                        <Button variant={filter === "critical" ? "default" : "outline"} size="sm" className="whitespace-nowrap flex-shrink-0" onClick={() => setFilter("critical")}>Critical (1-3)</Button>
+                        <Button
+                            variant={filter === "all" ? "default" : "outline"}
+                            size="sm"
+                            className={cn("whitespace-nowrap flex-shrink-0 rounded-full h-10 px-6 font-bold transition-all", filter === "all" ? "shadow-lg shadow-primary/20" : "")}
+                            onClick={() => setFilter("all")}
+                        >
+                            All Reviews
+                        </Button>
+                        <Button
+                            variant={filter === "unreplied" ? "default" : "outline"}
+                            size="sm"
+                            className={cn("whitespace-nowrap flex-shrink-0 rounded-full h-10 px-6 font-bold transition-all", filter === "unreplied" ? "shadow-lg shadow-orange/20" : "")}
+                            onClick={() => setFilter("unreplied")}
+                        >
+                            Pending Reply
+                        </Button>
+                        <Button
+                            variant={filter === "5-star" ? "default" : "outline"}
+                            size="sm"
+                            className={cn("whitespace-nowrap flex-shrink-0 rounded-full h-10 px-6 font-bold transition-all", filter === "5-star" ? "shadow-lg shadow-yellow/20" : "")}
+                            onClick={() => setFilter("5-star")}
+                        >
+                            5 Star Love
+                        </Button>
+                        <Button
+                            variant={filter === "critical" ? "default" : "outline"}
+                            size="sm"
+                            className={cn("whitespace-nowrap flex-shrink-0 rounded-full h-10 px-6 font-bold transition-all", filter === "critical" ? "shadow-lg shadow-destructive/20" : "")}
+                            onClick={() => setFilter("critical")}
+                        >
+                            Critical Growth
+                        </Button>
                     </div>
                 </div>
 
-                <div className="space-y-4">
+                <div className="space-y-6">
                     {filteredReviews.length === 0 ? (
-                        <div className="text-center py-12 text-muted-foreground bg-muted/20 rounded-lg border border-dashed">No reviews found matching your filter.</div>
+                        <div className="text-center py-24 text-muted-foreground bg-muted/10 rounded-[2rem] border-2 border-dashed border-border/50">
+                            <MessageSquare className="h-12 w-12 mx-auto mb-4 text-muted-foreground/30" />
+                            <p className="font-bold text-lg">No reviews match your filter.</p>
+                            <p className="text-sm">Try exploring a wider selection!</p>
+                        </div>
                     ) : (
                         filteredReviews.map((review) => (
-                            <Card key={review.id} className="overflow-hidden">
-                                <CardContent className="p-4 sm:p-6">
-                                    <div className="flex flex-col gap-4">
+                            <Card key={review.id} className="overflow-hidden border-none rounded-[1.5rem] shadow-card ring-1 ring-border/5">
+                                <CardContent className="p-5 sm:p-8">
+                                    <div className="flex flex-col gap-5">
                                         <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
-                                            <div className="flex gap-3">
-                                                <div className="h-10 w-10 rounded-full bg-primary/10 flex-shrink-0 flex items-center justify-center">
-                                                    <User className="h-5 w-5 text-primary" />
+                                            <div className="flex gap-4">
+                                                <div className="h-14 w-14 rounded-2xl bg-primary/10 flex-shrink-0 flex items-center justify-center border border-primary/20">
+                                                    <User className="h-7 w-7 text-primary" />
                                                 </div>
-                                                <div className="min-w-0">
-                                                    <h3 className="font-semibold truncate">{review.customer_name || "Customer"}</h3>
-                                                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
-                                                        <span className="flex items-center">
+                                                <div className="min-w-0 space-y-1">
+                                                    <h3 className="font-black text-lg sm:text-xl truncate text-foreground">{review.customer_name || "Valued Customer"}</h3>
+                                                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                                                        <div className="flex items-center bg-yellow-400/10 px-2 py-0.5 rounded-full border border-yellow-400/20">
                                                             {Array.from({ length: 5 }).map((_, i) => (
-                                                                <Star key={i} className={`h-3 w-3 ${i < review.rating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"}`} />
+                                                                <Star key={i} className={`h-3 w-3 ${i < review.rating ? "fill-yellow-400 text-yellow-500" : "text-gray-200"}`} />
                                                             ))}
-                                                        </span>
-                                                        <span className="hidden xs:inline">•</span>
-                                                        <span className="flex items-center gap-1">
-                                                            <Calendar className="h-3 w-3" />
+                                                        </div>
+                                                        <span className="flex items-center gap-1.5 text-xs text-muted-foreground font-bold italic">
+                                                            <Calendar className="h-3.5 w-3.5 text-primary/60" />
                                                             {formatDate(review.created_at)}
                                                         </span>
                                                     </div>
                                                 </div>
                                             </div>
                                             {!review.response && !replyingTo && (
-                                                <Button variant="outline" size="sm" className="w-full sm:w-auto" onClick={() => setReplyingTo(review.id)}>
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    className="w-full sm:w-auto rounded-full h-10 px-6 font-black border-2 hover:bg-primary hover:text-white transition-all shadow-sm"
+                                                    onClick={() => setReplyingTo(review.id)}
+                                                >
                                                     <MessageSquare className="h-4 w-4 mr-2" />
-                                                    Reply
+                                                    REPLY NOW
                                                 </Button>
                                             )}
                                         </div>
-                                        <p className="text-gray-700 leading-relaxed">{review.comment}</p>
+                                        <p className="text-foreground/80 leading-relaxed text-base sm:text-lg font-medium italic pl-1 border-l-4 border-primary/10">"{review.comment}"</p>
+
                                         {review.response ? (
-                                            <div className="bg-muted/30 p-3 sm:p-4 rounded-lg border ml-4 sm:ml-8 mt-1">
-                                                <div className="flex items-center flex-wrap gap-2 mb-2">
-                                                    <Badge variant="outline" className="bg-white text-[10px] sm:text-xs">Business Response</Badge>
-                                                    <span className="text-[10px] sm:text-xs text-muted-foreground">{review.response_date ? formatDate(review.response_date) : "Recently"}</span>
+                                            <div className="bg-primary/5 p-4 sm:p-6 rounded-[1.25rem] border border-primary/10 ml-0 sm:ml-12 mt-2 relative">
+                                                <div className="absolute top-0 left-0 w-2 h-full bg-primary/20 rounded-l-full" />
+                                                <div className="flex items-center justify-between flex-wrap gap-2 mb-3">
+                                                    <Badge className="bg-primary text-[10px] sm:text-xs font-black tracking-widest px-2.5 py-1">YOU RESPONDED</Badge>
+                                                    <span className="text-[10px] sm:text-xs text-primary/60 font-black italic">{review.response_date ? formatDate(review.response_date) : "Recently"}</span>
                                                 </div>
-                                                <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">{review.response}</p>
+                                                <p className="text-sm sm:text-base text-foreground/70 leading-relaxed font-semibold">{review.response}</p>
                                             </div>
                                         ) : replyingTo === review.id && (
-                                            <div className="ml-4 sm:ml-8 mt-1 space-y-3 animate-in fade-in slide-in-from-top-2">
-                                                <Textarea
-                                                    placeholder="Write a professional response..."
-                                                    value={replyText}
-                                                    onChange={(e) => setReplyText(e.target.value)}
-                                                    className="min-h-[100px] text-sm"
-                                                />
-                                                <div className="flex gap-2 justify-end">
-                                                    <Button variant="ghost" size="sm" onClick={() => { setReplyingTo(null); setReplyText(""); }}>Cancel</Button>
-                                                    <Button size="sm" onClick={() => handleReplySubmit(review.id)}>Post Response</Button>
+                                            <div className="ml-0 sm:ml-12 mt-2 space-y-4 animate-in fade-in slide-in-from-top-4 duration-500">
+                                                <div className="relative">
+                                                    <Textarea
+                                                        placeholder="Craft a thoughtful response here..."
+                                                        value={replyText}
+                                                        onChange={(e) => setReplyText(e.target.value)}
+                                                        className="min-h-[120px] text-base rounded-[1.25rem] border-2 border-primary/20 focus-visible:ring-primary p-4 shadow-inner"
+                                                    />
+                                                </div>
+                                                <div className="flex gap-3 justify-end">
+                                                    <Button variant="ghost" size="sm" className="rounded-full font-bold h-10 px-6" onClick={() => { setReplyingTo(null); setReplyText(""); }}>Cancel</Button>
+                                                    <Button size="sm" className="rounded-full shadow-lg shadow-primary/20 font-black h-10 px-8" onClick={() => handleReplySubmit(review.id)}>POST RESPONSE</Button>
                                                 </div>
                                             </div>
                                         )}
