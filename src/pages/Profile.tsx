@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 import {
   ArrowLeft,
   User,
@@ -111,29 +112,33 @@ const Profile = () => {
         <div className="grid lg:grid-cols-4 gap-8">
           {/* Sidebar Navigation */}
           <div className="lg:col-span-1">
-            <Card className="sticky top-24 shadow-sm border-muted">
-              <CardContent className="p-0">
-                {tabs.map((tab) => (
-                  <Button
-                    key={tab.id}
-                    variant="ghost"
-                    className={`w-full justify-start px-4 py-4 text-left gap-3 transition-all ${activeTab === tab.id
-                      ? "bg-primary/10 text-primary border-l-4 border-primary font-semibold"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                      }`}
-                    onClick={() => setActiveTab(tab.id)}
-                  >
-                    <tab.icon className="h-5 w-5" />
-                    <span>{tab.label}</span>
-                    {tab && tab.badge !== undefined && tab.badge > 0 && (
-                      <Badge variant="outline" className="ml-auto bg-white">
-                        {tab.badge}
-                      </Badge>
-                    )}
-                  </Button>
-                ))}
-              </CardContent>
-            </Card>
+            <div className="lg:sticky lg:top-24 space-y-4">
+              <Card className="shadow-sm border-muted overflow-hidden">
+                <CardContent className="p-0 flex lg:flex-col overflow-x-auto no-scrollbar lg:overflow-x-visible">
+                  {tabs.map((tab) => (
+                    <Button
+                      key={tab.id}
+                      variant="ghost"
+                      className={cn(
+                        "flex-1 lg:w-full justify-center lg:justify-start px-6 lg:px-4 py-5 lg:py-4 text-center lg:text-left gap-2 lg:gap-3 transition-all rounded-none whitespace-nowrap border-b-2 lg:border-b-0 lg:border-l-4",
+                        activeTab === tab.id
+                          ? "bg-primary/5 lg:bg-primary/10 text-primary border-primary font-bold"
+                          : "text-muted-foreground hover:text-foreground hover:bg-muted/50 border-transparent"
+                      )}
+                      onClick={() => setActiveTab(tab.id)}
+                    >
+                      <tab.icon className="h-4 w-4 lg:h-5 lg:w-5" />
+                      <span className="text-sm lg:text-base">{tab.label}</span>
+                      {tab && tab.badge !== undefined && tab.badge > 0 && (
+                        <Badge variant="outline" className="ml-1 lg:ml-auto bg-white text-[10px] h-4 px-1">
+                          {tab.badge}
+                        </Badge>
+                      )}
+                    </Button>
+                  ))}
+                </CardContent>
+              </Card>
+            </div>
           </div>
 
           {/* Main Content */}

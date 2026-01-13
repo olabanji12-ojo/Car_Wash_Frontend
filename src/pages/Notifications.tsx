@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Bell, Clock, Check, Trash2 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 
 const NotificationsPage = () => {
@@ -52,13 +53,13 @@ const NotificationsPage = () => {
         <DashboardLayout>
             <div className="container mx-auto max-w-3xl py-8 px-4">
                 <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-7">
-                        <CardTitle className="text-2xl font-bold flex items-center gap-2">
-                            <Bell className="h-6 w-6" />
+                    <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-7">
+                        <CardTitle className="text-2xl font-black flex items-center gap-2">
+                            <Bell className="h-6 w-6 text-primary" />
                             Notifications
                             {unreadCount > 0 && (
-                                <Badge variant="destructive" className="ml-2">
-                                    {unreadCount} New
+                                <Badge variant="destructive" className="ml-2 font-black shadow-lg shadow-red-100">
+                                    {unreadCount} NEW
                                 </Badge>
                             )}
                         </CardTitle>
@@ -66,6 +67,7 @@ const NotificationsPage = () => {
                             <Button
                                 variant="outline"
                                 size="sm"
+                                className="w-full sm:w-auto rounded-full border-2 font-black h-10 px-6 hover:bg-blue-50 hover:text-blue-600 transition-all"
                                 onClick={() => markAllReadMutation.mutate()}
                                 disabled={markAllReadMutation.isPending}
                             >
@@ -80,11 +82,13 @@ const NotificationsPage = () => {
                                 notifications.map((notif: any, index: number) => (
                                     <div key={notif.id}>
                                         <div
-                                            className={`flex items-start gap-4 p-4 rounded-lg transition-colors ${!notif.is_read ? "bg-blue-50/50 border-l-4 border-blue-500" : "hover:bg-gray-50"
-                                                }`}
+                                            className={cn(
+                                                "flex items-start gap-3 sm:gap-4 p-4 sm:p-5 rounded-2xl transition-all duration-300",
+                                                !notif.is_read ? "bg-blue-50/30 border-l-4 border-blue-600 shadow-sm" : "hover:bg-muted/50"
+                                            )}
                                         >
-                                            <div className={`p-2 rounded-full mt-1 ${!notif.is_read ? "bg-blue-100/50" : "bg-gray-100"}`}>
-                                                <Bell className={`h-4 w-4 ${!notif.is_read ? "text-blue-600" : "text-gray-400"}`} />
+                                            <div className={`p-2.5 rounded-xl mt-1 flex-shrink-0 ${!notif.is_read ? "bg-blue-100 text-blue-600 shadow-inner" : "bg-gray-100 text-gray-400"}`}>
+                                                <Bell className="h-4 w-4" />
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex justify-between items-start gap-2">

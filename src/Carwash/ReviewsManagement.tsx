@@ -131,12 +131,29 @@ const ReviewsManagement = () => {
                     </div>
                 </div>
 
-                <div className="flex flex-col gap-4 bg-card rounded-2xl border border-border/50 shadow-sm p-4 w-full overflow-hidden">
+                <div className="flex flex-col gap-4 bg-card rounded-[1.5rem] border border-border/50 shadow-sm p-4 w-full overflow-hidden">
                     <div className="flex items-center gap-2.5 px-1 border-b border-border/50 pb-3">
                         <Filter className="h-4 w-4 text-primary" />
-                        <span className="text-xs font-black uppercase tracking-widest text-primary/80">Search Filters</span>
+                        <span className="text-xs font-black uppercase tracking-widest text-primary/80">Sort & Filter Feed</span>
                     </div>
-                    <div className="flex gap-2 overflow-x-auto pb-1 px-1 w-full no-scrollbar touch-pan-x">
+
+                    {/* Mobile Dropdown - Visible on small screens */}
+                    <div className="block sm:hidden flex-1">
+                        <Select value={filter} onValueChange={setFilter}>
+                            <SelectTrigger className="w-full h-12 rounded-xl border-2 font-bold focus:ring-blue-600 bg-white shadow-sm">
+                                <SelectValue placeholder="Select Filter" />
+                            </SelectTrigger>
+                            <SelectContent className="rounded-xl border-2">
+                                <SelectItem value="all" className="font-bold py-3 uppercase text-[10px] tracking-widest">All Reviews</SelectItem>
+                                <SelectItem value="unreplied" className="text-orange-600 font-bold py-3 uppercase text-[10px] tracking-widest">Pending Reply</SelectItem>
+                                <SelectItem value="5-star" className="text-yellow-600 font-bold py-3 uppercase text-[10px] tracking-widest">5 Star Love</SelectItem>
+                                <SelectItem value="critical" className="text-destructive font-bold py-3 uppercase text-[10px] tracking-widest">Critical Growth</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    {/* Desktop Buttons - Hidden on small screens */}
+                    <div className="hidden sm:flex gap-2 overflow-x-auto pb-1 px-1 w-full no-scrollbar touch-pan-x">
                         <Button
                             variant={filter === "all" ? "default" : "outline"}
                             size="sm"

@@ -16,6 +16,13 @@ import {
   User
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { BookingResponse } from "@/Contexts/BookingService";
 import { ReviewModal } from "@/components/ReviewModal";
 import { useMyBookings, useUpdateBookingStatus } from "@/hooks/useBookings";
@@ -344,22 +351,47 @@ const MyBookingsPage = () => {
         </div>
 
         <div className="border-b mb-4 sm:mb-6 -mx-3 sm:mx-0 px-3 sm:px-0">
-          <div className="flex space-x-4 sm:space-x-8 overflow-x-auto scrollbar-hide">
+          {/* Mobile Select - Only visible on small screens */}
+          <div className="block sm:hidden pb-4">
+            <Select value={activeTab} onValueChange={setActiveTab}>
+              <SelectTrigger className="w-full h-12 rounded-xl border-2 font-bold focus:ring-blue-600 bg-white shadow-sm">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-blue-600" />
+                  <SelectValue placeholder="Filter by status" />
+                </div>
+              </SelectTrigger>
+              <SelectContent className="rounded-xl border-2">
+                {tabs.map((tab) => (
+                  <SelectItem key={tab} value={tab} className="capitalize font-bold py-3 focus:bg-blue-50 focus:text-blue-600">
+                    <div className="flex items-center justify-between w-full min-w-[200px]">
+                      <span>{tab} Bookings</span>
+                      <Badge variant="secondary" className="ml-auto bg-blue-100 text-blue-600 border-none px-2 rounded-full">
+                        {bookingCounts[tab]}
+                      </Badge>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Desktop Tabs - Hidden on small screens */}
+          <div className="hidden sm:flex space-x-4 sm:space-x-8 overflow-x-auto scrollbar-hide">
             {tabs.map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 className={cn(
-                  "pb-2 border-b-2 font-semibold flex items-center gap-2 whitespace-nowrap flex-shrink-0 text-sm sm:text-base capitalize",
+                  "pb-2 border-b-2 font-semibold flex items-center gap-2 whitespace-nowrap flex-shrink-0 text-sm sm:text-base capitalize transition-all duration-200",
                   activeTab === tab
                     ? "border-blue-600 text-blue-600"
-                    : "border-transparent text-gray-500 hover:text-gray-800"
+                    : "border-transparent text-gray-400 hover:text-gray-600"
                 )}
               >
                 {tab}
                 <Badge className={cn(
-                  "text-xs",
-                  activeTab === tab ? "bg-blue-100 text-blue-600" : "bg-gray-200 text-gray-600"
+                  "text-[10px] px-2 py-0 h-4 rounded-full border-none",
+                  activeTab === tab ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-500"
                 )}>
                   {bookingCounts[tab]}
                 </Badge>
