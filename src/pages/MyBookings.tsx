@@ -13,7 +13,8 @@ import {
   Car,
   Truck,
   Star,
-  User
+  User,
+  AlertCircle
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -231,15 +232,31 @@ const BookingCard = ({
   );
 };
 
+// 💡 New Empty State Component
 const EmptyState = ({ status }: { status: string }) => {
   const navigate = useNavigate();
   return (
-    <div className="text-center py-12 sm:py-16 px-4 sm:px-6 border-2 border-dashed rounded-xl">
-      <div className="flex justify-center mb-4"><Search size={60} className="text-gray-400" /></div>
-      <h2 className="text-lg sm:text-xl font-semibold mb-2">No {status} bookings</h2>
-      <p className="text-sm sm:text-base text-muted-foreground mb-6">You have no {status} bookings at the moment.</p>
-      <Button onClick={() => navigate("/dashboard")}>
-        <Search className="mr-2 h-4 w-4" /> Find a Carwash
+    <div className="flex flex-col items-center justify-center text-center py-16 px-4 border-2 border-dashed border-muted rounded-[2rem] bg-muted/5 space-y-4">
+      <div className="h-20 w-20 bg-muted/20 rounded-full flex items-center justify-center mb-2">
+        {status === "pending" && <Clock className="h-10 w-10 text-orange-400" />}
+        {status === "confirmed" && <CheckCircle2 className="h-10 w-10 text-blue-500" />}
+        {status === "completed" && <Star className="h-10 w-10 text-green-500" />}
+        {status === "cancelled" && <XCircle className="h-10 w-10 text-red-400" />}
+        {!["pending", "confirmed", "completed", "cancelled"].includes(status) && <Search className="h-10 w-10 text-muted-foreground" />}
+      </div>
+
+      <div className="space-y-1 max-w-xs">
+        <h2 className="text-xl font-bold tracking-tight text-foreground">No {status} bookings</h2>
+        <p className="text-sm text-muted-foreground">
+          {status === 'pending' && "You don't have any upcoming appointments pending approval."}
+          {status === 'confirmed' && "No confirmed bookings yet. Hang tight!"}
+          {status === 'completed' && "You haven't completed any services yet."}
+          {status === 'cancelled' && "No cancelled bookings to show."}
+        </p>
+      </div>
+
+      <Button onClick={() => navigate("/dashboard")} className="rounded-full font-bold px-8 shadow-lg shadow-primary/20">
+        <Search className="mr-2 h-4 w-4" /> Book a Service
       </Button>
     </div>
   );
@@ -311,28 +328,31 @@ const MyBookingsPage = () => {
       <div className="bg-gray-50/50 min-h-screen">
         <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
           <div className="mb-8 space-y-2">
-            <Skeleton className="h-8 w-48" />
-            <Skeleton className="h-4 w-96" />
+            <Skeleton className="h-8 w-48 rounded-lg" />
+            <Skeleton className="h-4 w-96 rounded-lg" />
           </div>
           <div className="space-y-4">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="rounded-xl border bg-card text-card-foreground shadow-sm p-5">
-                <div className="flex gap-4">
-                  <div className="space-y-3 flex-1">
-                    <div className="flex justify-between">
-                      <div className="space-y-2">
-                        <Skeleton className="h-6 w-32" />
-                        <Skeleton className="h-4 w-24" />
+              <Card key={i} className="rounded-xl overflow-hidden border-none shadow-sm">
+                <CardContent className="p-5">
+                  <div className="flex flex-col sm:flex-row gap-5">
+                    <div className="flex-1 space-y-4">
+                      <div className="flex justify-between items-start">
+                        <div className="space-y-2">
+                          <Skeleton className="h-6 w-40 rounded-md" />
+                          <Skeleton className="h-4 w-24 rounded-md" />
+                        </div>
+                        <Skeleton className="h-6 w-24 rounded-full" />
                       </div>
-                      <Skeleton className="h-6 w-20 rounded-full" />
-                    </div>
-                    <div className="space-y-2 pt-2">
-                      <Skeleton className="h-4 w-48" />
-                      <Skeleton className="h-4 w-32" />
+                      <div className="grid grid-cols-2 gap-4">
+                        <Skeleton className="h-20 w-full rounded-2xl" />
+                        <Skeleton className="h-20 w-full rounded-2xl" />
+                      </div>
+                      <Skeleton className="h-4 w-1/3 rounded-md" />
                     </div>
                   </div>
-                </div>
-              </div>
+                </CardContent>
+              </Card>
             ))}
           </div>
         </div>

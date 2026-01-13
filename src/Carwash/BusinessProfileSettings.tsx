@@ -241,13 +241,13 @@ const BusinessProfileSettings = () => {
 
   return (
     <DashboardLayout>
-      <div className="container mx-auto px-4 py-8 font-outfit">
+      <div className="container mx-auto px-4 py-8 font-outfit max-w-full overflow-x-hidden">
         <div className="flex flex-col gap-8">
           {/* Header & Mobile-First Navigation */}
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div className="space-y-1">
-                <h1 className="text-3xl md:text-5xl font-black tracking-tight text-foreground uppercase">Settings</h1>
+                <h1 className="text-3xl md:text-5xl font-black tracking-tight text-foreground uppercase truncate">Settings</h1>
                 <p className="text-sm md:text-lg text-muted-foreground font-medium italic">Fine-tune your business presence</p>
               </div>
               <Button
@@ -286,19 +286,21 @@ const BusinessProfileSettings = () => {
 
           <div className="w-full max-w-5xl mx-auto">
             <Card className="border-none rounded-[2.5rem] shadow-card ring-1 ring-border/5 overflow-hidden">
-              <CardHeader className="p-8 border-b border-border/50 bg-primary/[0.02]">
-                <CardTitle className="text-2xl font-black text-primary tracking-tight uppercase flex items-center gap-3">
+              <CardHeader className="p-6 sm:p-8 border-b border-border/50 bg-primary/[0.02]">
+                <CardTitle className="text-xl sm:text-2xl font-black text-primary tracking-tight uppercase flex items-center gap-3">
                   <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
                     {activeTab === "business-info" && <User className="h-6 w-6" />}
                     {activeTab === "hours" && <Clock className="h-6 w-6" />}
                     {activeTab === "services-pricing" && <DollarSign className="h-6 w-6" />}
                   </div>
-                  {activeTab === "business-info" && "Business Identity"}
-                  {activeTab === "hours" && "Times of Operation"}
-                  {activeTab === "services-pricing" && "Menu & Pricing"}
+                  <span className="truncate">
+                    {activeTab === "business-info" && "Business Identity"}
+                    {activeTab === "hours" && "Times of Operation"}
+                    {activeTab === "services-pricing" && "Menu & Pricing"}
+                  </span>
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-8 space-y-10">
+              <CardContent className="p-4 sm:p-8 space-y-10">
                 {activeTab === "services-pricing" && (
                   <div className="space-y-6">
                     {/* Base Price Section */}
@@ -310,8 +312,8 @@ const BusinessProfileSettings = () => {
                         <h3 className="font-black text-lg tracking-tight">BASE STATION PRICE</h3>
                       </div>
                       <p className="text-sm text-muted-foreground font-medium pl-1">This is the starting cost for customers who reserve a slot at your station.</p>
-                      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                        <div className="relative w-full sm:max-w-[240px]">
+                      <div className="flex flex-col xs:flex-row items-start xs:items-center gap-4 flex-wrap">
+                        <div className="relative w-full xs:max-w-[200px]">
                           <span className="absolute left-4 top-1/2 -translate-y-1/2 font-black text-primary text-xl">₦</span>
                           <Input
                             type="number"
@@ -320,7 +322,9 @@ const BusinessProfileSettings = () => {
                             onChange={(e) => setBusinessData({ ...businessData, basePrice: parseInt(e.target.value) || 0 })}
                           />
                         </div>
-                        <Badge variant="outline" className="h-12 px-6 rounded-full flex items-center bg-white font-black text-primary shadow-sm border-primary/10 tracking-widest uppercase">Premium Standard</Badge>
+                        <Badge variant="outline" className="h-12 px-4 sm:px-6 rounded-full flex items-center bg-white font-black text-primary shadow-sm border-primary/10 tracking-widest uppercase whitespace-normal text-center leading-tight">
+                          Premium Standard
+                        </Badge>
                       </div>
                     </div>
 
@@ -328,14 +332,14 @@ const BusinessProfileSettings = () => {
 
                     {/* Services Section */}
                     <div className="space-y-4">
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between flex-wrap gap-2">
                         <div className="flex items-center gap-2">
                           <Briefcase className="h-5 w-5 text-blue-600" />
                           <h3 className="font-bold text-lg">Main Services</h3>
                         </div>
                         <Button
                           size="sm"
-                          className="gap-2"
+                          className="gap-2 rounded-full"
                           onClick={() => {
                             setEditingService({ name: "", description: "", price: 0, duration: 30 });
                             setIsServiceModalOpen(true);
@@ -348,16 +352,16 @@ const BusinessProfileSettings = () => {
                       <div className="grid gap-3">
                         {businessData.services.length > 0 ? (
                           businessData.services.map((service, index) => (
-                            <div key={index} className="flex items-center justify-between p-4 border rounded-xl hover:bg-muted/30 transition-colors">
-                              <div className="space-y-1">
-                                <div className="font-bold flex items-center gap-2">
-                                  {service.name}
-                                  <Badge variant="secondary" className="text-[10px] h-5">{service.duration} mins</Badge>
+                            <div key={index} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border rounded-xl hover:bg-muted/30 transition-colors gap-4">
+                              <div className="space-y-1 min-w-0 flex-1">
+                                <div className="font-bold flex items-center gap-2 flex-wrap">
+                                  <span className="truncate">{service.name}</span>
+                                  <Badge variant="secondary" className="text-[10px] h-5 whitespace-nowrap">{service.duration} mins</Badge>
                                 </div>
-                                <p className="text-sm text-muted-foreground line-clamp-1">{service.description}</p>
+                                <p className="text-sm text-muted-foreground line-clamp-2">{service.description}</p>
                                 <p className="text-sm font-black text-primary">₦{service.price.toLocaleString()}</p>
                               </div>
-                              <div className="flex gap-2">
+                              <div className="flex gap-2 self-start sm:self-center">
                                 <Button
                                   variant="ghost"
                                   size="icon"
@@ -395,7 +399,7 @@ const BusinessProfileSettings = () => {
 
                     {/* Add-ons Section */}
                     <div className="space-y-4">
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between flex-wrap gap-2">
                         <div className="flex items-center gap-2">
                           <Tag className="h-5 w-5 text-purple-600" />
                           <h3 className="font-bold text-lg">Add-ons</h3>
@@ -403,7 +407,7 @@ const BusinessProfileSettings = () => {
                         <Button
                           variant="outline"
                           size="sm"
-                          className="gap-2"
+                          className="gap-2 rounded-full"
                           onClick={() => {
                             setEditingAddon({ name: "", description: "", price: 0 });
                             setIsAddonModalOpen(true);
@@ -416,9 +420,9 @@ const BusinessProfileSettings = () => {
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         {businessData.addons.length > 0 ? (
                           businessData.addons.map((addon, index) => (
-                            <div key={index} className="p-4 border rounded-xl hover:bg-muted/30 transition-colors flex flex-col justify-between gap-3">
-                              <div className="space-y-1">
-                                <div className="font-bold">{addon.name}</div>
+                            <div key={index} className="p-4 border rounded-xl hover:bg-muted/30 transition-colors flex flex-col justify-between gap-3 min-w-0">
+                              <div className="space-y-1 min-w-0">
+                                <div className="font-bold truncate">{addon.name}</div>
                                 <p className="text-xs text-muted-foreground line-clamp-2">{addon.description}</p>
                                 <p className="text-sm font-black text-purple-600">₦{addon.price.toLocaleString()}</p>
                               </div>
@@ -628,7 +632,7 @@ const BusinessProfileSettings = () => {
 
       {/* Service Modal */}
       <Dialog open={isServiceModalOpen} onOpenChange={setIsServiceModalOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-[90vw] sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle>{editingService?.index !== undefined ? "Edit Service" : "Add New Service"}</DialogTitle>
           </DialogHeader>
@@ -687,7 +691,7 @@ const BusinessProfileSettings = () => {
 
       {/* Addon Modal */}
       <Dialog open={isAddonModalOpen} onOpenChange={setIsAddonModalOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-[90vw] sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle>{editingAddon?.index !== undefined ? "Edit Add-on" : "Add New Add-on"}</DialogTitle>
           </DialogHeader>

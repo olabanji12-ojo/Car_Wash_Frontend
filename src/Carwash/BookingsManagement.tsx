@@ -14,11 +14,13 @@ import {
   XCircle,
   MessageSquare,
   MapPin,
+  Search,
 } from "lucide-react";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { useCarwashBookings, useUpdateBookingStatus } from "@/hooks/useBookings";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Booking {
   id: string;
@@ -139,8 +141,37 @@ const BookingsManagement = () => {
   if (isLoading) {
     return (
       <DashboardLayout>
-        <div className="min-h-[60vh] flex items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="container mx-auto px-4 py-8">
+          <div className="space-y-6">
+            <Skeleton className="h-10 w-48 mb-6" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8 bg-muted/30 p-4 rounded-2xl border border-primary/5">
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-12 w-full rounded-xl" />
+              </div>
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-12 w-full rounded-xl" />
+              </div>
+            </div>
+            <div className="space-y-4">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="flex flex-col gap-4 p-4 border rounded-2xl bg-white shadow-sm">
+                  <div className="flex justify-between items-start">
+                    <div className="space-y-2">
+                      <Skeleton className="h-6 w-40" />
+                      <Skeleton className="h-4 w-24" />
+                    </div>
+                    <Skeleton className="h-6 w-20 rounded-full" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <Skeleton className="h-12 w-full rounded-xl" />
+                    <Skeleton className="h-12 w-full rounded-xl" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </DashboardLayout>
     );
@@ -186,51 +217,61 @@ const BookingsManagement = () => {
             </div>
 
             <div className="hidden md:block overflow-x-auto">
-              <table className="w-full text-left">
-                <thead>
-                  <tr className="border-b">
-                    <th className="py-2 px-4">Customer</th>
-                    <th className="py-2 px-4">Service Type</th>
-                    <th className="py-2 px-4">Date/Time</th>
-                    <th className="py-2 px-4">Status</th>
-                    <th className="py-2 px-4">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredBookings.map((booking) => (
-                    <tr key={booking.id} className="border-b">
-                      <td className="py-2 px-4">{booking.customerName}</td>
-                      <td className="py-2 px-4">
-                        {booking.serviceType === "slot" ? "Slot" : "Home Service"}
-                      </td>
-                      <td className="py-2 px-4 whitespace-nowrap">
-                        {booking.date} {booking.time}
-                      </td>
-                      <td className="py-2 px-4">
-                        <span className={
-                          booking.status === "pending" ? "text-yellow-600" :
-                            booking.status === "confirmed" ? "text-green-600" :
-                              booking.status === "cancelled" ? "text-red-600" : "text-blue-600"
-                        }>
-                          {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
-                        </span>
-                      </td>
-                      <td className="py-2 px-4 flex gap-2">
-                        <Button variant="outline" size="sm" onClick={() => openBookingDetails(booking)}>View</Button>
-                        {booking.status === "pending" && (
-                          <>
-                            <Button size="sm" onClick={() => handleAcceptBooking(booking.id)}><CheckCircle className="h-4 w-4 mr-1" />Accept</Button>
-                            <Button variant="destructive" size="sm" onClick={() => handleRejectBooking(booking.id)}><XCircle className="h-4 w-4 mr-1" />Reject</Button>
-                          </>
-                        )}
-                        {booking.status === "confirmed" && (
-                          <Button size="sm" className="bg-purple-600 hover:bg-purple-700" onClick={() => handleCompleteBooking(booking.id)}><CheckCircle className="h-4 w-4 mr-1" />Mark Completed</Button>
-                        )}
-                      </td>
+              {filteredBookings.length > 0 ? (
+                <table className="w-full text-left">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="py-2 px-4">Customer</th>
+                      <th className="py-2 px-4">Service Type</th>
+                      <th className="py-2 px-4">Date/Time</th>
+                      <th className="py-2 px-4">Status</th>
+                      <th className="py-2 px-4">Actions</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {filteredBookings.map((booking) => (
+                      <tr key={booking.id} className="border-b">
+                        <td className="py-2 px-4">{booking.customerName}</td>
+                        <td className="py-2 px-4">
+                          {booking.serviceType === "slot" ? "Slot" : "Home Service"}
+                        </td>
+                        <td className="py-2 px-4 whitespace-nowrap">
+                          {booking.date} {booking.time}
+                        </td>
+                        <td className="py-2 px-4">
+                          <span className={
+                            booking.status === "pending" ? "text-yellow-600" :
+                              booking.status === "confirmed" ? "text-green-600" :
+                                booking.status === "cancelled" ? "text-red-600" : "text-blue-600"
+                          }>
+                            {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
+                          </span>
+                        </td>
+                        <td className="py-2 px-4 flex gap-2">
+                          <Button variant="outline" size="sm" onClick={() => openBookingDetails(booking)}>View</Button>
+                          {booking.status === "pending" && (
+                            <>
+                              <Button size="sm" onClick={() => handleAcceptBooking(booking.id)}><CheckCircle className="h-4 w-4 mr-1" />Accept</Button>
+                              <Button variant="destructive" size="sm" onClick={() => handleRejectBooking(booking.id)}><XCircle className="h-4 w-4 mr-1" />Reject</Button>
+                            </>
+                          )}
+                          {booking.status === "confirmed" && (
+                            <Button size="sm" className="bg-purple-600 hover:bg-purple-700" onClick={() => handleCompleteBooking(booking.id)}><CheckCircle className="h-4 w-4 mr-1" />Mark Completed</Button>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <div className="text-center py-16 border-2 border-dashed rounded-xl space-y-4">
+                  <div className="flex justify-center"><div className="bg-muted/30 p-4 rounded-full"><Search size={40} className="text-muted-foreground" /></div></div>
+                  <div>
+                    <h3 className="text-lg font-bold">No Bookings Found</h3>
+                    <p className="text-muted-foreground">There are no bookings matching your current filter.</p>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Mobile View - Cards */}
@@ -332,7 +373,13 @@ const BookingsManagement = () => {
                   </Card>
                 ))
               ) : (
-                <div className="text-center py-8 text-muted-foreground">No bookings found matching your criteria.</div>
+                <div className="text-center py-16 border-2 border-dashed rounded-[2rem] space-y-4">
+                  <div className="flex justify-center"><div className="bg-muted/30 p-4 rounded-full"><Search size={40} className="text-muted-foreground" /></div></div>
+                  <div>
+                    <h3 className="text-lg font-bold">No Bookings Found</h3>
+                    <p className="text-muted-foreground">There are no bookings matching your current filter.</p>
+                  </div>
+                </div>
               )}
             </div>
           </CardContent>
@@ -340,6 +387,7 @@ const BookingsManagement = () => {
 
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogContent className="sm:max-w-[600px]">
+            {/* ... content remains same in spirit ... */}
             <DialogHeader>
               <DialogTitle>Booking Details</DialogTitle>
             </DialogHeader>

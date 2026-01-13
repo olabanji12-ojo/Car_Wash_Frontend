@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Star, MessageSquare, Filter, Calendar, User } from 'lucide-react';
+import { Star, MessageSquare, Filter, Calendar, User, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
     Select,
     SelectContent,
@@ -91,8 +92,40 @@ const ReviewsManagement = () => {
     if (isLoading) {
         return (
             <DashboardLayout>
-                <div className="min-h-[60vh] flex items-center justify-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                <div className="w-full px-3 sm:px-6 py-4 sm:py-8 space-y-8 font-outfit">
+                    <div className="space-y-4">
+                        <div className="space-y-2">
+                            <Skeleton className="h-10 w-48 sm:w-64" />
+                            <Skeleton className="h-5 w-72 sm:w-96" />
+                        </div>
+                        <div className="grid grid-cols-3 gap-3 w-full lg:max-w-2xl">
+                            <Skeleton className="h-28 w-full rounded-2xl" />
+                            <Skeleton className="h-28 w-full rounded-2xl" />
+                            <Skeleton className="h-28 w-full rounded-2xl" />
+                        </div>
+                    </div>
+                    <div className="space-y-6">
+                        {[1, 2, 3].map((i) => (
+                            <Card key={i} className="overflow-hidden border-none rounded-[1.5rem] shadow-sm">
+                                <CardContent className="p-6 sm:p-8 space-y-6">
+                                    <div className="flex gap-4">
+                                        <Skeleton className="h-14 w-14 rounded-2xl" />
+                                        <div className="space-y-2 flex-1">
+                                            <div className="flex justify-between">
+                                                <Skeleton className="h-6 w-32 sm:w-48" />
+                                                <Skeleton className="h-8 w-24 rounded-full" />
+                                            </div>
+                                            <Skeleton className="h-4 w-24" />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2 pl-4 border-l-4 border-muted">
+                                        <Skeleton className="h-4 w-full" />
+                                        <Skeleton className="h-4 w-2/3" />
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </div>
                 </div>
             </DashboardLayout>
         );
@@ -192,9 +225,20 @@ const ReviewsManagement = () => {
                 <div className="space-y-6">
                     {filteredReviews.length === 0 ? (
                         <div className="text-center py-24 text-muted-foreground bg-muted/10 rounded-[2rem] border-2 border-dashed border-border/50">
-                            <MessageSquare className="h-12 w-12 mx-auto mb-4 text-muted-foreground/30" />
-                            <p className="font-bold text-lg">No reviews match your filter.</p>
-                            <p className="text-sm">Try exploring a wider selection!</p>
+                            <div className="h-20 w-20 mx-auto mb-6 bg-muted/20 rounded-full flex items-center justify-center">
+                                <Search className="h-10 w-10 text-muted-foreground/50" />
+                            </div>
+                            <h3 className="font-black text-xl text-foreground mb-2">No reviews match your filter</h3>
+                            <p className="text-sm font-medium text-muted-foreground max-w-xs mx-auto">
+                                We couldn't find any reviews matching "{filter}". Try switching to 'All Reviews' to see everything.
+                            </p>
+                            <Button
+                                variant="outline"
+                                className="mt-6 rounded-full font-bold"
+                                onClick={() => setFilter('all')}
+                            >
+                                Clear Filters
+                            </Button>
                         </div>
                     ) : (
                         filteredReviews.map((review) => (

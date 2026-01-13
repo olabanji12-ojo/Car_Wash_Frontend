@@ -53,6 +53,15 @@ const Signup = () => {
       return;
     }
 
+    // Validate Phone Number (Nigerian Format: 080... or +234...)
+    const phoneRegex = /^(\+234|0)(7|8|9)(0|1)\d{8}$/;
+    if (!phoneRegex.test(phone.replace(/\s/g, ''))) {
+      const errorMsg = 'Please enter a valid Nigerian phone number (e.g. 08012345678 or +234...)';
+      console.error('❌ [handleSignup] Invalid phone format:', phone);
+      toast.error(errorMsg);
+      return;
+    }
+
     // Validate password strength
     if (!passwordValidation.isValid) {
       const errorMsg = 'Password does not meet security requirements';
