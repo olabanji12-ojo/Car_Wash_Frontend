@@ -612,7 +612,7 @@ const Booking = () => {
                           <Loader2 className="h-8 w-8 animate-spin text-primary" />
                         </div>
                       ) : availableSlots.length > 0 ? (
-                        <div className="grid grid-cols-3 xs:grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-2">
+                        <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-6 gap-2">
                           {availableSlots.map((slot: any, idx: number) => {
                             const dateObj = new Date(slot.start_time);
                             const startTime = dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
