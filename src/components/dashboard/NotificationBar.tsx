@@ -32,13 +32,13 @@ export const NotificationBar = () => {
 
     return (
         <div className="bg-blue-600 text-white py-2 px-4 shadow-md sticky top-16 z-20 animate-in slide-in-from-top duration-300">
-            <div className="container mx-auto flex items-center justify-between gap-4">
-                <div className="flex items-center gap-3 min-w-0">
-                    <Bell className="h-5 w-5 flex-shrink-0 animate-bounce" />
-                    <p className="text-sm font-medium truncate">
-                        {latestNotif.message}
-                    </p>
-                </div>
+            <div className="container mx-auto flex items-center justify-between gap-2 sm:gap-4">
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                <Bell className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 animate-bounce" />
+                <p className="text-xs sm:text-sm font-medium truncate">
+                    {latestNotif.message}
+                </p>
+            </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
                     <Button
                         variant="ghost"

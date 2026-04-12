@@ -127,13 +127,13 @@ const BookingCard = ({
                       <><Search className="h-3 w-3" /> Queue Number</>
                     )}
                   </p>
-                  <p className="font-mono font-black text-xl text-primary tracking-widest bg-primary/5 px-2 py-0.5 rounded-lg inline-block border border-primary/10 shadow-sm">
+                  <p className="font-mono font-black text-lg sm:text-xl text-primary tracking-normal sm:tracking-widest bg-primary/5 px-2 py-0.5 rounded-lg inline-block border border-primary/10 shadow-sm">
                     {booking.booking_type === 'home_service'
                       ? (booking.verification_code || "----")
                       : (booking.queue_number || "---")
                     }
                   </p>
-                  <p className="text-[10px] text-muted-foreground italic">
+                  <p className="text-[9px] sm:text-[10px] text-muted-foreground italic">
                     {booking.booking_type === 'home_service' ? "Handshake Code" : "Show at Entrance"}
                   </p>
                 </div>

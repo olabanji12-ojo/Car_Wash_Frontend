@@ -19,8 +19,8 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         <div className="flex-1 flex flex-col">
           <DashboardHeader />
           {user?.role === 'car_owner' && <NotificationBar />}
-          <main className="flex-1 p-4 pb-24 md:p-8">
-            <div className="max-w-7xl mx-auto">
+          <main className="flex-1 p-4 pb-24 md:p-8 min-w-0 overflow-x-hidden">
+            <div className="max-w-7xl mx-auto min-w-0">
               {children}
             </div>
           </main>
