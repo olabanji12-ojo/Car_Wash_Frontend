@@ -19,13 +19,13 @@ const Hero = () => {
           <span className="text-xs sm:text-sm font-medium">Your Car Deserves the Best</span>
         </div>
 
-        <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold text-foreground mb-4 md:mb-6 leading-tight" data-aos="fade-up" data-aos-delay="100">
+        <h1 className="text-2xl sm:text-4xl md:text-6xl lg:text-7xl font-bold text-foreground mb-4 md:mb-6 leading-tight" data-aos="fade-up" data-aos-delay="100">
           Experience the Joy of a
           <span className="hidden sm:inline"><br /></span>
           <span className="text-primary bg-clip-text block sm:inline ml-0 sm:ml-2">Spotlessly Clean Car</span>
         </h1>
 
-        <p className="text-base sm:text-lg md:text-xl text-muted-foreground mb-8 md:mb-10 max-w-2xl mx-auto leading-relaxed" data-aos="fade-up" data-aos-delay="200">
+        <p className="text-sm sm:text-lg md:text-xl text-muted-foreground mb-8 md:mb-10 max-w-2xl mx-auto leading-relaxed" data-aos="fade-up" data-aos-delay="200">
           Stop wasting weekends at the car wash. Book premium detailing services in seconds and get back to what matters.
         </p>
 

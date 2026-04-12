@@ -82,12 +82,12 @@ export const QuickActions = ({ onSearch }: QuickActionsProps) => {
             </div>
 
             {/* Search Bar Row */}
-            <div className="bg-white p-2 rounded-2xl shadow-xl ring-1 ring-black/5 flex flex-col md:flex-row gap-2 sm:gap-3">
+            <div className="bg-white p-1.5 sm:p-2 rounded-2xl shadow-xl ring-1 ring-black/5 flex flex-col md:flex-row gap-1.5 sm:gap-3">
               <div className="flex-1 relative group min-w-0">
                 <div className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-gray-400 z-10">
                   <MapPin className="h-4 w-4 sm:h-5 sm:w-5" />
                 </div>
-                <div className="[&>div]:bg-transparent [&_input]:text-gray-900 [&_input]:placeholder:text-gray-400 [&_input]:pl-10 sm:[&_input]:pl-11 [&_input]:h-10 sm:[&_input]:h-12 [&_input]:text-base sm:[&_input]:text-lg [&_input]:border-none [&_input]:ring-0 [&_input]:shadow-none w-full">
+                <div className="[&>div]:bg-transparent [&_input]:text-gray-900 [&_input]:placeholder:text-gray-400 [&_input]:pl-9 sm:[&_input]:pl-11 [&_input]:h-11 sm:[&_input]:h-12 [&_input]:text-sm sm:[&_input]:text-lg [&_input]:border-none [&_input]:ring-0 [&_input]:shadow-none w-full">
                   <LocationSearchBar
                     onPlaceSelected={handlePlaceSelected}
                     placeholder={serviceMode === 'home' ? "Where should we come to?" : "Enter your street or area..."}
@@ -95,11 +95,11 @@ export const QuickActions = ({ onSearch }: QuickActionsProps) => {
                 </div>
               </div>
               <Button
-                className="h-12 px-8 bg-blue-600 hover:bg-blue-500 text-white font-bold text-lg shadow-lg border border-blue-400/30 transition-all active:scale-95 w-full md:w-auto"
+                className="h-11 sm:h-12 px-8 bg-blue-600 hover:bg-blue-500 text-white font-bold text-base sm:text-lg shadow-lg border border-blue-400/30 transition-all active:scale-95 w-full md:w-auto"
                 onClick={handleSearchClick}
                 disabled={!selectedLocation}
               >
-                <Search className="mr-2 h-5 w-5" />
+                <Search className="mr-2 h-4.5 w-4.5 sm:h-5 sm:w-5" />
                 Search
               </Button>
             </div>
