@@ -46,18 +46,18 @@ export const DashboardHeader = () => {
     };
 
     return (
-        <header className="sticky top-0 z-10 flex h-16 items-center border-b bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60 md:px-6">
-            <div className="flex flex-1 items-center gap-4">
+        <header className="sticky top-0 z-10 flex h-16 items-center border-b bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60 md:px-6 w-full max-w-full overflow-hidden">
+            <div className="flex flex-1 items-center gap-2 sm:gap-4 min-w-0">
                 {/* Sidebar Trigger - Visible on mobile when sidebar is off-canvas */}
-                <SidebarTrigger />
-
+                <SidebarTrigger className="flex-shrink-0" />
+ 
                 {/* Site Title/Logo for Mobile screens only */}
-                <h1 className="text-xl font-bold md:hidden bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
+                <h1 className="text-xl font-bold md:hidden bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent truncate min-w-0">
                     QueueLess
                 </h1>
-
+ 
                 {/* Spacer to push items to the right */}
-                <div className="flex-1" />
+                <div className="flex-1 min-w-0" />
 
                 {/* Notifications Button with Dropdown */}
                 {user && (
