@@ -197,7 +197,7 @@ export const BookingDetailsModal = ({
                     )}
 
                     {/* Worker Assignment Section */}
-                    {booking.booking_type === "home_service" && booking.status !== "completed" && booking.status !== "cancelled" && (
+                    {booking.status !== "completed" && booking.status !== "cancelled" && (
                         <div className="space-y-3 pt-2">
                             <Separator />
                             <div className="flex items-center justify-between">
@@ -232,7 +232,7 @@ export const BookingDetailsModal = ({
                                             ) : (
                                                 workers.map(w => (
                                                     <SelectItem key={w.id} value={w.id}>
-                                                        {w.name} ({w.worker_status})
+                                                        {w.name} ({w.worker_status || 'Online'}) {(w.active_orders?.length || 0) > 0 ? `• ${w.active_orders?.length} active` : '• Available'}
                                                     </SelectItem>
                                                 ))
                                             )}
@@ -240,7 +240,7 @@ export const BookingDetailsModal = ({
                                     </Select>
                                     <Button
                                         size="sm"
-                                        className="h-10"
+                                        className="h-10 bg-blue-600 hover:bg-blue-700"
                                         disabled={!assignedWorkerId || assignedWorkerId === "none" || !onAssignWorker}
                                         onClick={async () => {
                                             if (onAssignWorker) {
@@ -262,7 +262,8 @@ export const BookingDetailsModal = ({
                                         <p className="text-xs text-gray-500 capitalize">{booking.worker_status || "Active"}</p>
                                     </div>
                                 </div>
-                            )}
+                            )
+                        }
 
                             {booking.worker_id && booking.status === "confirmed" && (
                                 <Button

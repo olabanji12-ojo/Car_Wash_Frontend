@@ -54,6 +54,11 @@ export interface Carwash {
     delivery_radius_km?: number;
     search_mode?: 'station' | 'home';
     base_price: number;
+    pricing_matrix?: {
+        small: number;
+        medium: number;
+        large: number;
+    };
     max_cars_per_slot?: number;
 }
 
@@ -110,9 +115,10 @@ const CarwashService = {
     /**
      * Search nearby car washes
      */
-    async searchNearby(lat: number, lng: number): Promise<Carwash[]> {
+    async searchNearby(lat: number, lng: number, radiusKm?: number): Promise<Carwash[]> {
         try {
-            const response = await axios.get(`${API_BASE_URL}/carwashes/nearby?lat=${lat}&lng=${lng}`);
+            const radiusParam = radiusKm ? `&radius=${radiusKm * 1000}` : ''; // backend expects meters
+            const response = await axios.get(`${API_BASE_URL}/carwashes/nearby?lat=${lat}&lng=${lng}${radiusParam}`);
             console.log('Response from searchNearby:', response.data);
 
             let carwashesArray: Carwash[] = [];

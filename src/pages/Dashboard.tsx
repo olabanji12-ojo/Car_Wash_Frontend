@@ -9,7 +9,7 @@ import MyBookingsPage from "./MyBookings";
 import Vehicles from "./Vehicles";
 import Favorites from "./Favorites";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import CarwashService, { Carwash } from "@/Contexts/CarwashService";
 import { toast } from "sonner";
 
@@ -67,13 +67,13 @@ const DashboardHome = () => {
         }
     };
 
-    const handleSearch = (lat: number, lng: number, address: string, mode: 'station' | 'home') => {
+    const handleSearch = (lat: number, lng: number, address: string, mode: 'station' | 'home', radiusKm?: number) => {
         setLoading(true);
         setHasSearched(true);
         setSearchedAddress(address);
         setSearchedLocation([lng, lat]);
 
-        CarwashService.searchNearby(lat, lng)
+        CarwashService.searchNearby(lat, lng, radiusKm)
             .then((data) => {
                 let carwashesArray = Array.isArray(data) ? data : [];
 
@@ -99,6 +99,20 @@ const DashboardHome = () => {
             .finally(() => setLoading(false));
     };
 
+    // 🆕 Fires when user drags the map to a new area
+    const handleAreaChange = useCallback((lat: number, lng: number) => {
+        setLoading(true);
+        CarwashService.searchNearby(lat, lng)
+            .then((data) => {
+                const carwashesArray = Array.isArray(data) ? data : [];
+                setCarwashes(carwashesArray);
+            })
+            .catch((err) => {
+                console.error("Area search failed", err);
+            })
+            .finally(() => setLoading(false));
+    }, []);
+
     return (
         <div className="space-y-8">
             <QuickActions onSearch={handleSearch} />
@@ -109,6 +123,7 @@ const DashboardHome = () => {
                 hasSearched={hasSearched}
                 searchedAddress={searchedAddress}
                 searchedLocation={searchedLocation}
+                onAreaChange={handleAreaChange}
             />
         </div>
     );

@@ -34,6 +34,7 @@ import {
   Save
 } from "lucide-react";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 interface Vehicle {
   id: string;
@@ -57,6 +58,7 @@ const carColors = [
 ];
 
 import CarService, { CarResponse } from "@/Contexts/CarService";
+import { classifyVehicle, VehicleSize } from "@/lib/vehicleClassifier";
 
 const Vehicles = () => {
   const navigate = useNavigate();
@@ -74,10 +76,17 @@ const Vehicles = () => {
   const [plateNumber, setPlateNumber] = useState("");
   const [color, setColor] = useState("");
   const [setAsDefault, setSetAsDefault] = useState(false);
+  const [detectedSize, setDetectedSize] = useState<VehicleSize>("medium");
 
   // Generate years (current year down to 30 years ago)
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 31 }, (_, i) => (currentYear - i).toString());
+  // Auto-detect size on model change
+  useEffect(() => {
+    if (make || model) {
+      setDetectedSize(classifyVehicle(`${make} ${model}`));
+    }
+  }, [make, model]);
 
   useEffect(() => {
     fetchVehicles();
@@ -108,6 +117,7 @@ const Vehicles = () => {
     setSetAsDefault(false);
     setIsEditing(false);
     setEditingVehicle(null);
+    setDetectedSize("medium");
   };
 
   const handleAddVehicle = async () => {
@@ -123,6 +133,7 @@ const Vehicles = () => {
       await CarService.createCar({
         model: fullModel,
         plate: plateNumber.toUpperCase(),
+        size: detectedSize,
         color,
         is_default: setAsDefault,
         note: noteData
@@ -149,6 +160,7 @@ const Vehicles = () => {
       await CarService.updateCar(editingVehicle.id, {
         model: fullModel,
         plate: plateNumber.toUpperCase(),
+        size: detectedSize,
         color,
         is_default: setAsDefault,
         note: noteData
@@ -168,6 +180,7 @@ const Vehicles = () => {
     setPlateNumber(vehicle.plate);
     setColor(vehicle.color || "");
     setSetAsDefault(vehicle.is_default);
+    setDetectedSize(vehicle.size || "medium");
 
     // Try to parse structured data from note
     try {
@@ -316,6 +329,16 @@ const Vehicles = () => {
                                   Default Vehicle
                                 </Badge>
                               )}
+                              {vehicle.size && (
+                                <Badge variant="outline" className={cn(
+                                  "mt-1 ml-2",
+                                  vehicle.size === 'small' && "border-blue-200 text-blue-700 bg-blue-50",
+                                  vehicle.size === 'medium' && "border-amber-200 text-amber-700 bg-amber-50",
+                                  vehicle.size === 'large' && "border-red-200 text-red-700 bg-red-50"
+                                )}>
+                                  {vehicle.size}
+                                </Badge>
+                              )}
                             </div>
                           </div>
 
@@ -436,6 +459,19 @@ const Vehicles = () => {
                     value={model}
                     onChange={(e) => setModel(e.target.value)}
                   />
+                  {detectedSize && (
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-tighter">Detected Size:</span>
+                      <Badge variant="outline" className={cn(
+                        "text-[10px] py-0 h-4 capitalize",
+                        detectedSize === 'small' && "border-blue-200 text-blue-700 bg-blue-50",
+                        detectedSize === 'medium' && "border-amber-200 text-amber-700 bg-amber-50",
+                        detectedSize === 'large' && "border-red-200 text-red-700 bg-red-50"
+                      )}>
+                        {detectedSize}
+                      </Badge>
+                    </div>
+                  )}
                 </div>
 
                 {/* Year */}

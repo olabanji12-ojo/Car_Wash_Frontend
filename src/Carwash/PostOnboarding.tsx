@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useNavigate } from "react-router-dom";
 import CarwashService from "@/Contexts/CarwashService";
@@ -19,7 +20,13 @@ import {
   Trash2,
   ChevronLeft,
   ChevronRight,
+  Sparkles,
+  Check,
+  Plus,
+  Home,
+  LayoutGrid
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { LocationSearchBar } from "@/components/LocationSearchBar";
 import { useAuth } from "@/Contexts/AuthContext";
 
@@ -41,6 +48,13 @@ interface BusinessInfo {
   homeService: boolean;
   deliveryRadiusKM: number;
   basePrice: number;
+  pricing_matrix: {
+    small: number;
+    medium: number;
+    large: number;
+  };
+  about: string;
+  features: string[];
 }
 
 interface OperatingHour {
@@ -80,6 +94,13 @@ const PostOnboarding = () => {
     homeService: false,
     deliveryRadiusKM: 10,
     basePrice: 5000,
+    pricing_matrix: {
+      small: 5000,
+      medium: 5000,
+      large: 5000,
+    },
+    about: "",
+    features: [],
   });
   const navigate = useNavigate();
   const { refreshUser } = useAuth(); // Get refreshUser from AuthContext
@@ -173,23 +194,25 @@ const PostOnboarding = () => {
         name: businessInfo.name,
         description: businessInfo.description,
         address: businessInfo.address,
-        // phone: businessInfo.phone, // Backend model doesn't seem to have phone? Checking... It's not in the struct I saw.
-        // Let's put phone in description for now if needed, or just omit if backend doesn't take it.
-        // Actually, let's check the struct again. It has Name, Description, Address, Location... No Phone.
-        // We'll omit phone for now to avoid errors, or append to description.
         location: {
           type: "Point",
           coordinates: [
-            businessInfo.lng || 3.3792,
-            businessInfo.lat || 6.5244
+            Number(businessInfo.lng) || 3.3792,
+            Number(businessInfo.lat) || 6.5244
           ]
         },
         open_hours: openHoursMap,
         services: formattedServices,
-        max_cars_per_slot: businessInfo.maxCarsPerSlot,
-        home_service: businessInfo.homeService,
-        delivery_radius_km: businessInfo.homeService ? businessInfo.deliveryRadiusKM : 0,
-        base_price: businessInfo.basePrice,
+        max_cars_per_slot: Number(businessInfo.maxCarsPerSlot) || 1,
+        home_service: !!businessInfo.homeService,
+        delivery_radius_km: businessInfo.homeService ? (Number(businessInfo.deliveryRadiusKM) || 0) : 0,
+        pricing_matrix: {
+          small: Number(businessInfo.pricing_matrix.small) || 3000,
+          medium: Number(businessInfo.pricing_matrix.medium) || 5000,
+          large: Number(businessInfo.pricing_matrix.large) || 7000,
+        },
+        about: businessInfo.about,
+        features: businessInfo.features,
         is_active: true,
         has_location: true,
         has_onboarded: true
@@ -338,15 +361,92 @@ const PostOnboarding = () => {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="description" className="text-sm">Description</Label>
-                <Textarea
+                <Label htmlFor="description" className="text-sm font-semibold">Short Tagline</Label>
+                <Input
                   id="description"
                   value={businessInfo.description}
                   onChange={(e) => setBusinessInfo({ ...businessInfo, description: e.target.value })}
-                  placeholder="Describe your carwash services..."
-                  rows={3}
+                  placeholder="e.g. The best wash in Lagos"
                   className="text-sm sm:text-base"
                 />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="about" className="text-sm font-semibold">About Our Business</Label>
+                <Textarea
+                  id="about"
+                  value={businessInfo.about}
+                  onChange={(e) => setBusinessInfo({ ...businessInfo, about: e.target.value })}
+                  placeholder="Provide a detailed description of your business, experience, and what makes you special..."
+                  rows={4}
+                  className="text-sm sm:text-base"
+                />
+              </div>
+              
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                    <Home className="h-3 w-3 text-blue-500" /> Facility Amenities
+                  </Label>
+                  <div className="flex flex-wrap gap-2">
+                    {["WiFi", "Waiting Room", "Cafe", "Restrooms", "Air Conditioned", "TV"].map((feat) => {
+                      const isSelected = businessInfo.features.includes(feat);
+                      return (
+                        <Badge
+                          key={feat}
+                          variant={isSelected ? "default" : "outline"}
+                          className="cursor-pointer py-1 px-3 rounded-full text-[10px] font-bold transition-all"
+                          onClick={() => {
+                            const newFeats = isSelected 
+                              ? businessInfo.features.filter(f => f !== feat)
+                              : [...businessInfo.features, feat];
+                            setBusinessInfo({ ...businessInfo, features: newFeats });
+                          }}
+                        >
+                          {isSelected && <Check className="h-2 w-2 mr-1" />} {feat}
+                        </Badge>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                    <Sparkles className="h-3 w-3 text-yellow-500" /> Services You Offer
+                  </Label>
+                  <p className="text-[10px] text-muted-foreground mb-2">Check the services you provide. You'll set prices in Step 4.</p>
+                  <div className="flex flex-wrap gap-2">
+                    {["Detailing", "Engine Wash", "Polishing", "Waxing", "Headlight Restoration", "Ceramic Coating"].map((sName) => {
+                      const isSelected = services.some(s => s.name === sName);
+                      return (
+                        <Badge
+                          key={sName}
+                          variant={isSelected ? "default" : "outline"}
+                          className={cn(
+                            "cursor-pointer py-1 px-3 rounded-full text-[10px] font-bold transition-all border-dashed",
+                            isSelected ? "bg-green-600 hover:bg-green-700 border-green-600" : "hover:border-green-500 hover:text-green-600"
+                          )}
+                          onClick={() => {
+                            if (isSelected) {
+                              setServices(services.filter(s => s.name !== sName));
+                            } else {
+                              setServices([...services, {
+                                name: sName,
+                                description: `Professional ${sName.toLowerCase()} service`,
+                                price: 0,
+                                duration: "30 mins",
+                                features: [],
+                                addOns: []
+                              }]);
+                              toast.info(`${sName} added to your menu!`);
+                            }
+                          }}
+                        >
+                          {isSelected ? <Check className="h-2 w-2 mr-1" /> : <Plus className="h-2 w-2 mr-1" />} {sName}
+                        </Badge>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="address" className="text-sm font-semibold">
@@ -382,22 +482,77 @@ const PostOnboarding = () => {
                   className="text-sm sm:text-base"
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="basePrice" className="text-sm font-semibold">
-                  Default Base Price (NGN) <span className="text-red-500">*</span>
-                </Label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">₦</span>
-                  <Input
-                    id="basePrice"
-                    type="number"
-                    value={businessInfo.basePrice}
-                    onChange={(e) => setBusinessInfo({ ...businessInfo, basePrice: parseFloat(e.target.value) || 0 })}
-                    placeholder="5000"
-                    className="pl-7 text-sm sm:text-base"
-                  />
+              <div className="space-y-4 p-4 bg-muted/30 rounded-xl border border-dashed">
+                <div className="flex flex-col gap-1">
+                  <Label className="text-sm font-bold flex items-center gap-2">
+                    <DollarSign className="h-4 w-4 text-primary" /> Multi-Tier Pricing Matrix
+                  </Label>
+                  <p className="text-xs text-muted-foreground">Adjust base prices based on vehicle size classifications.</p>
                 </div>
-                <p className="text-xs text-gray-500">The minimum price shown to customers for a basic wash slot.</p>
+
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="price-small" className="text-[10px] uppercase font-black text-muted-foreground tracking-tighter">Small Cars</Label>
+                    <div className="relative">
+                      <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground">₦</span>
+                      <Input
+                        id="price-small"
+                        type="number"
+                        value={businessInfo.pricing_matrix.small}
+                        onChange={(e) => {
+                          const val = parseFloat(e.target.value) || 0;
+                          setBusinessInfo({ 
+                            ...businessInfo, 
+                            pricing_matrix: { ...businessInfo.pricing_matrix, small: val }
+                          });
+                        }}
+                        className="pl-5 h-9 text-sm font-bold"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="price-medium" className="text-[10px] uppercase font-black text-muted-foreground tracking-tighter">Medium / SUV</Label>
+                    <div className="relative">
+                      <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground">₦</span>
+                      <Input
+                        id="price-medium"
+                        type="number"
+                        value={businessInfo.pricing_matrix.medium}
+                        onChange={(e) => {
+                          const val = parseFloat(e.target.value) || 0;
+                          setBusinessInfo({ 
+                            ...businessInfo, 
+                            basePrice: val,
+                            pricing_matrix: { ...businessInfo.pricing_matrix, medium: val }
+                          });
+                        }}
+                        className="pl-5 h-9 text-sm font-bold border-primary/50 bg-primary/5"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="price-large" className="text-[10px] uppercase font-black text-muted-foreground tracking-tighter">Large / Trucks</Label>
+                    <div className="relative">
+                      <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground">₦</span>
+                      <Input
+                        id="price-large"
+                        type="number"
+                        value={businessInfo.pricing_matrix.large}
+                        onChange={(e) => {
+                          const val = parseFloat(e.target.value) || 0;
+                          setBusinessInfo({ 
+                            ...businessInfo, 
+                            pricing_matrix: { ...businessInfo.pricing_matrix, large: val }
+                          });
+                        }}
+                        className="pl-5 h-9 text-sm font-bold"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <p className="text-[10px] text-muted-foreground italic">
+                  * Medium price is used as the default fallback base price.
+                </p>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="maxCarsPerSlot" className="text-sm font-semibold">
@@ -580,164 +735,233 @@ const PostOnboarding = () => {
             </div>
           )}
 
-          {/* Step 4: Add Service */}
+          {/* Step 4: Setup Services */}
           {step === 4 && (
-            <div className="space-y-3 sm:space-y-4">
-              <h3 className="text-base sm:text-lg font-semibold">Add Service</h3>
-              <p className="text-xs sm:text-sm text-gray-600">
-                Add at least one service for your carwash
-              </p>
-              <div className="space-y-2">
-                <Label htmlFor="service-name" className="text-sm font-semibold">
-                  Service Name <span className="text-red-500">*</span>
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
+              <div className="flex justify-between items-start">
+                <div className="space-y-1">
+                  <h3 className="text-lg font-bold flex items-center gap-2">
+                    <LayoutGrid className="h-5 w-5 text-blue-600" /> Setup Your Services
+                  </h3>
+                  <p className="text-sm text-gray-500">
+                    Define the core packages your customers can select.
+                  </p>
+                </div>
+                <Badge variant="secondary" className="px-3 py-1 font-bold bg-blue-50 text-blue-700 border-blue-100">
+                  {services.length} Added
+                </Badge>
+              </div>
+
+              {/* Quick Add Templates */}
+              <div className="space-y-3 p-4 bg-blue-50/50 rounded-2xl border border-blue-100">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-blue-700 flex items-center gap-1.5">
+                  <Sparkles className="h-3 w-3" /> Quick Add Templates
                 </Label>
-                <Input
-                  id="service-name"
-                  value={newService.name}
-                  onChange={(e) => setNewService({ ...newService, name: e.target.value })}
-                  placeholder="Exterior Wash"
-                  className="text-sm sm:text-base"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="service-description" className="text-sm">Description</Label>
-                <Textarea
-                  id="service-description"
-                  value={newService.description}
-                  onChange={(e) => setNewService({ ...newService, description: e.target.value })}
-                  placeholder="Describe the service..."
-                  rows={2}
-                  className="text-sm sm:text-base"
-                />
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="service-price" className="text-sm font-semibold">
-                    Price (NGN) <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    id="service-price"
-                    type="number"
-                    value={newService.price}
-                    onChange={(e) => setNewService({ ...newService, price: parseFloat(e.target.value) || 0 })}
-                    placeholder="6000"
-                    className="text-sm sm:text-base"
-                  />
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    { name: "Express Exterior", price: 3000, duration: "15 mins", description: "Fast exterior wash and dry" },
+                    { name: "Executive Detail", price: 15000, duration: "1 hour", description: "Full interior/exterior detailing" },
+                    { name: "Interior Only", price: 5000, duration: "30 mins", description: "Deep interior vacuum and wipe" },
+                    { name: "Engine Bay Clean", price: 7500, duration: "30 mins", description: "Degreasing and shine" },
+                  ].map((temp) => (
+                    <Button
+                      key={temp.name}
+                      variant="outline"
+                      size="sm"
+                      className="rounded-full border-blue-200 bg-white hover:bg-blue-600 hover:text-white transition-all h-8 text-[11px] font-bold shadow-sm"
+                      onClick={() => {
+                        setServices([...services, { ...temp, features: [], addOns: [] }]);
+                        toast.success(`Added ${temp.name}`);
+                      }}
+                    >
+                      <Plus className="h-3 w-3 mr-1" /> {temp.name}
+                    </Button>
+                  ))}
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="service-duration" className="text-sm font-semibold">
-                    Duration <span className="text-red-500">*</span>
-                  </Label>
-                  <Select
-                    value={newService.duration}
-                    onValueChange={(value) => setNewService({ ...newService, duration: value })}
+              </div>
+
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-dashed" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-white px-3 text-muted-foreground font-bold tracking-tighter">Or Create Custom</span>
+                </div>
+              </div>
+
+              {/* Custom Add Form */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-5 bg-gray-50 rounded-2xl border">
+                <div className="space-y-4">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="service-name" className="text-xs font-black text-gray-500 uppercase">Service Name</Label>
+                    <Input
+                      id="service-name"
+                      value={newService.name}
+                      onChange={(e) => setNewService({ ...newService, name: e.target.value })}
+                      placeholder="e.g. Diamond Polish"
+                      className="bg-white border-gray-200 shadow-sm"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="service-description" className="text-xs font-black text-gray-500 uppercase">Description</Label>
+                    <Textarea
+                      id="service-description"
+                      value={newService.description}
+                      onChange={(e) => setNewService({ ...newService, description: e.target.value })}
+                      placeholder="What's included in this package?"
+                      className="bg-white border-gray-200 shadow-sm min-h-[85px] text-sm"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-4 flex flex-col justify-between">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="service-price" className="text-xs font-black text-gray-500 uppercase">Price (₦)</Label>
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-sm">₦</span>
+                        <Input
+                          id="service-price"
+                          type="number"
+                          value={newService.price}
+                          onChange={(e) => setNewService({ ...newService, price: parseFloat(e.target.value) || 0 })}
+                          className="bg-white border-gray-200 shadow-sm font-black pl-7"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="service-duration" className="text-xs font-black text-gray-500 uppercase">Duration</Label>
+                      <Select
+                        value={newService.duration}
+                        onValueChange={(value) => setNewService({ ...newService, duration: value })}
+                      >
+                        <SelectTrigger className="bg-white border-gray-200 shadow-sm font-bold">
+                          <SelectValue placeholder="Time" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="15 mins">15m</SelectItem>
+                          <SelectItem value="30 mins">30m</SelectItem>
+                          <SelectItem value="45 mins">45m</SelectItem>
+                          <SelectItem value="1 hour">1h</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <div className="flex gap-2">
+                       <Input
+                        placeholder="Add feature (e.g. Clay Bar)"
+                        value={featureInput}
+                        onChange={(e) => setFeatureInput(e.target.value)}
+                        className="h-9 text-xs bg-white"
+                        onKeyPress={(e) => e.key === 'Enter' && handleAddFeature()}
+                      />
+                      <Button variant="secondary" size="sm" onClick={handleAddFeature}>+</Button>
+                    </div>
+                    {newService.features.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {newService.features.map((f, i) => (
+                          <Badge key={i} variant="outline" className="bg-white text-[9px] font-bold py-0 h-5">
+                            {f} <span className="ml-1 cursor-pointer text-red-500" onClick={() => setNewService({...newService, features: newService.features.filter((_, idx)=>idx!==i)})}>×</span>
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  <Button 
+                    onClick={handleAddService} 
+                    className="w-full bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-200 h-11 font-black text-xs uppercase tracking-widest mt-auto transition-all active:scale-[0.98]"
                   >
-                    <SelectTrigger className="text-sm sm:text-base">
-                      <SelectValue placeholder="Select duration" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="15 mins">15 minutes</SelectItem>
-                      <SelectItem value="30 mins">30 minutes</SelectItem>
-                      <SelectItem value="45 mins">45 minutes</SelectItem>
-                      <SelectItem value="1 hour">1 hour</SelectItem>
-                    </SelectContent>
-                  </Select>
+                    <Plus className="h-4 w-4 mr-2" /> Add to Menu
+                  </Button>
                 </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="service-features" className="text-sm">Features</Label>
-                <div className="flex gap-2">
-                  <Input
-                    id="service-features"
-                    value={featureInput}
-                    onChange={(e) => setFeatureInput(e.target.value)}
-                    placeholder="Add a feature"
-                    className="text-sm sm:text-base"
-                  />
-                  <Button onClick={handleAddFeature} size="sm" className="text-xs sm:text-sm">Add</Button>
+
+              {/* Added Services List (Visual Cards) */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <div className="h-px flex-1 bg-gray-100" />
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400">
+                    Your Active Menu ({services.length})
+                  </Label>
+                  <div className="h-px flex-1 bg-gray-100" />
                 </div>
-                {newService.features.length > 0 && (
-                  <ul className="space-y-1">
-                    {newService.features.map((feature, index) => (
-                      <li key={index} className="flex items-center justify-between text-xs sm:text-sm bg-gray-50 p-2 rounded">
-                        <span>{feature}</span>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6 text-red-600"
-                          onClick={() =>
-                            setNewService({
-                              ...newService,
-                              features: newService.features.filter((_, i) => i !== index),
-                            })
-                          }
+                
+                {services.length === 0 ? (
+                  <div className="text-center py-12 bg-gray-50/50 rounded-3xl border-2 border-dashed border-gray-200 flex flex-col items-center gap-3">
+                    <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center">
+                      <LayoutGrid className="h-8 w-8 text-gray-300" />
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-sm text-gray-400 font-bold">Your menu is empty</p>
+                      <p className="text-xs text-gray-400">Use templates to get started quickly!</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {services.map((service, index) => {
+                      const needsPrice = service.price === 0;
+                      return (
+                        <div 
+                          key={index} 
+                          className={cn(
+                            "group relative bg-white p-4 rounded-3xl border-2 transition-all shadow-sm hover:shadow-md",
+                            needsPrice ? "border-amber-200 bg-amber-50/10" : "hover:border-blue-600/50"
+                          )}
                         >
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="service-addons" className="text-sm">Add-ons (Optional)</Label>
-                <div className="flex gap-2">
-                  <Input
-                    id="service-addons"
-                    value={addOnInput}
-                    onChange={(e) => setAddOnInput(e.target.value)}
-                    placeholder="Add an add-on"
-                    className="text-sm sm:text-base"
-                  />
-                  <Button onClick={handleAddAddOn} size="sm" className="text-xs sm:text-sm">Add</Button>
-                </div>
-                {newService.addOns.length > 0 && (
-                  <ul className="space-y-1">
-                    {newService.addOns.map((addOn, index) => (
-                      <li key={index} className="flex items-center justify-between text-xs sm:text-sm bg-gray-50 p-2 rounded">
-                        <span>{addOn}</span>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6 text-red-600"
-                          onClick={() =>
-                            setNewService({
-                              ...newService,
-                              addOns: newService.addOns.filter((_, i) => i !== index),
-                            })
-                          }
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-              <Button onClick={handleAddService} className="w-full text-sm sm:text-base">Add Service</Button>
-              {services.length > 0 && (
-                <div className="mt-3 sm:mt-4">
-                  <h4 className="text-sm font-semibold mb-2">Added Services ({services.length})</h4>
-                  <ul className="space-y-2">
-                    {services.map((service, index) => (
-                      <li key={index} className="flex items-start justify-between text-xs sm:text-sm bg-blue-50 p-2 sm:p-3 rounded">
-                        <div>
-                          <p className="font-medium">{service.name}</p>
-                          <p className="text-gray-600">₦{service.price} • {service.duration}</p>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="absolute -top-2 -right-2 h-8 w-8 text-red-500 opacity-0 group-hover:opacity-100 transition-opacity bg-white shadow-lg border hover:bg-red-50 rounded-full"
+                            onClick={() => {
+                              setServices(services.filter((_, i) => i !== index));
+                              toast.info(`Removed ${service.name}`);
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                          <div className="space-y-1.5 pr-2">
+                            <div className="flex items-center gap-2">
+                              <h4 className="font-black text-sm leading-tight text-gray-900">{service.name}</h4>
+                              {needsPrice && (
+                                <Badge variant="secondary" className="bg-amber-100 text-amber-700 text-[8px] px-1.5 h-4 font-black uppercase">Price Required</Badge>
+                              )}
+                            </div>
+                            <p className="text-[10px] text-gray-500 line-clamp-2 leading-relaxed">{service.description}</p>
+                          </div>
+                          <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-50">
+                            <div className="flex flex-col">
+                              <span className="text-[9px] font-black text-gray-400 uppercase tracking-tighter mb-0.5">Price</span>
+                              {needsPrice ? (
+                                <button 
+                                  className="text-amber-600 text-[10px] font-black underline decoration-amber-300 underline-offset-2"
+                                  onClick={() => {
+                                    setNewService(service);
+                                    setServices(services.filter((_, i) => i !== index));
+                                    document.getElementById("service-price")?.focus();
+                                  }}
+                                >
+                                  Click to Set Price
+                                </button>
+                              ) : (
+                                <span className="font-black text-blue-600 text-base">₦{service.price.toLocaleString()}</span>
+                              )}
+                            </div>
+                            <div className="flex flex-col items-end">
+                              <span className="text-[9px] font-black text-gray-400 uppercase tracking-tighter mb-1">Time</span>
+                              <Badge variant="outline" className="text-[10px] font-black bg-gray-100 border-gray-200 flex items-center gap-1 h-6">
+                                <Clock className="h-3 w-3 text-blue-500" /> {service.duration}
+                              </Badge>
+                            </div>
+                          </div>
                         </div>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6 sm:h-8 sm:w-8 text-red-600"
-                          onClick={() => setServices(services.filter((_, i) => i !== index))}
-                        >
-                          <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
-                        </Button>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             </div>
           )}
 

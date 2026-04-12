@@ -8,6 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 import {
   Calendar,
   CheckCircle,
@@ -16,11 +18,13 @@ import {
   MapPin,
   Search,
 } from "lucide-react";
-import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { useCarwashBookings, useUpdateBookingStatus } from "@/hooks/useBookings";
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
+import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import WorkerService, { Worker as WorkerType } from "@/Contexts/WorkerService";
+import { BookingDetailsModal } from "@/components/dashboard/BookingDetailsModal";
+import BookingService from "@/Contexts/BookingService";
 
 interface Booking {
   id: string;
@@ -34,6 +38,7 @@ interface Booking {
   paymentStatus: "pending" | "paid";
   totalAmount: number;
   address?: string;
+  raw?: any;
 }
 
 interface Message {
@@ -69,6 +74,14 @@ const BookingsManagement = () => {
 
   const storedUser = localStorage.getItem('user');
   const user = storedUser ? JSON.parse(storedUser) : null;
+  const queryClient = useQueryClient();
+
+  // Fetch Workers for assignment
+  const { data: workers = [] } = useQuery({
+    queryKey: ["workers", user?.carwash_id],
+    queryFn: () => WorkerService.getWorkers(user?.carwash_id || ""),
+    enabled: !!user?.carwash_id,
+  });
 
   const { data: rawBookings = [], isLoading } = useCarwashBookings(user?.carwash_id);
   const updateStatusMutation = useUpdateBookingStatus();
@@ -81,11 +94,14 @@ const BookingsManagement = () => {
     date: b.booking_time ? new Date(b.booking_time).toISOString().split('T')[0] : '',
     time: b.booking_time ? new Date(b.booking_time).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '',
     status: b.status || 'pending',
-    serviceName: b.service_name || 'Car Wash',
+    serviceName: b.service_details && b.service_details.length > 0 
+      ? b.service_details.map((s: any) => s.name).join(", ") 
+      : (b.service_name || "Basic Wash"),
     addOns: b.add_ons || [],
     paymentStatus: b.payment_status || 'pending',
     totalAmount: b.total_price || 0,
     address: b.address_note || b.user_location?.address || '',
+    raw: b, // Keep reference to raw object for the modal
   }));
 
   const filteredBookings = bookings.filter((booking) => {
@@ -103,17 +119,21 @@ const BookingsManagement = () => {
   };
 
   const handleCompleteBooking = (id: string, code?: string) => {
-    const booking = bookings.find((b) => b.id === id);
-    if (booking?.serviceType === "home" && !code) {
-      const promptCode = window.prompt("Enter customer's 4-digit verification code:");
-      if (promptCode) {
-        updateStatusMutation.mutate({ id, status: "completed", code: promptCode });
-      } else {
-        toast.error("Verification code required for home service");
-      }
-    } else {
-      updateStatusMutation.mutate({ id, status: "completed", code });
+    updateStatusMutation.mutate({ id, status: "completed", code });
+  };
+
+  const handleAssignWorker = async (bookingId: string, workerId: string) => {
+    try {
+      await WorkerService.assignWorker(bookingId, workerId);
+      queryClient.invalidateQueries({ queryKey: ["carwash-bookings"] });
+      toast.success("Worker assigned successfully");
+    } catch (err) {
+      toast.error("Failed to assign worker");
     }
+  };
+
+  const handleUpdateStatus = (id: string, status: string, code?: string) => {
+    updateStatusMutation.mutate({ id, status, code });
   };
 
   const openBookingDetails = (booking: Booking) => {
@@ -385,28 +405,16 @@ const BookingsManagement = () => {
           </CardContent>
         </Card>
 
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent className="sm:max-w-[600px]">
-            {/* ... content remains same in spirit ... */}
-            <DialogHeader>
-              <DialogTitle>Booking Details</DialogTitle>
-            </DialogHeader>
-            {selectedBooking && (
-              <div className="space-y-4">
-                <div><Label className="font-semibold">Customer</Label><p>{selectedBooking.customerName}</p></div>
-                <div><Label className="font-semibold">Service</Label><p>{selectedBooking.serviceName} ({selectedBooking.serviceType === "slot" ? "Slot" : "Home Service"})</p></div>
-                <div><Label className="font-semibold">Date/Time</Label><p>{selectedBooking.date} at {selectedBooking.time}</p></div>
-                {selectedBooking.serviceType === "home" && <div><Label className="font-semibold">Address</Label><p>{selectedBooking.address}</p></div>}
-                <div><Label className="font-semibold">Add-Ons</Label><p>{selectedBooking.addOns.join(", ") || "None"}</p></div>
-                <div><Label className="font-semibold">Payment Status</Label><p>{selectedBooking.paymentStatus.charAt(0).toUpperCase() + selectedBooking.paymentStatus.slice(1)}</p></div>
-                <div><Label className="font-semibold">Total Amount</Label><p>₦{selectedBooking.totalAmount.toLocaleString()}</p></div>
-              </div>
-            )}
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Close</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        <BookingDetailsModal
+          isOpen={isDialogOpen}
+          onClose={() => setIsDialogOpen(false)}
+          booking={selectedBooking?.raw}
+          onAccept={handleAcceptBooking}
+          onReject={handleRejectBooking}
+          onUpdateStatus={handleUpdateStatus}
+          workers={workers}
+          onAssignWorker={handleAssignWorker}
+        />
       </div>
     </DashboardLayout>
   );

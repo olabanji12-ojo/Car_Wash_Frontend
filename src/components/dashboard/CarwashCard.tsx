@@ -79,8 +79,20 @@ export const CarwashCard = ({ carwash }: CarwashCardProps) => {
           {/* Price Overlay or Bottom Info */}
           <div className="absolute bottom-3 right-3">
             <div className="bg-white/95 px-3 py-1.5 rounded-xl shadow-lg backdrop-blur-md border border-white/20">
-              <p className="text-sm font-black text-primary">
-                ₦{(carwash.base_price || 5000).toLocaleString()}
+              <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest leading-none mb-1">Starts at</p>
+              <p className="text-sm font-black text-primary leading-none">
+                ₦{(() => {
+                  const matrix = carwash.pricing_matrix;
+                  if (matrix) {
+                    const prices = [matrix.small, matrix.medium, matrix.large].filter(p => p > 0);
+                    if (prices.length > 0) {
+                      const min = Math.min(...prices);
+                      const max = Math.max(...prices);
+                      return min === max ? min.toLocaleString() : `${min.toLocaleString()} - ₦${max.toLocaleString()}`;
+                    }
+                  }
+                  return (carwash.base_price || 5000).toLocaleString();
+                })()}
               </p>
             </div>
           </div>

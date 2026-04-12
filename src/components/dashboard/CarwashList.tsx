@@ -13,6 +13,7 @@ interface CarwashListProps {
     hasSearched: boolean;
     searchedAddress?: string;
     searchedLocation?: [number, number]; // [lng, lat]
+    onAreaChange?: (lat: number, lng: number) => void; // 🆕 Dynamic discovery
 }
 
 // Internal display configuration
@@ -23,7 +24,8 @@ export const CarwashList = ({
     loading,
     hasSearched,
     searchedAddress,
-    searchedLocation
+    searchedLocation,
+    onAreaChange
 }: CarwashListProps) => {
     const [isExpanded, setIsExpanded] = useState(false);
 
@@ -52,6 +54,7 @@ export const CarwashList = ({
                     <CarwashMap
                         carwashes={carwashes}
                         center={searchedLocation}
+                        onAreaChange={onAreaChange}
                     />
                 </div>
 

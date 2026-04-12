@@ -5,6 +5,7 @@ import API_BASE_URL from './baseUrl';
 export interface CarPayload {
     model: string; // Combined "Year Make Model"
     plate: string;
+    size: 'small' | 'medium' | 'large';
     color?: string;
     is_default?: boolean;
     note?: string;
@@ -15,6 +16,7 @@ export interface CarResponse {
     owner_id: string;
     model: string;
     plate: string;
+    size: 'small' | 'medium' | 'large';
     color: string;
     is_default: boolean;
     note: string;

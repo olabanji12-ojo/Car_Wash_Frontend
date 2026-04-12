@@ -30,6 +30,8 @@ import { FavoritesProvider } from "./Contexts/FavoritesContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import BrowseCarwashesPage from "./components/dashboard/BrowseCarwashesPage";
 import { PublicOnlyRoute } from "./components/PublicOnlyRoute";
+import WalletPage from "./pages/Wallet";
+import WalletCallback from "./pages/WalletCallback";
 
 
 const queryClient = new QueryClient();
@@ -53,7 +55,11 @@ const App = () => (
               <Route path="/reset-password" element={<PublicOnlyRoute><ResetPassword /></PublicOnlyRoute>} />
               <Route path="/carwash/:id" element={<CarwashDetails />} />
               <Route path="/carwashes" element={<BrowseCarwashesPage />} />
-              <Route path="/dashboard/*" element={<Dashboard />} />
+              <Route path="/dashboard/*" element={
+                <ProtectedRoute allowedRoles={['car_owner']}>
+                  <Dashboard />
+                </ProtectedRoute>
+              } />
               <Route path="/track/:id" element={<WorkerTrackPage />} />
 
               {/* 🚗 CUSTOMER-ONLY ROUTES */}
@@ -73,6 +79,21 @@ const App = () => (
                   </ProtectedRoute>
                 }
               />
+
+              <Route
+                path="/wallet"
+                element={
+                  <ProtectedRoute allowedRoles={['car_owner', 'business_owner']}>
+                    <WalletPage />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route path="/wallet/callback" element={
+                <ProtectedRoute allowedRoles={['car_owner', 'business_owner']}>
+                  <WalletCallback />
+                </ProtectedRoute>
+              } />
 
               {/* 🏢 BUSINESS OWNER-ONLY ROUTES */}
               <Route

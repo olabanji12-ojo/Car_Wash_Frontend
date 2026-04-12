@@ -53,6 +53,11 @@ interface BusinessData {
   homeService: boolean;
   deliveryRadiusKM: number;
   basePrice: number;
+  pricing_matrix: {
+    small: number;
+    medium: number;
+    large: number;
+  };
   services: { id?: string; name: string; price: number; duration: number; description: string }[];
   addons: { name: string; price: number; description?: string }[];
   payoutMethod: PayoutMethod;
@@ -75,6 +80,11 @@ const BusinessProfileSettings = () => {
     homeService: false,
     deliveryRadiusKM: 10,
     basePrice: 5000,
+    pricing_matrix: {
+      small: 5000,
+      medium: 5000,
+      large: 5000,
+    },
     services: [],
     addons: [],
     payoutMethod: { type: "", bankName: "", accountNumber: "" },
@@ -140,6 +150,11 @@ const BusinessProfileSettings = () => {
           homeService: carwashData.home_service || false,
           deliveryRadiusKM: carwashData.delivery_radius_km || 10,
           basePrice: carwashData.base_price || 5000,
+          pricing_matrix: carwashData.pricing_matrix || {
+            small: carwashData.base_price || 5000,
+            medium: carwashData.base_price || 5000,
+            large: carwashData.base_price || 5000,
+          },
           services: carwashData.services || [],
           addons: carwashData.addons || [],
           payoutMethod: { type: '', bankName: '', accountNumber: '' },
@@ -175,6 +190,11 @@ const BusinessProfileSettings = () => {
         home_service: businessData.homeService,
         delivery_radius_km: businessData.homeService ? businessData.deliveryRadiusKM : 0,
         base_price: Number(businessData.basePrice),
+        pricing_matrix: {
+          small: Number(businessData.pricing_matrix.small),
+          medium: Number(businessData.pricing_matrix.medium),
+          large: Number(businessData.pricing_matrix.large),
+        },
         services: businessData.services,
         addons: businessData.addons,
       };
@@ -514,26 +534,78 @@ const BusinessProfileSettings = () => {
                   </CardHeader>
                   <CardContent className="p-6 sm:p-8 space-y-8">
                     {/* Base Price Card */}
-                    <div className="p-6 bg-primary/5 rounded-[2rem] border border-primary/20 space-y-4">
+                    <div className="p-6 bg-primary/5 rounded-[2rem] border border-primary/20 space-y-6">
                       <div className="flex items-center gap-3 text-primary">
                         <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20">
                           <DollarSign className="h-5 w-5" />
                         </div>
-                        <h3 className="font-black text-lg tracking-tight uppercase">Base Station Price</h3>
+                        <h3 className="font-black text-lg tracking-tight uppercase">Multi-Tier Base Pricing</h3>
                       </div>
-                      <p className="text-xs text-muted-foreground font-medium">Starting price for standard reservations at your location.</p>
-                      <div className="flex items-center gap-4">
-                        <div className="relative flex-1 max-w-[200px]">
-                          <span className="absolute left-4 top-1/2 -translate-y-1/2 font-black text-primary text-xl">₦</span>
-                          <Input
-                            type="number"
-                            className="pl-10 h-14 font-black text-2xl rounded-2xl border-none shadow-sm ring-1 ring-primary/10"
-                            value={businessData.basePrice}
-                            onChange={(e) => setBusinessData({ ...businessData, basePrice: parseInt(e.target.value) || 0 })}
-                          />
+                      
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                        <div className="space-y-2">
+                          <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Small Vehicles</Label>
+                          <div className="relative">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 font-black text-primary text-sm">₦</span>
+                            <Input
+                              type="number"
+                              className="pl-7 h-12 font-black text-xl rounded-xl border-none shadow-sm ring-1 ring-primary/10"
+                              value={businessData.pricing_matrix.small}
+                              onChange={(e) => {
+                                const val = parseInt(e.target.value) || 0;
+                                setBusinessData({ 
+                                  ...businessData, 
+                                  pricing_matrix: { ...businessData.pricing_matrix, small: val } 
+                                });
+                              }}
+                            />
+                          </div>
                         </div>
-                        <Badge className="bg-primary/10 text-primary border-none font-black text-[10px] tracking-widest px-4 py-2 rounded-full uppercase">Standard Rate</Badge>
+
+                        <div className="space-y-2">
+                          <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Medium / SUV (Default)</Label>
+                          <div className="relative">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 font-black text-primary text-xl">₦</span>
+                            <Input
+                              type="number"
+                              className="pl-7 h-12 font-black text-xl rounded-xl border-none shadow-md ring-2 ring-primary/30 bg-white"
+                              value={businessData.pricing_matrix.medium}
+                              onChange={(e) => {
+                                const val = parseInt(e.target.value) || 0;
+                                setBusinessData({ 
+                                  ...businessData, 
+                                  basePrice: val,
+                                  pricing_matrix: { ...businessData.pricing_matrix, medium: val } 
+                                });
+                              }}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Large / Trucks</Label>
+                          <div className="relative">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 font-black text-primary text-sm">₦</span>
+                            <Input
+                              type="number"
+                              className="pl-7 h-12 font-black text-xl rounded-xl border-none shadow-sm ring-1 ring-primary/10"
+                              value={businessData.pricing_matrix.large}
+                              onChange={(e) => {
+                                const val = parseInt(e.target.value) || 0;
+                                setBusinessData({ 
+                                  ...businessData, 
+                                  pricing_matrix: { ...businessData.pricing_matrix, large: val } 
+                                });
+                              }}
+                            />
+                          </div>
+                        </div>
                       </div>
+
+                      <p className="text-[10px] text-muted-foreground italic font-medium">
+                        * These rates represent the base cost of a wash before adding custom packages or add-ons. 
+                        Medium price is automatically synced as your default base rate.
+                      </p>
                     </div>
 
                     {/* Services List */}

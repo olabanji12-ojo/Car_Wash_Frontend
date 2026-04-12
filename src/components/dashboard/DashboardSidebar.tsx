@@ -1,4 +1,4 @@
-import { Home, Search, Calendar, BookOpen, Heart, Car, ClipboardList, Star, Settings, Bell } from "lucide-react";
+import { Home, Search, Calendar, BookOpen, Heart, Car, ClipboardList, Star, Settings, Bell, User, Wallet } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import {
   Sidebar,
@@ -18,7 +18,9 @@ const customerMenuItems = [
   { title: "My Bookings", url: "/dashboard/bookings", icon: BookOpen },
   { title: "Favorites", url: "/dashboard/favorites", icon: Heart },
   { title: "My Vehicles", url: "/dashboard/vehicles", icon: Car },
+  { title: "My Wallet", url: "/wallet", icon: Wallet },
   { title: "Notifications", url: "/notifications", icon: Bell },
+  { title: "My Profile", url: "/profile", icon: Settings },
 ];
 
 const guestMenuItems = [
@@ -33,6 +35,7 @@ const businessMenuItems = [
   { title: "Bookings", url: "/bookings-management", icon: ClipboardList },
   { title: "Reviews", url: "/reviews-management", icon: Star },
   { title: "Notifications", url: "/notifications", icon: Bell },
+  { title: "My Profile", url: "/profile", icon: User },
   { title: "Settings", url: "/business-profile-settings", icon: Settings },
 ];
 
@@ -62,7 +65,7 @@ export function DashboardSidebar() {
                   <SidebarMenuButton asChild>
                     <NavLink
                       to={item.url}
-                      end={item.url === "/dashboard"}
+                      end={item.url === "/dashboard" || item.url === "/"}
                       className={({ isActive }) =>
                         `flex items-center gap-3 px-6 py-3 transition-all duration-200 rounded-md mx-2 ${isActive
                           ? "bg-primary/10 text-primary font-bold shadow-sm"

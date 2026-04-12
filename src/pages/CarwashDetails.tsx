@@ -17,7 +17,8 @@ import {
   CheckCircle2,
   User,
   LogOut,
-  Settings
+  Settings,
+  Wallet
 } from "lucide-react";
 import CarwashService, { Carwash } from "@/Contexts/CarwashService";
 import ReviewService, { Review } from "@/Contexts/ReviewService";
@@ -37,6 +38,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
+import API_BASE_URL from "@/Contexts/baseUrl";
 
 // Fix for default marker icon
 import icon from 'leaflet/dist/images/marker-icon.png';
@@ -60,26 +62,42 @@ const CarwashDetails = () => {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [walletBalance, setWalletBalance] = useState<number | null>(null);
 
   useEffect(() => {
     if (id) {
       fetchCarwashData(id);
       fetchReviews(id);
+      if (user) fetchWalletBalance();
     }
-  }, [id]);
+  }, [id, user]);
+
+  const fetchWalletBalance = async () => {
+    try {
+      const token = localStorage.getItem('authToken');
+      if (!token) return;
+      const response = await fetch(`${API_BASE_URL}/wallet`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await response.json();
+      // Handle both {data: {balance: X}} and {balance: X} structures
+      const balance = data?.data?.balance ?? data?.balance;
+      if (typeof balance === 'number') {
+        setWalletBalance(balance);
+      }
+    } catch (err) {
+      console.error("Failed to fetch wallet", err);
+    }
+  };
 
   const fetchCarwashData = async (carwashId: string) => {
     try {
       setIsLoading(true);
-      console.log('🔍 Fetching carwash data for ID:', carwashId);
       const response = await CarwashService.getCarwashById(carwashId) as any;
-      console.log('✅ Carwash data:', response);
-      // Backend returns { success: true, data: {...} }
       const carwashData = response.data || response;
       setCarwash(carwashData);
       setError(null);
     } catch (err) {
-      console.error('❌ Failed to fetch carwash:', err);
       setError("Failed to load carwash details");
       toast.error("Failed to load carwash details");
     } finally {
@@ -89,15 +107,12 @@ const CarwashDetails = () => {
 
   const fetchReviews = async (carwashId: string) => {
     try {
-      console.log('🔍 Fetching reviews for carwash:', carwashId);
       const data = await ReviewService.getReviewsByBusinessId(carwashId) as any;
-      console.log('✅ Reviews data:', data);
       // Backend returns { success: true, data: [...] } or { success: true, data: null }
       const reviewsData = data?.data || data;
       const reviewsArray = Array.isArray(reviewsData) ? reviewsData : [];
       setReviews(reviewsArray);
     } catch (err) {
-      console.error('❌ Failed to fetch reviews:', err);
       // Don't show error toast for reviews, just log it
       setReviews([]);
     }
@@ -165,10 +180,48 @@ const CarwashDetails = () => {
     );
   }
 
-  // Calculate starting price from services if available
-  const startingPrice = carwash.services && carwash.services.length > 0
-    ? Math.min(...carwash.services.map(s => s.price || 0))
-    : (carwash.base_price || 5000);
+  // Calculate price range from services
+  const allPrices = carwash.services?.map(s => s.price || 0) || [];
+  const minPrice = allPrices.length > 0 ? Math.min(...allPrices) : (carwash.base_price || 0);
+  const maxPrice = allPrices.length > 0 ? Math.max(...allPrices) : (carwash.base_price || 0);
+  const startingPrice = minPrice;
+
+  // Check if open now
+  const isOpenNow = () => {
+    if (!carwash.operating_hours) return null;
+    const now = new Date();
+    const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    const todayName = dayNames[now.getDay()];
+
+    const todayHours = Array.isArray(carwash.operating_hours)
+      ? carwash.operating_hours.find((h: any) => h.day === todayName)
+      : carwash.operating_hours[todayName.toLowerCase()];
+
+    if (!todayHours || todayHours.status === "closed" || todayHours.hours === "Closed") return false;
+
+    const [startStr, endStr] = (todayHours.hours || `${todayHours.start}-${todayHours.end}`).split("-").map((s: string) => s.trim());
+    if (!startStr || !endStr) return false;
+
+    const parseTime = (t: string) => {
+      const [time, modifier] = t.split(/(AM|PM)/i);
+      let [hours, minutes] = time.trim().split(":").map(Number);
+      if (modifier?.toUpperCase() === "PM" && hours < 12) hours += 12;
+      if (modifier?.toUpperCase() === "AM" && hours === 12) hours = 0;
+      const d = new Date();
+      d.setHours(hours, minutes || 0, 0, 0);
+      return d;
+    };
+
+    try {
+      const startTime = parseTime(startStr);
+      const endTime = parseTime(endStr);
+      return now >= startTime && now <= endTime;
+    } catch (e) {
+      return null;
+    }
+  };
+
+  const openStatus = isOpenNow();
 
   // Use photo_gallery, photos or fallback images
   const images = (carwash.photo_gallery && carwash.photo_gallery.length > 0)
@@ -253,10 +306,20 @@ const CarwashDetails = () => {
               alt={carwash.name}
               className="w-full h-full object-cover transition-all duration-500 hover:scale-105"
             />
-            <div className="absolute top-4 left-4 flex gap-2">
+            <div className="absolute top-4 left-4 flex flex-wrap gap-2">
               <Badge className="bg-primary/90 text-white backdrop-blur-sm border-none px-3 py-1 font-bold shadow-sm">
                 Verified Provider
               </Badge>
+              {openStatus === true && (
+                <Badge className="bg-green-600 text-white border-none py-1 font-bold">
+                  Open Now
+                </Badge>
+              )}
+              {openStatus === false && (
+                <Badge variant="destructive" className="py-1 font-bold">
+                  Closed
+                </Badge>
+              )}
               {startingPrice > 0 && (
                 <Badge variant="secondary" className="px-2.5 py-1 font-bold bg-white/90 text-primary">
                   <Star className="h-3 w-3 mr-1 fill-primary" />
@@ -308,6 +371,13 @@ const CarwashDetails = () => {
                   <Star className="h-3 w-3 mr-1 fill-blue-700" />
                   Verified Business
                 </Badge>
+
+                {typeof walletBalance === 'number' && (
+                  <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 font-bold px-3">
+                    <Wallet className="h-3 w-3 mr-1" />
+                    Wallet: ₦{walletBalance.toLocaleString()}
+                  </Badge>
+                )}
               </div>
 
               <div className="space-y-2 text-muted-foreground">
@@ -592,8 +662,8 @@ const CarwashDetails = () => {
           </div >
 
 
-          {/* Booking Sidebar */}
-          <div id="booking-section">
+          {/* Booking Sidebar - Sticky on Desktop */}
+          <div id="booking-section" className="lg:sticky lg:top-24 h-fit">
             <BookingSidebar
               carwashId={id || "1"}
               startingPrice={startingPrice}
@@ -610,8 +680,12 @@ const CarwashDetails = () => {
       <div className="lg:hidden fixed bottom-0 left-0 right-0 p-4 bg-background/80 backdrop-blur-lg border-t z-50 animate-in fade-in slide-in-from-bottom-10 duration-500">
         <div className="container mx-auto flex items-center justify-between gap-4">
           <div className="flex flex-col">
-            <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Starting Price</span>
-            <span className="font-black text-lg text-primary leading-none">₦{startingPrice.toLocaleString()}</span>
+            <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">
+              {minPrice === maxPrice ? "Price" : "Price Range"}
+            </span>
+            <span className="font-black text-lg text-primary leading-none">
+              ₦{minPrice.toLocaleString()}{minPrice !== maxPrice && ` – ₦${maxPrice.toLocaleString()}`}
+            </span>
           </div>
           <Button
             className="flex-1 bg-blue-600 hover:bg-blue-700 h-12 rounded-xl font-bold text-base shadow-lg shadow-blue-200"
@@ -621,7 +695,7 @@ const CarwashDetails = () => {
                   state: {
                     carwashId: id,
                     serviceType: "onsite",
-                    selectedService: carwash.services?.[0] || null,
+                    selectedService: null,
                   },
                 });
               } else {

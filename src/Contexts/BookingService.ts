@@ -15,6 +15,8 @@ export interface BookingPayload {
     };
     address_note?: string;
     notes?: string;
+    services?: string[]; // Array of Service IDs
+    total_price?: number;
     status?: string; // usually 'pending' by default
 }
 
@@ -43,6 +45,7 @@ export interface BookingResponse {
         type: 'Point';
         coordinates: [number, number]; // [longitude, latitude]
     };
+    service_details?: any[];
 }
 
 // Helper function to get auth headers

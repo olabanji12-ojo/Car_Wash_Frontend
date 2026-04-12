@@ -3,13 +3,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
-import BookingService, { BookingResponse } from "@/Contexts/BookingService";
-import CarwashService from "@/Contexts/CarwashService";
+import BookingService from "@/Contexts/BookingService";
+import CarwashService, { Carwash } from "@/Contexts/CarwashService";
 import { useAuth } from "@/Contexts/AuthContext";
 import { toast } from "sonner";
+import PaymentService from "@/Contexts/PaymentService";
 import {
   Calendar,
   DollarSign,
@@ -19,9 +19,14 @@ import {
   Clock,
   AlertCircle,
   Truck,
-  Share2
+  Share2,
+  Wallet,
+  Users,
+  ArrowLeft,
+  Pencil
 } from "lucide-react";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { motion, AnimatePresence } from "framer-motion";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import NotificationService from "@/Contexts/NotificationService";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -32,15 +37,25 @@ import { WorkerCard } from "@/components/dashboard/WorkerCard";
 import { AddWorkerModal } from "@/components/dashboard/AddWorkerModal";
 import { EditWorkerModal } from "@/components/dashboard/EditWorkerModal";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users } from "lucide-react";
+import { WithdrawalModal } from "@/components/dashboard/WithdrawalModal";
+import API_BASE_URL from "@/Contexts/baseUrl";
 
-// Chart data remains mock for now as it's a presentation element
-const mockChartData = [
-  { name: 'Week 1', bookings: 5, revenue: 30000 },
-  { name: 'Week 2', bookings: 8, revenue: 48000 },
-  { name: 'Week 3', bookings: 6, revenue: 36000 },
-  { name: 'Week 4', bookings: 7, revenue: 42000 },
-];
+// Builds real weekly chart data from actual bookings
+const buildChartData = (bookings: any[]) => {
+  const weeks: Record<string, { bookings: number; revenue: number }> = {};
+  bookings.forEach((b: any) => {
+    const date = new Date(b.booking_time || b.created_at);
+    if (isNaN(date.getTime())) return;
+    const weekNum = Math.ceil(date.getDate() / 7);
+    const key = `Week ${weekNum}`;
+    if (!weeks[key]) weeks[key] = { bookings: 0, revenue: 0 };
+    weeks[key].bookings += 1;
+    if (b.status === 'completed') {
+      weeks[key].revenue += b.total_price || b.amount || 0;
+    }
+  });
+  return Object.entries(weeks).map(([name, data]) => ({ name, ...data }));
+};
 
 const BusinessDashboard = () => {
   const navigate = useNavigate();
@@ -54,6 +69,7 @@ const BusinessDashboard = () => {
   const [isAddWorkerModalOpen, setIsAddWorkerModalOpen] = useState(false);
   const [isEditWorkerModalOpen, setIsEditWorkerModalOpen] = useState(false);
   const [selectedWorker, setSelectedWorker] = useState<Worker | null>(null);
+  const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
 
   // Fetch Notifications with Polling
   const { data: notifications = [] } = useQuery({
@@ -71,20 +87,17 @@ const BusinessDashboard = () => {
       const myCarwash = await CarwashService.getCarwashById(user.carwash_id);
       const fetchedBookings = await BookingService.getBookingsByCarwash(user.carwash_id);
       const bookingsArray = Array.isArray(fetchedBookings) ? fetchedBookings : [];
-
-      const total = bookingsArray.length;
-      const pending = bookingsArray.filter((b: any) => b.status === 'pending').length;
-      const revenue = bookingsArray
-        .filter((b: any) => b.status === 'completed' || b.status === 'confirmed')
-        .reduce((acc: number, curr: any) => acc + (curr.total_price || 0), 0);
+      
+      const earnings = await PaymentService.getEarningsSummary(user.carwash_id);
 
       return {
         bookings: bookingsArray,
+        myCarwash,
         metrics: {
-          totalBookings: total,
-          revenue: revenue,
+          totalBookings: earnings.total_bookings || bookingsArray.length,
+          revenue: earnings.total_revenue || 0,
           averageRating: myCarwash.rating || 0,
-          pendingBookings: pending
+          pendingBookings: earnings.pending_bookings || bookingsArray.filter((b: any) => b.status === 'pending').length
         }
       };
     },
@@ -105,7 +118,25 @@ const BusinessDashboard = () => {
   const bookings = dashboardData?.bookings || [];
   const metrics = dashboardData?.metrics || { totalBookings: 0, revenue: 0, averageRating: 0, pendingBookings: 0 };
 
-  // Real-time tracking for "en_route" bookings (Step 2: The Producer)
+  // Fetch Wallet Balance for Merchant
+  const { data: walletData } = useQuery({
+    queryKey: ["merchant-wallet", user?.id],
+    queryFn: async () => {
+      const response = await fetch(`${API_BASE_URL}/wallet`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+        },
+      });
+      const data = await response.json();
+      return data.data;
+    },
+    enabled: !!user?.id,
+    refetchInterval: 10000,
+  });
+
+  const chartData = buildChartData(bookings);
+
+  // Real-time tracking for "en_route" bookings
   useEffect(() => {
     const enRouteBookings = bookings.filter((b: any) => b.status === "en_route" && b.booking_type === "home_service");
 
@@ -116,12 +147,9 @@ const BusinessDashboard = () => {
       return;
     }
 
-    console.info("🛰️ Provider Tracking Active:", enRouteBookings.length, "booking(s)");
-
     const watchId = navigator.geolocation.watchPosition(
       (position) => {
         const { latitude, longitude } = position.coords;
-        // Batch updates to backend
         enRouteBookings.forEach((booking: any) => {
           BookingService.updateWorkerLocation(booking.id, latitude, longitude);
         });
@@ -131,7 +159,7 @@ const BusinessDashboard = () => {
     );
 
     return () => navigator.geolocation.clearWatch(watchId);
-  }, [dashboardData?.bookings]); // Only re-run if bookings list changes
+  }, [dashboardData?.bookings]);
 
   const markReadMutation = useMutation({
     mutationFn: (id: string) => NotificationService.markAsRead(id),
@@ -157,9 +185,12 @@ const BusinessDashboard = () => {
         return;
       }
       updateStatusMutation.mutate({ id, status, code: promptCode });
-      return;
+    } else {
+      updateStatusMutation.mutate({ id, status, code });
     }
-    updateStatusMutation.mutate({ id, status, code });
+
+    // Automated Escrow Release is now handled by the backend UpdateBookingStatus method.
+    // Frontend trigger removed to avoid duplicate processing.
   };
 
   const handleAssignWorker = async (bookingId: string, workerId: string) => {
@@ -272,52 +303,114 @@ const BusinessDashboard = () => {
 
           <TabsContent value="overview">
             <div className="grid lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
-              {/* Sidebar - Metrics and Quick Actions */}
               <div className="lg:col-span-1 space-y-4 sm:space-y-6">
-                <Card>
-                  <CardHeader className="pb-3 sm:pb-4">
-                    <CardTitle className="text-base sm:text-lg">Key Metrics</CardTitle>
+                <Card className="border-none rounded-[2rem] shadow-card ring-1 ring-border/5 overflow-hidden bg-primary text-white">
+                  <CardHeader className="pb-2 border-b border-white/10">
+                    <CardTitle className="text-xs font-black uppercase tracking-widest flex items-center gap-2 opacity-80">
+                      <Wallet className="h-3.5 w-3.5" /> Wallet Overview
+                    </CardTitle>
                   </CardHeader>
-                  <CardContent className="p-3 sm:p-4">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
-                      <div className="flex items-center gap-4 p-4 rounded-2xl bg-primary/5 border border-primary/10 shadow-sm transition-all hover:bg-primary/10">
-                        <div className="p-3 rounded-xl bg-primary/10">
-                          <Calendar className="h-6 w-6 text-primary" />
-                        </div>
-                        <div>
-                          <p className="text-xs font-bold text-primary/70 uppercase tracking-wider">Total Bookings</p>
-                          <p className="text-3xl font-black text-foreground">{metrics.totalBookings}</p>
-                        </div>
+                  <CardContent className="p-5 space-y-4">
+                    <div className="space-y-1">
+                      <p className="text-[10px] font-black uppercase tracking-widest opacity-60">Withdrawable Balance</p>
+                      <h2 className="text-3xl font-black tracking-tighter">
+                        ₦{(walletData?.balance || 0).toLocaleString()}
+                      </h2>
+                    </div>
+                    
+                    <div className="pt-3 border-t border-white/10 flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <p className="text-[9px] font-black uppercase tracking-widest opacity-60">Held in Escrow</p>
+                        <p className="text-sm font-black italic">
+                          ₦{bookings
+                            .filter((b: any) => ['pending', 'confirmed', 'en_route'].includes(b.status))
+                            .reduce((sum: number, b: any) => sum + (b.total_price || 0), 0)
+                            .toLocaleString()}
+                        </p>
                       </div>
-                      <div className="flex items-center gap-4 p-4 rounded-2xl bg-accent/5 border border-accent/10 shadow-sm transition-all hover:bg-accent/10">
-                        <div className="p-3 rounded-xl bg-accent/10">
-                          <DollarSign className="h-6 w-6 text-accent" />
+                      <Badge className="bg-white/20 hover:bg-white/30 text-white border-none text-[9px] font-bold">
+                        {bookings.filter((b: any) => ['pending', 'confirmed', 'en_route'].includes(b.status)).length} Active
+                      </Badge>
+                    </div>
+
+                    <Button variant="secondary" className="w-full h-10 rounded-xl font-black text-xs uppercase tracking-widest mt-2" onClick={() => setIsWithdrawModalOpen(true)}>
+                      Withdraw Funds
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-none rounded-[2rem] shadow-card ring-1 ring-border/5 overflow-hidden">
+                  <CardHeader className="pb-3 sm:pb-4 border-b border-border/50 bg-primary/[0.02]">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-sm font-black text-primary tracking-widest uppercase flex items-center gap-2">
+                        <DollarSign className="h-4 w-4" /> Live Pricing Tiers
+                      </CardTitle>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-8 w-8 rounded-full" 
+                        onClick={() => navigate("/business-profile-settings")}
+                      >
+                        <Pencil className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-5 space-y-4">
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="h-2 w-2 rounded-full bg-blue-500" />
+                          <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">SMALL</span>
                         </div>
-                        <div>
-                          <p className="text-xs font-bold text-accent/70 uppercase tracking-wider">Revenue</p>
-                          <p className="text-3xl font-black text-foreground">₦{metrics.revenue.toLocaleString()}</p>
-                        </div>
+                        <span className="font-black text-sm">₦{(dashboardData?.myCarwash?.pricing_matrix?.small || 5000).toLocaleString()}</span>
                       </div>
-                      <div className="hidden lg:block py-2"><Separator className="bg-border/50" /></div>
-                      <div className="flex items-center gap-4 p-4 rounded-2xl bg-yellow-50 border border-yellow-100 shadow-sm transition-all hover:bg-yellow-100/50">
-                        <div className="p-3 rounded-xl bg-yellow-400/20">
-                          <Star className="h-6 w-6 text-yellow-600" />
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="h-2 w-2 rounded-full bg-amber-500" />
+                          <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">MEDIUM</span>
                         </div>
-                        <div>
-                          <p className="text-xs font-bold text-yellow-700/70 uppercase tracking-wider">Avg Rating</p>
-                          <p className="text-3xl font-black text-foreground">{metrics.averageRating}/5</p>
-                        </div>
+                        <span className="font-black text-sm">₦{(dashboardData?.myCarwash?.pricing_matrix?.medium || 5000).toLocaleString()}</span>
                       </div>
-                      <div className="flex items-center gap-4 p-4 rounded-2xl bg-orange-50 border border-orange-100 shadow-sm transition-all hover:bg-orange-100/50">
-                        <div className="p-3 rounded-xl bg-orange-400/20">
-                          <AlertCircle className="h-6 w-6 text-orange-600" />
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="h-2 w-2 rounded-full bg-red-500" />
+                          <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">LARGE</span>
                         </div>
-                        <div>
-                          <p className="text-xs font-bold text-orange-700/70 uppercase tracking-wider">Pending</p>
-                          <p className="text-3xl font-black text-foreground">{metrics.pendingBookings}</p>
-                        </div>
+                        <span className="font-black text-sm">₦{(dashboardData?.myCarwash?.pricing_matrix?.large || 5000).toLocaleString()}</span>
                       </div>
                     </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Revenue Performance</CardTitle>
+                  </CardHeader>
+                  <CardContent className="h-[200px] p-0 pr-4">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={chartData}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                        <XAxis
+                          dataKey="name"
+                          axisLine={false}
+                          tickLine={false}
+                          tick={{ fontSize: 10, fill: '#999' }}
+                        />
+                        <YAxis hide />
+                        <Tooltip
+                          contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                          formatter={(value: any) => [`₦${value.toLocaleString()}`, 'Revenue']}
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="revenue"
+                          stroke="#3b82f6"
+                          strokeWidth={4}
+                          dot={{ r: 4, strokeWidth: 2, fill: '#fff' }}
+                          activeDot={{ r: 6, strokeWidth: 0 }}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
                   </CardContent>
                 </Card>
 
@@ -366,6 +459,7 @@ const BusinessDashboard = () => {
                             <TableHead>Date/Time</TableHead>
                             <TableHead>Status</TableHead>
                             <TableHead>Actions</TableHead>
+                            <TableHead>Details</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -379,36 +473,20 @@ const BusinessDashboard = () => {
                               </TableCell>
                               <TableCell>
                                 <div className="flex flex-col gap-1">
+                                  <span className="text-[10px] font-bold text-muted-foreground uppercase truncate max-w-[120px]">
+                                    {booking.service_details && booking.service_details.length > 0 
+                                      ? booking.service_details.map((s: any) => s.name).join(", ") 
+                                      : "Basic Wash"}
+                                  </span>
                                   {getServiceBadge(booking.booking_type)}
-                                  {booking.booking_type === 'home_service' && booking.address_note && (
-                                    <p className="text-[10px] text-muted-foreground italic truncate max-w-[120px]" title={booking.address_note}>
-                                      {booking.address_note}
-                                    </p>
-                                  )}
                                 </div>
                               </TableCell>
                               <TableCell>
                                 <div className="flex items-center gap-2">
                                   {booking.booking_type === 'home_service' ? (
-                                    <>
-                                      <span className="font-mono font-bold text-primary bg-primary/5 px-2 py-1 rounded border">
-                                        {booking.verification_code || "----"}
-                                      </span>
-                                      <Button
-                                        size="icon"
-                                        variant="ghost"
-                                        className="h-7 w-7 text-blue-600"
-                                        title="Copy Magic Tracking Link"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          const link = `${window.location.origin}/track/${booking.id}`;
-                                          navigator.clipboard.writeText(link);
-                                          toast.success("Tracking link copied!");
-                                        }}
-                                      >
-                                        <Share2 className="h-3.5 w-3.5" />
-                                      </Button>
-                                    </>
+                                    <span className="font-mono font-bold text-primary bg-primary/5 px-2 py-1 rounded border">
+                                      {booking.verification_code || "----"}
+                                    </span>
                                   ) : (
                                     <Badge variant="outline" className="font-bold border-primary text-primary bg-primary/5 px-2 py-1">
                                       Q #{booking.queue_number || "---"}
@@ -425,21 +503,23 @@ const BusinessDashboard = () => {
                               <TableCell>{getStatusBadge(booking.status)}</TableCell>
                               <TableCell>
                                 <div className="flex gap-2">
-                                  {booking.status === "pending" ? (
+                                  {booking.status === "pending" && (
                                     <>
                                       <Button size="sm" variant="outline" className="text-green-600 border-green-600" onClick={() => handleAcceptBooking(booking.id)}>Accept</Button>
                                       <Button size="sm" variant="outline" className="text-red-600 border-red-600" onClick={() => handleRejectBooking(booking.id)}>Reject</Button>
                                     </>
-                                  ) : booking.status === "confirmed" && booking.booking_type === "home_service" ? (
+                                  )}
+                                  {booking.status === "confirmed" && booking.booking_type === "home_service" && (
                                     <Button size="sm" className="bg-blue-600 hover:bg-blue-700" onClick={() => handleUpdateStatus(booking.id, "en_route")}>
                                       <Truck className="h-3 w-3 mr-1" />
                                       Start Trip
                                     </Button>
-                                  ) : booking.status === "en_route" ? (
+                                  )}
+                                  {booking.status === "en_route" && (
                                     <Button size="sm" className="bg-purple-600 hover:bg-purple-700" onClick={() => handleUpdateStatus(booking.id, "completed")}>
                                       Arrived
                                     </Button>
-                                  ) : null}
+                                  )}
                                 </div>
                               </TableCell>
                               <TableCell>
@@ -452,7 +532,7 @@ const BusinessDashboard = () => {
                     </div>
 
                     <div className="md:hidden space-y-4 px-1">
-                      {bookings.slice(0, 5).map((booking) => (
+                      {bookings.slice(0, 5).map((booking: any) => (
                         <div key={booking.id} className="border-none rounded-[1.5rem] p-5 space-y-4 bg-card shadow-card ring-1 ring-border/5">
                           <div className="flex justify-between items-start">
                             <div className="space-y-1">
@@ -472,24 +552,9 @@ const BusinessDashboard = () => {
                               <p className="text-[9px] uppercase font-black text-muted-foreground tracking-widest">Verification</p>
                               <div className="flex items-center gap-1.5">
                                 {booking.booking_type === 'home_service' ? (
-                                  <div className="flex items-center gap-2">
-                                    <span className="font-mono font-black text-primary bg-primary/5 px-2.5 py-1 rounded-lg border border-primary/20 text-sm shadow-inner">
-                                      {booking.verification_code || "----"}
-                                    </span>
-                                    <Button
-                                      size="icon"
-                                      variant="ghost"
-                                      className="h-8 w-8 text-primary hover:bg-primary/10 rounded-full"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        const link = `${window.location.origin}/track/${booking.id}`;
-                                        navigator.clipboard.writeText(link);
-                                        toast.success("Tracking link copied!");
-                                      }}
-                                    >
-                                      <Share2 className="h-4 w-4" />
-                                    </Button>
-                                  </div>
+                                  <span className="font-mono font-black text-primary bg-primary/5 px-2.5 py-1 rounded-lg border border-primary/20 text-sm shadow-inner">
+                                    {booking.verification_code || "----"}
+                                  </span>
                                 ) : (
                                   <span className="font-black text-primary text-sm tracking-tight">Q #{booking.queue_number || "---"}</span>
                                 )}
@@ -513,13 +578,6 @@ const BusinessDashboard = () => {
                               </div>
                             </div>
                           </div>
-
-                          {booking.booking_type === 'home_service' && booking.address_note && (
-                            <div className="p-3 bg-primary/5 rounded-[1rem] border border-primary/10 text-foreground text-[11px] leading-relaxed font-medium">
-                              <span className="font-black text-[9px] uppercase tracking-widest block mb-1.5 text-primary/70">Address Instructions</span>
-                              {booking.address_note}
-                            </div>
-                          )}
 
                           <div className="pt-2 flex gap-3">
                             {booking.status === "pending" ? (
@@ -553,7 +611,7 @@ const BusinessDashboard = () => {
                     <CardTitle className="text-base sm:text-lg">Notifications</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-2 sm:space-y-3">
-                    {notifications.slice(0, 5).map((notif) => (
+                    {notifications.slice(0, 5).map((notif: any) => (
                       <div
                         key={notif.id}
                         className={`flex items-start gap-2 sm:gap-3 p-2 sm:p-3 rounded-md cursor-pointer ${!notif.is_read ? "bg-blue-50" : ""} hover:bg-gray-100`}
@@ -649,6 +707,13 @@ const BusinessDashboard = () => {
         onClose={() => setIsEditWorkerModalOpen(false)}
         worker={selectedWorker}
         onUpdate={handleUpdateWorker}
+      />
+
+      <WithdrawalModal
+        isOpen={isWithdrawModalOpen}
+        onClose={() => setIsWithdrawModalOpen(false)}
+        balance={walletData?.balance || 0}
+        onSuccess={() => queryClient.invalidateQueries({ queryKey: ["merchant-wallet"] })}
       />
     </DashboardLayout>
   );
